@@ -1,0 +1,62 @@
+[gd_scene load_steps=7 format=3 uid="uid://cx4j1fizzball01"]
+
+[ext_resource type="Script" path="res://scripts/ball/ball.gd" id="1_ball"]
+[ext_resource type="Script" path="res://scripts/ball/ball_trail.gd" id="2_trail"]
+[ext_resource type="Resource" uid="uid://cx4j1keywordelectric01" path="res://resources/keyword_electric.tres" id="3_electric_kw"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ball"]
+friction = 0.0
+bounce = 0.55
+
+[sub_resource type="Curve" id="Curve_trail"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ball"]
+radius = 16.0
+
+[node name="Fizzball" type="RigidBody2D"]
+collision_layer = 1
+collision_mask = 62
+mass = 1.2
+physics_material_override = SubResource("PhysicsMaterial_ball")
+gravity_scale = 1.35
+continuous_cd = 1
+contact_monitor = true
+max_contacts_reported = 4
+can_sleep = false
+script = ExtResource("1_ball")
+ball_id = &"fizz"
+ball_color = Color(0.2, 0.95, 0.75, 1)
+core_color = Color(0.85, 1, 0.35, 1)
+trail_color = Color(0.25, 1, 0.8, 0.5)
+native_keywords = [ExtResource("3_electric_kw")]
+
+[node name="BallTrail" type="Line2D" parent="."]
+top_level = true
+width = 24.0
+width_curve = SubResource("Curve_trail")
+default_color = Color(0.25, 1, 0.8, 0.5)
+script = ExtResource("2_trail")
+
+[node name="Shadow" type="Polygon2D" parent="."]
+position = Vector2(0, 10)
+scale = Vector2(1.1, 0.45)
+color = Color(0, 0, 0, 0.28)
+polygon = PackedVector2Array(16, 0, 11.31, 11.31, 0, 16, -11.31, 11.31, -16, 0, -11.31, -11.31, 0, -16, 11.31, -11.31)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_ball")
+
+[node name="VisualBall" type="Polygon2D" parent="."]
+color = Color(0.2, 0.95, 0.75, 1)
+polygon = PackedVector2Array(16, 0, 14.78, 5.47, 11.31, 11.31, 5.47, 14.78, 0, 16, -5.47, 14.78, -11.31, 11.31, -14.78, 5.47, -16, 0, -14.78, -5.47, -11.31, -11.31, -5.47, -14.78, 0, -16, 5.47, -14.78, 11.31, -11.31, 14.78, -5.47)
+
+[node name="CoreGlow" type="Polygon2D" parent="VisualBall"]
+color = Color(0.85, 1, 0.35, 1)
+polygon = PackedVector2Array(11, 0, 7.78, 7.78, 0, 11, -7.78, 7.78, -11, 0, -7.78, -7.78, 0, -11, 7.78, -7.78)
+
+[node name="Highlight" type="Polygon2D" parent="VisualBall"]
+position = Vector2(-5, -5)
+color = Color(1, 1, 1, 0.95)
+polygon = PackedVector2Array(4, 0, 2.8, 2.8, 0, 4, -2.8, 2.8, -4, 0, -2.8, -2.8, 0, -4, 2.8, -2.8)

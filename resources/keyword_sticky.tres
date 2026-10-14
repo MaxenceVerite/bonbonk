@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="KeywordSticky" load_steps=2 format=3 uid="uid://cx4j1keywordsticky01"]
+
+[ext_resource type="Script" path="res://scripts/keywords/keyword_sticky.gd" id="1_sticky"]
+
+[resource]
+script = ExtResource("1_sticky")
+id = &"sticky"
+display_name = "Collant"
+description = "S'accroche à l'ennemi à l'impact, le ralentit de 65% et explose à sa mort."
+slow_multiplier = 0.35
+initial_impact_damage = 1

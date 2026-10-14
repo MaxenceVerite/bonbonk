@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3 uid="uid://cx4j1watermelondata01"]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1_enemy_data"]
+
+[resource]
+script = ExtResource("1_enemy_data")
+enemy_name = &"Pastèque"
+max_health = 30
+speed_tier = 0
+move_speed = 38.0
+damage_on_escape = 20
+score_value = 500
+can_be_kicked_by_gate = false
+mass_weight = 4.0
+kick_rebound_factor = 0.2
+is_spiky = false
+can_accelerate_when_idle = true
+move_pattern = 1
+wobble_frequency = 3.0
+wobble_amplitude = 0.05
+squash_frequency = 2.0
+squash_amount = 0.05
+death_effect_type = "flatten"

@@ -1,0 +1,97 @@
+﻿Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
+
+Godot_v4.3-stable_win64.exe : SCRIPT ERROR: Compile Error: Identifier not found: EventBus
+Au caractère Ligne:1 : 1
++ & 'C:\Users\Maxence\Desktop\repositories\godot_cli\Godot_v4.3-stable_ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (SCRIPT ERROR: C...found: EventBus:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+          at: GDScript::reload (res://scripts/core/main.gd:40)
+ERROR: Failed to load script "res://scripts/core/main.gd" with error "Compilation failed".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Compile Error: Identifier not found: EventBus
+          at: GDScript::reload (res://scripts/board/candy_bumper.gd:45)
+SCRIPT ERROR: Compile Error: Identifier not found: EventBus
+          at: GDScript::reload (res://scripts/enemies/enemy.gd:185)
+SCRIPT ERROR: Compile Error: 
+          at: GDScript::reload (res://scripts/keywords/ball_keyword.gd:-1)
+SCRIPT ERROR: Compile Error: Identifier not found: EventBus
+          at: GDScript::reload (res://scripts/enemies/enemy.gd:185)
+SCRIPT ERROR: Compile Error: Identifier not found: EventBus
+          at: GDScript::reload (res://scripts/board/candy_bumper.gd:45)
+SCRIPT ERROR: Compile Error: 
+          at: GDScript::reload (res://scripts/ball/ball.gd:-1)
+ERROR: Failed to load script "res://scripts/ball/ball.gd" with error "Compilation failed".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Compile Error: Identifier not found: EventBus
+          at: GDScript::reload (res://scripts/enemies/enemy.gd:185)
+SCRIPT ERROR: Compile Error: 
+          at: GDScript::reload (res://scripts/keywords/keyword_electric.gd:-1)
+ERROR: Failed to load script "res://scripts/keywords/keyword_electric.gd" with error "Compilation failed".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+SCRIPT ERROR: Compile Error: Identifier not found: EventBus
+          at: GDScript::reload (res://scripts/enemies/enemy.gd:185)
+SCRIPT ERROR: Compile Error: 
+          at: GDScript::reload (res://scripts/keywords/keyword_sticky.gd:-1)
+ERROR: Failed to load script "res://scripts/keywords/keyword_sticky.gd" with error "Compilation failed".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+--- DIAGNOSTIC ECRANS ---
+SCRIPT ERROR: Invalid access to property or key 'current_screen_state' on a base object of type 'Node2D'.
+          at: _init (res://scripts/test_screens.gd:7)
+SCRIPT ERROR: Parse Error: Could not find type "ShopItemData" in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:21)
+SCRIPT ERROR: Parse Error: Could not find type "ShopItemData" in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:293)
+SCRIPT ERROR: Parse Error: Could not find type "ShopItemData" in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:154)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:154)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:158)
+SCRIPT ERROR: Parse Error: Could not find type "ShopItemData" in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:172)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:172)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:176)
+SCRIPT ERROR: Parse Error: Could not find type "ShopItemData" in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:190)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:190)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:194)
+SCRIPT ERROR: Parse Error: Could not find type "ShopItemData" in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:209)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:209)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:213)
+SCRIPT ERROR: Parse Error: Could not find type "ShopItemData" in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:224)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:224)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:228)
+SCRIPT ERROR: Parse Error: Could not find type "ShopItemData" in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:240)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:240)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:244)
+SCRIPT ERROR: Parse Error: Could not find type "ShopItemData" in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:254)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:254)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:258)
+SCRIPT ERROR: Parse Error: Could not find type "ShopItemData" in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:268)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:268)
+SCRIPT ERROR: Parse Error: Identifier "ShopItemData" not declared in the current scope.
+          at: GDScript::reload (res://scripts/autoload/save_manager.gd:272)
+ERROR: Failed to load script "res://scripts/autoload/save_manager.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2936)
+ERROR: Failed to instantiate an autoload, script 'res://scripts/autoload/save_manager.gd' does not inherit from 'Node'.
+   at: (main/main.cpp:3678)

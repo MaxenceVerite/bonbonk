@@ -1,0 +1,116 @@
+[gd_scene load_steps=6 format=3 uid="uid://bumperplacementoverlay01"]
+
+[ext_resource type="Script" path="res://scripts/ui/bumper_placement_overlay.gd" id="1_script"]
+[ext_resource type="Theme" uid="uid://candytheme001" path="res://resources/candy_theme.tres" id="2_theme"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_nav_dock.png" id="3_dock_bg"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_candy_card_pink.png" id="4_banner_bg"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_Dock"]
+texture = ExtResource("3_dock_bg")
+texture_margin_left = 12.0
+texture_margin_top = 16.0
+texture_margin_right = 12.0
+texture_margin_bottom = 16.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_Banner"]
+texture = ExtResource("4_banner_bg")
+texture_margin_left = 16.0
+texture_margin_top = 10.0
+texture_margin_right = 16.0
+texture_margin_bottom = 12.0
+
+[node name="BumperPlacementOverlay" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="TopBanner" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 30.0
+offset_top = 40.0
+offset_right = -140.0
+offset_bottom = 104.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_Banner")
+
+[node name="Label" type="Label" parent="TopBanner"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_font_sizes/font_size = 16
+text = "GLISSE TES BUMPERS SUR LE PLATEAU"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RightDock" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(116, 440)
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -126.0
+offset_top = 140.0
+offset_right = -10.0
+offset_bottom = -280.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_Dock")
+
+[node name="VBox" type="VBoxContainer" parent="RightDock"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="RightDock/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.95, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "BUMPERS"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="RightDock/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ItemsVBox" type="VBoxContainer" parent="RightDock/VBox/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="BottomBar" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -140.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="BtnStart" type="Button" parent="BottomBar"]
+custom_minimum_size = Vector2(280, 68)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -140.0
+offset_top = -34.0
+offset_right = 140.0
+offset_bottom = 34.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 24
+text = "PRÊT ! ▶"

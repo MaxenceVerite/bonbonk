@@ -1,0 +1,698 @@
+[gd_scene load_steps=30 format=3 uid="uid://cx4j1mainmenu01"]
+
+[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
+[ext_resource type="Shader" path="res://assets/shaders/candy_menu_bg.gdshader" id="2_bg_shader"]
+[ext_resource type="Theme" uid="uid://candytheme001" path="res://resources/candy_theme.tres" id="3_theme"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_candy_card.png" id="4_card_biscuit"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_candy_card_pink.png" id="5_card_pink"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_candy_card_blue.png" id="6_card_blue"]
+[ext_resource type="Texture2D" path="res://assets/ui/booster_pack.png" id="7_booster"]
+[ext_resource type="Texture2D" path="res://assets/ui/icon_ball_standard.png" id="8_ball_std"]
+[ext_resource type="Texture2D" path="res://assets/ui/icon_ball_fizz.png" id="9_ball_fizz"]
+[ext_resource type="Texture2D" path="res://assets/ui/icon_ball_locked.png" id="10_ball_lock"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_nav_dock.png" id="11_nav_dock"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_badge_gold.png" id="14_badge_gold"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_badge_silver.png" id="15_badge_silver"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_badge_bronze.png" id="16_badge_bronze"]
+[ext_resource type="Texture2D" path="res://assets/ui/sparkle_star.png" id="18_sparkle"]
+[ext_resource type="PackedScene" path="res://scenes/ui/collection/card_detail_modal.tscn" id="19_card_modal"]
+[ext_resource type="PackedScene" path="res://scenes/ui/deck_slot_button.tscn" id="20_deck_slot"]
+[ext_resource type="PackedScene" path="res://scenes/ui/card_picker_modal.tscn" id="21_picker_modal"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_MenuBg"]
+shader = ExtResource("2_bg_shader")
+shader_parameter/bg_color_base = Color(0.98, 0.93, 0.85, 1)
+shader_parameter/bg_color_secondary = Color(0.96, 0.82, 0.88, 1)
+shader_parameter/bg_color_accent = Color(0.85, 0.94, 0.96, 1)
+shader_parameter/stripe_scale = 18.0
+shader_parameter/scroll_speed = 0.05
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_PinkCard"]
+texture = ExtResource("5_card_pink")
+texture_margin_left = 28.0
+texture_margin_top = 28.0
+texture_margin_right = 28.0
+texture_margin_bottom = 28.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_BlueCard"]
+texture = ExtResource("6_card_blue")
+texture_margin_left = 28.0
+texture_margin_top = 28.0
+texture_margin_right = 28.0
+texture_margin_bottom = 28.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_NavDock"]
+texture = ExtResource("11_nav_dock")
+texture_margin_left = 28.0
+texture_margin_top = 24.0
+texture_margin_right = 28.0
+texture_margin_bottom = 28.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_BadgeGold"]
+texture = ExtResource("14_badge_gold")
+texture_margin_left = 20.0
+texture_margin_top = 16.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_BadgeSilver"]
+texture = ExtResource("15_badge_silver")
+texture_margin_left = 20.0
+texture_margin_top = 16.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_BadgeBronze"]
+texture = ExtResource("16_badge_bronze")
+texture_margin_left = 20.0
+texture_margin_top = 16.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_theme")
+script = ExtResource("1_menu")
+
+[node name="CandyBackground" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_MenuBg")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+
+
+[node name="ContentContainer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 80.0
+offset_bottom = -120.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CollectionTab" type="Control" parent="ContentContainer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="ContentContainer/CollectionTab"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = 60.0
+offset_right = -30.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 22
+
+[node name="HeaderLabel" type="Label" parent="ContentContainer/CollectionTab/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 0.8)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 38
+text = "🍬 COLLECTION"
+horizontal_alignment = 1
+
+[node name="BoostersCard" type="PanelContainer" parent="ContentContainer/CollectionTab/VBox"]
+custom_minimum_size = Vector2(0, 190)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_PinkCard")
+
+[node name="HBox" type="HBoxContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="BagAnchor" type="Control" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox"]
+custom_minimum_size = Vector2(130, 150)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="BoosterGlow" type="TextureRect" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox/BagAnchor"]
+modulate = Color(1, 0.85, 0.3, 0.6)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -75.0
+offset_top = -75.0
+offset_right = 75.0
+offset_bottom = 75.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("18_sparkle")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BoosterIcon" type="TextureRect" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox/BagAnchor"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -58.0
+offset_top = -72.0
+offset_right = 58.0
+offset_bottom = 72.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(58, 72)
+texture = ExtResource("7_booster")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BadgeCount" type="Label" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox/BagAnchor"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -38.0
+offset_top = 6.0
+offset_right = -4.0
+offset_bottom = 34.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.4, 0.05, 0.05, 1)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 18
+text = "x2"
+horizontal_alignment = 1
+
+[node name="VBoxB" type="VBoxContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Title" type="Label" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox/VBoxB"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_font_sizes/font_size = 20
+text = "🍬 SACHET CLASSIQUE
+(2 DISPONIBLES)"
+horizontal_alignment = 0
+
+[node name="BtnsHBox" type="HBoxContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox/VBoxB"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="OpenBtn" type="Button" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox/VBoxB/BtnsHBox"]
+custom_minimum_size = Vector2(160, 56)
+layout_mode = 2
+theme_type_variation = &"ButtonPink"
+theme_override_font_sizes/font_size = 22
+text = "✨ OUVRIR"
+
+[node name="ShopShortcutBtn" type="Button" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox/VBoxB/BtnsHBox"]
+custom_minimum_size = Vector2(140, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "🛍️ + Sachets"
+
+[node name="FilterBar" type="HBoxContainer" parent="ContentContainer/CollectionTab/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 0
+
+[node name="ItemsLabel" type="Label" parent="ContentContainer/CollectionTab/VBox/FilterBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_font_sizes/font_size = 22
+text = "MES BONBONS"
+
+[node name="BtnFilterUpgradable" type="Button" parent="ContentContainer/CollectionTab/VBox/FilterBar"]
+custom_minimum_size = Vector2(80, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+toggle_mode = true
+text = "⬆ Prêts"
+
+[node name="FilterRarityOption" type="OptionButton" parent="ContentContainer/CollectionTab/VBox/FilterBar"]
+custom_minimum_size = Vector2(140, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+item_count = 5
+selected = 0
+popup/item_0/text = "Toutes raretés"
+popup/item_0/id = 0
+popup/item_1/text = "Communes"
+popup/item_1/id = 1
+popup/item_2/text = "Rares"
+popup/item_2/id = 2
+popup/item_3/text = "Épiques"
+popup/item_3/id = 3
+popup/item_4/text = "Légendaires"
+popup/item_4/id = 4
+
+[node name="FilterSortOption" type="OptionButton" parent="ContentContainer/CollectionTab/VBox/FilterBar"]
+custom_minimum_size = Vector2(130, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+item_count = 3
+selected = 0
+popup/item_0/text = "Niveau ↓"
+popup/item_0/id = 0
+popup/item_1/text = "Rareté ↓"
+popup/item_1/id = 1
+popup/item_2/text = "Progression ↓"
+popup/item_2/id = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="ContentContainer/CollectionTab/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SectionsVBox" type="VBoxContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="BallsHeaderLabel" type="Label" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_font_sizes/font_size = 20
+text = "🔮 BILLES DE JEU"
+
+[node name="BallsGrid" type="GridContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 3
+
+[node name="BumpersHeaderLabel" type="Label" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_font_sizes/font_size = 20
+text = "🎯 BUMPERS & DÉFENSES"
+
+[node name="BumpersGrid" type="GridContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 3
+
+
+[node name="PlayTab" type="Control" parent="ContentContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="ContentContainer/PlayTab"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = 40.0
+offset_right = -30.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="GameTitle" type="Label" parent="ContentContainer/PlayTab/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 0.9)
+theme_override_constants/shadow_offset_y = 3
+theme_override_font_sizes/font_size = 44
+text = "🍭 FLIP DEFENSE"
+horizontal_alignment = 1
+
+[node name="DeckCard" type="PanelContainer" parent="ContentContainer/PlayTab/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_BlueCard")
+
+[node name="VBox" type="VBoxContainer" parent="ContentContainer/PlayTab/VBox/DeckCard"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="DeckTabsRow" type="HBoxContainer" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="BtnDeck1" type="Button" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckTabsRow"]
+custom_minimum_size = Vector2(100, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+toggle_mode = true
+text = "DECK 1"
+
+[node name="BtnDeck2" type="Button" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckTabsRow"]
+custom_minimum_size = Vector2(100, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+toggle_mode = true
+text = "DECK 2"
+
+[node name="BtnDeck3" type="Button" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckTabsRow"]
+custom_minimum_size = Vector2(100, 46)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+toggle_mode = true
+text = "DECK 3"
+
+[node name="DeckSubtitle" type="Label" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 0.8)
+theme_override_font_sizes/font_size = 14
+text = "6 BONBONS DE DÉPART (TOUCHER POUR MODIFIER)"
+horizontal_alignment = 1
+
+[node name="DeckSlotsGrid" type="GridContainer" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 14
+columns = 3
+
+[node name="Slot0" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("20_deck_slot")]
+layout_mode = 2
+
+[node name="Slot1" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("20_deck_slot")]
+layout_mode = 2
+slot_index = 1
+
+[node name="Slot2" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("20_deck_slot")]
+layout_mode = 2
+slot_index = 2
+
+[node name="Slot3" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("20_deck_slot")]
+layout_mode = 2
+slot_index = 3
+
+[node name="Slot4" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("20_deck_slot")]
+layout_mode = 2
+slot_index = 4
+
+[node name="Slot5" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("20_deck_slot")]
+layout_mode = 2
+slot_index = 5
+
+[node name="BtnLaunchGame" type="Button" parent="ContentContainer/PlayTab/VBox"]
+custom_minimum_size = Vector2(360, 94)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"ButtonPink"
+theme_override_font_sizes/font_size = 40
+text = "▶ JOUER"
+
+[node name="LeaderboardTab" type="Control" parent="ContentContainer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="ContentContainer/LeaderboardTab"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = 60.0
+offset_right = -32.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 22
+
+[node name="HeaderLabel" type="Label" parent="ContentContainer/LeaderboardTab/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 0.8)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 38
+text = "🏆 CLASSEMENT"
+horizontal_alignment = 1
+
+[node name="RankingList" type="VBoxContainer" parent="ContentContainer/LeaderboardTab/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Rank1" type="PanelContainer" parent="ContentContainer/LeaderboardTab/VBox/RankingList"]
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_BadgeGold")
+
+[node name="Label" type="Label" parent="ContentContainer/LeaderboardTab/VBox/RankingList/Rank1"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_font_sizes/font_size = 22
+text = " 🥇  1. PixelMaster — 14 500 pts"
+
+[node name="Rank2" type="PanelContainer" parent="ContentContainer/LeaderboardTab/VBox/RankingList"]
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_BadgeSilver")
+
+[node name="Label" type="Label" parent="ContentContainer/LeaderboardTab/VBox/RankingList/Rank2"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_font_sizes/font_size = 22
+text = " 🥈  2. PinballKing — 11 200 pts"
+
+[node name="Rank3" type="PanelContainer" parent="ContentContainer/LeaderboardTab/VBox/RankingList"]
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_BadgeBronze")
+
+[node name="Label" type="Label" parent="ContentContainer/LeaderboardTab/VBox/RankingList/Rank3"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_font_sizes/font_size = 22
+text = " 🥉  3. TomatoSlayer — 8 900 pts"
+
+[node name="RankMe" type="PanelContainer" parent="ContentContainer/LeaderboardTab/VBox/RankingList"]
+custom_minimum_size = Vector2(0, 68)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="ContentContainer/LeaderboardTab/VBox/RankingList/RankMe"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_font_sizes/font_size = 22
+text = " ⭐  4. Vous — 0 pts"
+
+[node name="ShopTab" type="Control" parent="ContentContainer"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="ContentContainer/ShopTab"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 50.0
+offset_right = -24.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderLabel" type="Label" parent="ContentContainer/ShopTab/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_colors/font_shadow_color = Color(1, 1, 1, 0.8)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 36
+text = "🛍️ BOUTIQUE SUCRÉE"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="ContentContainer/ShopTab/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SectionsVBox" type="VBoxContainer" parent="ContentContainer/ShopTab/VBox/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="SectionBoostersLabel" type="Label" parent="ContentContainer/ShopTab/VBox/ScrollContainer/SectionsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_font_sizes/font_size = 22
+text = "🍬 SACHETS DE BONBONS"
+
+[node name="BoostersGrid" type="GridContainer" parent="ContentContainer/ShopTab/VBox/ScrollContainer/SectionsVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 14
+columns = 2
+
+[node name="SectionCardsLabel" type="Label" parent="ContentContainer/ShopTab/VBox/ScrollContainer/SectionsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_font_sizes/font_size = 22
+text = "⚡ CARTES DU JOUR"
+
+[node name="CardsGrid" type="GridContainer" parent="ContentContainer/ShopTab/VBox/ScrollContainer/SectionsVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 14
+columns = 2
+
+[node name="SectionCurrencyLabel" type="Label" parent="ContentContainer/ShopTab/VBox/ScrollContainer/SectionsVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_font_sizes/font_size = 22
+text = "💎 BANQUE & TRÉSORERIE"
+
+[node name="CurrencyGrid" type="GridContainer" parent="ContentContainer/ShopTab/VBox/ScrollContainer/SectionsVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 14
+columns = 2
+
+[node name="NavBar" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -112.0
+offset_right = -12.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBox_NavDock")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="NavBar"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="BtnShop" type="Button" parent="NavBar/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "🛍️ Boutique"
+
+[node name="BtnCollection" type="Button" parent="NavBar/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "📦 Collection"
+
+[node name="BtnPlay" type="Button" parent="NavBar/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "▶ Jeu"
+
+[node name="BtnLeaderboard" type="Button" parent="NavBar/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "🏆 Top"
+
+[node name="TopGoldBar" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 68.0
+grow_horizontal = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+
+[node name="HBox" type="HBoxContainer" parent="TopGoldBar"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 2
+
+[node name="DiamondBadge" type="PanelContainer" parent="TopGoldBar/HBox"]
+custom_minimum_size = Vector2(148, 48)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_BadgeSilver")
+
+[node name="HBoxD" type="HBoxContainer" parent="TopGoldBar/HBox/DiamondBadge"]
+layout_mode = 2
+alignment = 1
+
+[node name="DiamondLabel" type="Label" parent="TopGoldBar/HBox/DiamondBadge/HBoxD"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.25, 0.45, 1)
+theme_override_font_sizes/font_size = 18
+text = "30 💎"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnAddDiamonds" type="Button" parent="TopGoldBar/HBox/DiamondBadge/HBoxD"]
+custom_minimum_size = Vector2(38, 38)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"ButtonSmall"
+theme_override_font_sizes/font_size = 22
+text = "+"
+
+[node name="GoldBadge" type="PanelContainer" parent="TopGoldBar/HBox"]
+custom_minimum_size = Vector2(158, 48)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_BadgeGold")
+
+[node name="HBoxG" type="HBoxContainer" parent="TopGoldBar/HBox/GoldBadge"]
+layout_mode = 2
+alignment = 1
+
+[node name="GoldLabel" type="Label" parent="TopGoldBar/HBox/GoldBadge/HBoxG"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
+theme_override_font_sizes/font_size = 18
+text = "250 🪙"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnAddGold" type="Button" parent="TopGoldBar/HBox/GoldBadge/HBoxG"]
+custom_minimum_size = Vector2(38, 38)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"ButtonSmall"
+theme_override_font_sizes/font_size = 22
+text = "+"
+
+[node name="CardDetailModal" parent="." instance=ExtResource("19_card_modal")]
+visible = false
+
+[node name="CardPickerModal" parent="." instance=ExtResource("21_picker_modal")]
+visible = false

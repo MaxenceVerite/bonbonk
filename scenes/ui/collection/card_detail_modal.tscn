@@ -1,0 +1,262 @@
+[gd_scene load_steps=9 format=3 uid="uid://carddetailmodal001"]
+
+[ext_resource type="Script" path="res://scripts/ui/collection/card_detail_modal.gd" id="1_script"]
+[ext_resource type="Theme" uid="uid://candytheme001" path="res://resources/candy_theme.tres" id="2_theme"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_candy_card.png" id="3_card_bg"]
+[ext_resource type="Texture2D" path="res://assets/ui/icon_ball_standard.png" id="4_icon"]
+[ext_resource type="Texture2D" path="res://assets/ui/sparkle_star.png" id="5_halo"]
+[ext_resource type="Texture2D" path="res://assets/ui/hp_bar_bg.png" id="6_gauge_bg"]
+[ext_resource type="Texture2D" path="res://assets/ui/hp_bar_fill_green.png" id="7_gauge_fill"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_DetailCard"]
+texture = ExtResource("3_card_bg")
+texture_margin_left = 32.0
+texture_margin_top = 32.0
+texture_margin_right = 32.0
+texture_margin_bottom = 36.0
+
+[node name="CardDetailModal" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="DarkOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.04, 0.12, 0.85)
+
+[node name="CenterAnchor" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ModalCard" type="PanelContainer" parent="CenterAnchor"]
+custom_minimum_size = Vector2(460, 620)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -230.0
+offset_top = -310.0
+offset_right = 230.0
+offset_bottom = 310.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(230, 310)
+theme_override_styles/panel = SubResource("StyleBox_DetailCard")
+
+[node name="VBox" type="VBoxContainer" parent="CenterAnchor/ModalCard"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Header" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="RarityBadge" type="Label" parent="CenterAnchor/ModalCard/VBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.6, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+text = "RARE"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="CenterAnchor/ModalCard/VBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.32, 0.16, 0.08, 1)
+theme_override_font_sizes/font_size = 28
+text = "Bille Caramel"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="CenterAnchor/ModalCard/VBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.40, 0.32, 1)
+theme_override_font_sizes/font_size = 14
+text = "Collante & Ralentissante"
+horizontal_alignment = 1
+
+[node name="IconBox" type="Control" parent="CenterAnchor/ModalCard/VBox"]
+custom_minimum_size = Vector2(130, 130)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="Halo" type="TextureRect" parent="CenterAnchor/ModalCard/VBox/IconBox"]
+modulate = Color(1, 0.9, 0.5, 0.7)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -70.0
+offset_top = -70.0
+offset_right = 70.0
+offset_bottom = 70.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_halo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="CenterAnchor/ModalCard/VBox/IconBox"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -55.0
+offset_top = -55.0
+offset_right = 55.0
+offset_bottom = 55.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(55, 55)
+texture = ExtResource("4_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LevelTransitionLabel" type="Label" parent="CenterAnchor/ModalCard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.45, 0.8, 1)
+theme_override_font_sizes/font_size = 16
+text = "NIVEAU 1  ➔  NIVEAU 2"
+horizontal_alignment = 1
+
+[node name="DescLabel" type="Label" parent="CenterAnchor/ModalCard/VBox"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.40, 0.28, 0.22, 1)
+theme_override_font_sizes/font_size = 14
+text = "Englue les bonbons adverses à chaque contact."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="StatsBox" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 6
+
+[node name="RowDamage" type="HBoxContainer" parent="CenterAnchor/ModalCard/VBox/StatsBox"]
+custom_minimum_size = Vector2(340, 26)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="IconDmg" type="Label" parent="CenterAnchor/ModalCard/VBox/StatsBox/RowDamage"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "💥 Dégâts :"
+
+[node name="ValLabel" type="Label" parent="CenterAnchor/ModalCard/VBox/StatsBox/RowDamage"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 0.15, 0.08, 1)
+theme_override_font_sizes/font_size = 15
+text = "12"
+
+[node name="GainLabel" type="Label" parent="CenterAnchor/ModalCard/VBox/StatsBox/RowDamage"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.65, 0.25, 1)
+theme_override_font_sizes/font_size = 15
+text = "➔ 15 (+3)"
+
+[node name="RowBounce" type="HBoxContainer" parent="CenterAnchor/ModalCard/VBox/StatsBox"]
+custom_minimum_size = Vector2(340, 26)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="IconBnc" type="Label" parent="CenterAnchor/ModalCard/VBox/StatsBox/RowBounce"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "⚡ Rebond :"
+
+[node name="ValLabel" type="Label" parent="CenterAnchor/ModalCard/VBox/StatsBox/RowBounce"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.25, 0.15, 0.08, 1)
+theme_override_font_sizes/font_size = 15
+text = "0.95"
+
+[node name="GainLabel" type="Label" parent="CenterAnchor/ModalCard/VBox/StatsBox/RowBounce"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.65, 0.25, 1)
+theme_override_font_sizes/font_size = 15
+text = "➔ 1.00"
+
+[node name="GaugeContainer" type="Control" parent="CenterAnchor/ModalCard/VBox"]
+custom_minimum_size = Vector2(340, 32)
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="GaugeBar" type="TextureProgressBar" parent="CenterAnchor/ModalCard/VBox/GaugeContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+nine_patch_stretch = true
+stretch_margin_left = 8
+stretch_margin_top = 6
+stretch_margin_right = 8
+stretch_margin_bottom = 6
+texture_under = ExtResource("6_gauge_bg")
+texture_progress = ExtResource("7_gauge_fill")
+
+[node name="GaugeText" type="Label" parent="CenterAnchor/ModalCard/VBox/GaugeContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 15
+text = "2 / 2 Cartes"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnUpgrade" type="Button" parent="CenterAnchor/ModalCard/VBox"]
+custom_minimum_size = Vector2(340, 56)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.18, 0.05, 0.02, 1)
+theme_override_font_sizes/font_size = 20
+text = "✨ AMÉLIORER  •  50 🪙"
+
+[node name="BtnReplace" type="Button" parent="CenterAnchor/ModalCard/VBox"]
+visible = false
+custom_minimum_size = Vector2(340, 54)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.18, 0.05, 0.02, 1)
+theme_override_font_sizes/font_size = 20
+text = "🔄 REMPLACER DANS LE DECK"
+
+[node name="BtnClose" type="Button" parent="CenterAnchor/ModalCard"]
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 26
+text = "✕"

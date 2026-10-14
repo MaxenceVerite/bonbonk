@@ -1,0 +1,71 @@
+[gd_scene load_steps=4 format=3 uid="uid://cx4j1intermission01"]
+
+[ext_resource type="Script" path="res://scripts/ui/intermission_overlay.gd" id="1_overlay"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_candy_card.png" id="2_card_bg"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_Card"]
+texture = ExtResource("2_card_bg")
+texture_margin_left = 24.0
+texture_margin_top = 20.0
+texture_margin_right = 24.0
+texture_margin_bottom = 26.0
+
+[node name="IntermissionOverlay" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_overlay")
+
+[node name="DimBackdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.04, 0.12, 0.65)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(440, 320)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_Card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 22
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.18, 0.08, 1)
+theme_override_font_sizes/font_size = 28
+text = "🎉 MANCHE 1 RÉUSSIE !"
+horizontal_alignment = 1
+
+[node name="InfoLabel" type="Label" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.35, 0.2, 1)
+theme_override_font_sizes/font_size = 20
+text = "Prochaine Manche : 2
+Menace à venir : 16 pts"
+horizontal_alignment = 1
+
+[node name="BtnNextWave" type="Button" parent="CenterContainer/Panel/VBox"]
+custom_minimum_size = Vector2(300, 72)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"ButtonMint"
+theme_override_font_sizes/font_size = 26
+text = "MANCHE SUIVANTE ➔"

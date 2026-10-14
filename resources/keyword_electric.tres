@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="KeywordElectric" load_steps=2 format=3 uid="uid://cx4j1keywordelectric01"]
+
+[ext_resource type="Script" path="res://scripts/keywords/keyword_electric.gd" id="1_electric"]
+
+[resource]
+script = ExtResource("1_electric")
+id = &"electric"
+display_name = "Électrique"
+description = "Propulse des arcs d'éclairs en chaîne et étourdit jusqu'à 3 ennemis."
+max_chain_targets = 2
+chain_radius = 380.0
+zap_damage = 1
+primary_stun_duration = 1.0
+secondary_stun_duration = 0.5

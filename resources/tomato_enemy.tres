@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3 uid="uid://cx4j1tomatodata01"]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1_enemy_data"]
+
+[resource]
+script = ExtResource("1_enemy_data")
+enemy_name = &"Tomate"
+max_health = 1
+speed_tier = 4
+move_speed = 115.0
+damage_on_escape = 1
+score_value = 100
+can_be_kicked_by_gate = true
+mass_weight = 0.8
+kick_rebound_factor = 1.2
+is_spiky = false
+can_accelerate_when_idle = false
+move_pattern = 0
+wobble_frequency = 7.0
+wobble_amplitude = 0.15
+squash_frequency = 5.0
+squash_amount = 0.18
+death_effect_type = "fly_away"

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3 uid="uid://cx4j1ananasdata01"]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1_enemy_data"]
+
+[resource]
+script = ExtResource("1_enemy_data")
+enemy_name = &"Ananas"
+max_health = 10
+speed_tier = 1
+move_speed = 55.0
+damage_on_escape = 3
+score_value = 250
+can_be_kicked_by_gate = true
+mass_weight = 1.2
+kick_rebound_factor = 0.95
+is_spiky = true
+spiky_ball_durability_loss = 2
+can_accelerate_when_idle = false
+move_pattern = 2
+wobble_frequency = 9.0
+wobble_amplitude = 0.2
+squash_frequency = 7.0
+squash_amount = 0.25
+death_effect_type = "burst"

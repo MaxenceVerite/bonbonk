@@ -1,0 +1,119 @@
+{
+  "difficulty_curve": {
+    "base_budget": 8,
+    "budget_growth_rate": 1.45,
+    "linear_bonus_per_wave": 4
+  },
+  "unit_costs": {
+    "tomato": {
+      "display_name": "Tomate",
+      "cost": 1,
+      "scene_path": "res://scenes/enemies/enemy_tomato.tscn"
+    },
+    "ananas": {
+      "display_name": "Ananas",
+      "cost": 3,
+      "scene_path": "res://scenes/enemies/enemy_ananas.tscn"
+    },
+    "watermelon": {
+      "display_name": "Pastèque",
+      "cost": 8,
+      "scene_path": "res://scenes/enemies/enemy_watermelon.tscn"
+    }
+  },
+  "squad_compositions": [
+    {
+      "id": "single_tomato",
+      "name": "Tomate Solitaire",
+      "min_wave_points": 0,
+      "weight": 8,
+      "spawns": [
+        { "unit": "tomato", "delay": 0.0, "x_ratio": -1.0 }
+      ]
+    },
+    {
+      "id": "single_ananas",
+      "name": "Ananas Solitaire",
+      "min_wave_points": 3,
+      "weight": 5,
+      "spawns": [
+        { "unit": "ananas", "delay": 0.0, "x_ratio": -1.0 }
+      ]
+    },
+    {
+      "id": "single_watermelon",
+      "name": "Pastèque Solitaire",
+      "min_wave_points": 18,
+      "weight": 4,
+      "spawns": [
+        { "unit": "watermelon", "delay": 0.0, "x_ratio": -1.0 }
+      ]
+    },
+    {
+      "id": "tomato_duo",
+      "name": "Duo de Tomates",
+      "min_wave_points": 4,
+      "weight": 7,
+      "spawns": [
+        { "unit": "tomato", "delay": 0.0, "x_ratio": 0.35 },
+        { "unit": "tomato", "delay": 0.3, "x_ratio": 0.65 }
+      ]
+    },
+    {
+      "id": "tomato_trio_spread",
+      "name": "Trio Dispersé",
+      "min_wave_points": 6,
+      "weight": 6,
+      "spawns": [
+        { "unit": "tomato", "delay": 0.0, "x_ratio": 0.25 },
+        { "unit": "tomato", "delay": 0.4, "x_ratio": 0.50 },
+        { "unit": "tomato", "delay": 0.8, "x_ratio": 0.75 }
+      ]
+    },
+    {
+      "id": "ananas_escort",
+      "name": "Ananas et ses gardes",
+      "min_wave_points": 12,
+      "weight": 5,
+      "spawns": [
+        { "unit": "tomato", "delay": 0.0, "x_ratio": 0.3 },
+        { "unit": "tomato", "delay": 0.0, "x_ratio": 0.7 },
+        { "unit": "ananas", "delay": 0.7, "x_ratio": 0.5 }
+      ]
+    },
+    {
+      "id": "ananas_pincer",
+      "name": "Pince Piquante",
+      "min_wave_points": 18,
+      "weight": 4,
+      "spawns": [
+        { "unit": "ananas", "delay": 0.0, "x_ratio": 0.25 },
+        { "unit": "ananas", "delay": 0.5, "x_ratio": 0.75 }
+      ]
+    },
+    {
+      "id": "watermelon_shield",
+      "name": "Char d'Assaut Pastèque",
+      "min_wave_points": 24,
+      "weight": 4,
+      "spawns": [
+        { "unit": "watermelon", "delay": 0.0, "x_ratio": 0.5 },
+        { "unit": "tomato", "delay": 0.8, "x_ratio": 0.2 },
+        { "unit": "tomato", "delay": 0.8, "x_ratio": 0.8 }
+      ]
+    },
+    {
+      "id": "fruit_salad_rush",
+      "name": "Salade de Fruits Chaotique",
+      "min_wave_points": 35,
+      "weight": 3,
+      "spawns": [
+        { "unit": "watermelon", "delay": 0.0, "x_ratio": 0.5 },
+        { "unit": "ananas", "delay": 0.7, "x_ratio": 0.25 },
+        { "unit": "ananas", "delay": 0.7, "x_ratio": 0.75 },
+        { "unit": "tomato", "delay": 1.4, "x_ratio": 0.4 },
+        { "unit": "tomato", "delay": 1.4, "x_ratio": 0.6 }
+      ]
+    }
+  ]
+}
