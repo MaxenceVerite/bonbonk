@@ -47,7 +47,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="ModalCard" type="PanelContainer" parent="CenterAnchor"]
-custom_minimum_size = Vector2(460, 620)
+custom_minimum_size = Vector2(460, 660)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -55,12 +55,12 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -230.0
-offset_top = -310.0
+offset_top = -330.0
 offset_right = 230.0
-offset_bottom = 310.0
+offset_bottom = 330.0
 grow_horizontal = 2
 grow_vertical = 2
-pivot_offset = Vector2(230, 310)
+pivot_offset = Vector2(230, 330)
 theme_override_styles/panel = SubResource("StyleBox_DetailCard")
 
 [node name="VBox" type="VBoxContainer" parent="CenterAnchor/ModalCard"]
@@ -156,50 +156,6 @@ autowrap_mode = 2
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 6
-
-[node name="RowDamage" type="HBoxContainer" parent="CenterAnchor/ModalCard/VBox/StatsBox"]
-custom_minimum_size = Vector2(340, 26)
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="IconDmg" type="Label" parent="CenterAnchor/ModalCard/VBox/StatsBox/RowDamage"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 15
-text = "💥 Dégâts :"
-
-[node name="ValLabel" type="Label" parent="CenterAnchor/ModalCard/VBox/StatsBox/RowDamage"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.25, 0.15, 0.08, 1)
-theme_override_font_sizes/font_size = 15
-text = "12"
-
-[node name="GainLabel" type="Label" parent="CenterAnchor/ModalCard/VBox/StatsBox/RowDamage"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.18, 0.65, 0.25, 1)
-theme_override_font_sizes/font_size = 15
-text = "➔ 15 (+3)"
-
-[node name="RowBounce" type="HBoxContainer" parent="CenterAnchor/ModalCard/VBox/StatsBox"]
-custom_minimum_size = Vector2(340, 26)
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="IconBnc" type="Label" parent="CenterAnchor/ModalCard/VBox/StatsBox/RowBounce"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 15
-text = "⚡ Rebond :"
-
-[node name="ValLabel" type="Label" parent="CenterAnchor/ModalCard/VBox/StatsBox/RowBounce"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.25, 0.15, 0.08, 1)
-theme_override_font_sizes/font_size = 15
-text = "0.95"
-
-[node name="GainLabel" type="Label" parent="CenterAnchor/ModalCard/VBox/StatsBox/RowBounce"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.18, 0.65, 0.25, 1)
-theme_override_font_sizes/font_size = 15
-text = "➔ 1.00"
 
 [node name="GaugeContainer" type="Control" parent="CenterAnchor/ModalCard/VBox"]
 custom_minimum_size = Vector2(340, 32)

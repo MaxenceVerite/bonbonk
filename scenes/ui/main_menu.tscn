@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/collection/card_detail_modal.tscn" id="19_card_modal"]
 [ext_resource type="PackedScene" path="res://scenes/ui/deck_slot_button.tscn" id="20_deck_slot"]
 [ext_resource type="PackedScene" path="res://scenes/ui/card_picker_modal.tscn" id="21_picker_modal"]
+[ext_resource type="PackedScene" path="res://scenes/ui/account_modal.tscn" id="22_account_modal"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_MenuBg"]
 shader = ExtResource("2_bg_shader")
@@ -639,7 +640,16 @@ theme_override_constants/margin_right = 20
 [node name="HBox" type="HBoxContainer" parent="TopGoldBar"]
 layout_mode = 2
 theme_override_constants/separation = 12
-alignment = 2
+
+[node name="BtnAccount" type="Button" parent="TopGoldBar/HBox"]
+custom_minimum_size = Vector2(170, 48)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ButtonSecondary"
+theme_override_font_sizes/font_size = 15
+text = "🟢 👤 Gourmand"
+clip_text = true
+
 
 [node name="DiamondBadge" type="PanelContainer" parent="TopGoldBar/HBox"]
 custom_minimum_size = Vector2(148, 48)
@@ -695,4 +705,7 @@ text = "+"
 visible = false
 
 [node name="CardPickerModal" parent="." instance=ExtResource("21_picker_modal")]
+visible = false
+
+[node name="AccountModal" parent="." instance=ExtResource("22_account_modal")]
 visible = false

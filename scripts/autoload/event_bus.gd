@@ -26,4 +26,11 @@ signal open_shop_requested(category_hint: StringName)
 signal shop_item_purchased(item_id: StringName, currency_used: StringName)
 signal deck_changed(deck_index: int)
 
+# Compte & Synchronisation Cloud
+signal profile_loaded(profile_id: String)
+signal cloud_sync_status_changed(status: String, message: String)
+signal cloud_sync_completed(success: bool)
+signal open_account_modal_requested
+
+
 

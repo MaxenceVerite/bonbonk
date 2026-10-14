@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://cx4j1j2mboard0"]
+[gd_scene load_steps=19 format=3 uid="uid://cx4j1j2mboard0"]
 
 [ext_resource type="Script" path="res://scripts/board/board.gd" id="1_board"]
 [ext_resource type="PackedScene" path="res://scenes/ball/ball.tscn" id="2_ball"]
@@ -13,6 +13,8 @@
 [ext_resource type="PackedScene" path="res://scenes/board/candy_bumper.tscn" id="11_bumper"]
 [ext_resource type="PackedScene" path="res://scenes/ball/caramel_ball.tscn" id="12_caramel"]
 [ext_resource type="PackedScene" path="res://scenes/board/bumper_slot.tscn" id="13_slot"]
+[ext_resource type="PackedScene" path="res://scenes/ball/mentox_ball.tscn" id="14_mentox"]
+[ext_resource type="PackedScene" path="res://scenes/ball/jawbreaker_ball.tscn" id="15_jawbreaker"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_CandyField"]
 shader = ExtResource("5_candy_shader")
@@ -34,6 +36,8 @@ script = ExtResource("1_board")
 ball_scene = ExtResource("2_ball")
 fizzball_scene = ExtResource("6_fizzball")
 caramel_ball_scene = ExtResource("12_caramel")
+mentox_ball_scene = ExtResource("14_mentox")
+jawbreaker_ball_scene = ExtResource("15_jawbreaker")
 enemy_tomato_scene = ExtResource("4_tomato")
 enemy_ananas_scene = ExtResource("8_ananas")
 enemy_watermelon_scene = ExtResource("9_watermelon")

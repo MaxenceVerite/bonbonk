@@ -31,6 +31,8 @@ enum MovePattern {
 @export var can_be_kicked_by_gate: bool = true
 @export var mass_weight: float = 1.0
 @export var kick_rebound_factor: float = 1.0
+@export var collision_damage_when_projected: int = 1 # Dégâts infligés aux autres ennemis lors d'un choc en vol
+
 
 # Trait spécial : PIQUANT (enfonce la durabilité de la balle et blesse les ennemis percutés)
 @export var is_spiky: bool = false
@@ -45,8 +47,14 @@ enum MovePattern {
 @export var wobble_frequency: float = 6.0
 @export var wobble_amplitude: float = 0.12
 @export var squash_frequency: float = 4.0
-@export var squash_amount: float = 0.15
-@export_enum("fly_away", "flatten", "burst") var death_effect_type: String = "fly_away"
+# Propriétés de mort et feedback
+@export var is_lightweight: bool = false # Si true, expulsé en cloche lors du coup fatal direct d'une bille
+@export var juice_primary_color: Color = Color(0.92, 0.2, 0.18, 1.0)
+@export var juice_secondary_color: Color = Color(1.0, 0.45, 0.3, 1.0)
+@export var juice_accent_color: Color = Color(0.95, 0.85, 0.3, 1.0)
+@export var juice_droplet_count: int = 18
+@export_enum("auto", "fly_away", "explode", "flatten") var death_effect_type: String = "auto"
+
 
 func get_speed_from_tier() -> float:
 	match speed_tier:

@@ -17,8 +17,16 @@ is_spiky = true
 spiky_ball_durability_loss = 2
 can_accelerate_when_idle = false
 move_pattern = 2
-wobble_frequency = 9.0
-wobble_amplitude = 0.2
-squash_frequency = 7.0
-squash_amount = 0.25
-death_effect_type = "burst"
+wobble_frequency = 3.0
+wobble_amplitude = 0.08
+squash_frequency = 2.5
+squash_amount = 0.08
+is_lightweight = false
+juice_primary_color = Color(1, 0.82, 0.12, 1)
+juice_secondary_color = Color(1, 0.58, 0.15, 1)
+juice_accent_color = Color(0.45, 0.78, 0.2, 1)
+juice_droplet_count = 20
+death_effect_type = "auto"
+collision_damage_when_projected = 3
+
+

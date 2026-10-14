@@ -54,8 +54,10 @@ func trigger_bumper_effect() -> void:
 	if bumper_data == null:
 		return
 		
-	# Pour le Dragibump : attire les ennemis proches
-	if bumper_data.id == &"dragibump":
+	# Utilisation de la stratégie d'effet si configurée
+	if bumper_data.effect_strategy != null:
+		bumper_data.effect_strategy.execute(self)
+	elif bumper_data.id == &"dragibump":
 		_pull_nearby_enemies()
 
 func _pull_nearby_enemies() -> void:

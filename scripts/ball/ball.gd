@@ -9,8 +9,10 @@ extends RigidBody2D
 
 signal durability_changed(current: int, max_val: int)
 signal ball_shattered
+signal split_requested(ball_types: Array[StringName], spawn_pos: Vector2, directions: Array[Vector2], speed: float)
 
 @export var ball_id: StringName = &"standard"
+@export var impact_damage: int = 1
 @export var max_durability: int = 3
 @export var max_linear_velocity: float = 2400.0
 @export var min_vertical_speed: float = 25.0
@@ -23,10 +25,20 @@ signal ball_shattered
 # Système de mots-clés modulaires
 @export var native_keywords: Array[BallKeyword] = []
 var temporary_keywords: Array[BallKeyword] = []
+var _cached_keywords: Array[BallKeyword] = []
+
+# Assistance à la visée (Magnétisme subtil vers les ennemis)
+@export_group("Aim Assist")
+@export var aim_assist_enabled: bool = true
+@export var aim_assist_force: float = 450.0
+@export var aim_assist_max_distance: float = 400.0
+@export var aim_assist_max_angle_deg: float = 28.0
 
 var current_durability: int = 3
 var _stuck_timer: float = 0.0
 var _is_shattering: bool = false
+var _aim_assist_scan_timer: float = 0.0
+var _current_aim_target: Enemy = null
 
 @onready var visual_ball: Polygon2D = $VisualBall
 @onready var core_glow: Polygon2D = $VisualBall/CoreGlow
@@ -39,6 +51,7 @@ func _ready() -> void:
 	durability_changed.emit(current_durability, max_durability)
 	body_entered.connect(_on_body_entered)
 	apply_skin(ball_color, core_color, trail_color)
+	_refresh_cached_keywords()
 
 func apply_skin(p_ball_color: Color, p_core_color: Color, p_trail_color: Color) -> void:
 	ball_color = p_ball_color
@@ -55,31 +68,32 @@ func apply_skin(p_ball_color: Color, p_core_color: Color, p_trail_color: Color) 
 func add_temporary_keyword(keyword: BallKeyword) -> void:
 	if keyword != null and not has_keyword(keyword.id):
 		temporary_keywords.append(keyword)
+		_refresh_cached_keywords()
 		print("Ball [%s]: Mot-clé temporaire ajouté -> %s" % [ball_id, keyword.display_name])
 
 func remove_temporary_keyword(keyword_id: StringName) -> void:
 	for i in range(temporary_keywords.size() - 1, -1, -1):
 		if temporary_keywords[i].id == keyword_id:
 			temporary_keywords.remove_at(i)
+	_refresh_cached_keywords()
+
+func _refresh_cached_keywords() -> void:
+	_cached_keywords.clear()
+	for kw in native_keywords:
+		if kw != null:
+			_cached_keywords.append(kw)
+	for kw in temporary_keywords:
+		if kw != null:
+			_cached_keywords.append(kw)
 
 func has_keyword(keyword_id: StringName) -> bool:
-	for kw in native_keywords:
-		if kw != null and kw.id == keyword_id:
-			return true
-	for kw in temporary_keywords:
+	for kw in _cached_keywords:
 		if kw != null and kw.id == keyword_id:
 			return true
 	return false
 
 func get_all_keywords() -> Array[BallKeyword]:
-	var result: Array[BallKeyword] = []
-	for kw in native_keywords:
-		if kw != null:
-			result.append(kw)
-	for kw in temporary_keywords:
-		if kw != null:
-			result.append(kw)
-	return result
+	return _cached_keywords
 
 func _on_body_entered(body: Node) -> void:
 	if body is CandyBumper:
@@ -92,7 +106,21 @@ func _on_body_entered(body: Node) -> void:
 		if enemy != null and is_instance_valid(enemy) and not enemy.is_dying():
 			var durability_penalty: int = enemy.enemy_data.spiky_ball_durability_loss if (enemy.enemy_data and enemy.enemy_data.is_spiky) else 1
 			hit_enemy_with_target(enemy, durability_penalty)
-			enemy.take_hit(1)
+			enemy.take_hit(impact_damage, self, linear_velocity)
+
+## Configure la bille et ses mots-clés selon la carte et son niveau
+func configure_from_card(card_def: CandyCardData, lvl: int) -> void:
+	if card_def == null:
+		return
+	impact_damage = card_def.get_damage_for_level(lvl)
+	aim_assist_force = card_def.get_magnetism_for_level(lvl)
+	if physics_material_override != null:
+		physics_material_override.bounce = clampf(card_def.get_bounce_for_level(lvl) * 0.55, 0.2, 0.98)
+
+	for kw in get_all_keywords():
+		if kw != null:
+			kw.apply_card_scaling(card_def, lvl)
+
 
 func _physics_process(delta: float) -> void:
 	if _is_shattering or freeze:
@@ -118,9 +146,114 @@ func _physics_process(delta: float) -> void:
 		var dir_to_center: float = signf(310.0 - global_position.x)
 		apply_central_force(Vector2(dir_to_center * 190.0, 0.0))
 
+	# Assistance à la visée magnétique (courbure douce vers les ennemis en ascension)
+	if aim_assist_enabled:
+		_apply_aim_assist(delta)
+
 	# Mots-clés continus
 	for kw in get_all_keywords():
 		kw.on_physics_tick(self, delta)
+
+## Assistance à la visée par magnétisme centripète
+func _apply_aim_assist(delta: float) -> void:
+	# Ne s'active que si la bille monte de façon dynamique
+	if linear_velocity.y >= -120.0:
+		_current_aim_target = null
+		_aim_assist_scan_timer = 0.0
+		return
+
+	# Recherche de cible périodique (~16 Hz) pour éviter toute allocation frame par frame
+	_aim_assist_scan_timer -= delta
+	if _aim_assist_scan_timer <= 0.0:
+		_aim_assist_scan_timer = 0.06
+		_find_best_aim_target()
+
+	if _current_aim_target == null:
+		return
+
+	if not is_instance_valid(_current_aim_target) or _current_aim_target.is_dying():
+		_current_aim_target = null
+		return
+
+	var to_enemy: Vector2 = _current_aim_target.global_position - global_position
+	# Doit rester strictement au-dessus de la bille
+	if to_enemy.y >= 0.0:
+		_current_aim_target = null
+		return
+
+	var dist: float = to_enemy.length()
+	if dist > aim_assist_max_distance or dist < 20.0:
+		_current_aim_target = null
+		return
+
+	var vel_len: float = linear_velocity.length()
+	if vel_len < 100.0:
+		return
+
+	var vel_dir: Vector2 = linear_velocity / vel_len
+	var to_dir: Vector2 = to_enemy / dist
+	var angle_diff: float = absf(vel_dir.angle_to(to_dir))
+	var max_angle_rad: float = deg_to_rad(aim_assist_max_angle_deg)
+
+	if angle_diff > max_angle_rad:
+		_current_aim_target = null
+		return
+
+	# Composante latérale perpendiculaire (effet centripète pur : incurve sans altérer la vitesse scalaire)
+	var perp: Vector2 = Vector2(-vel_dir.y, vel_dir.x)
+	var lateral_sign: float = signf(perp.dot(to_dir))
+	var alignment_factor: float = 1.0 - (angle_diff / max_angle_rad)
+	var distance_factor: float = 1.0 - (dist / aim_assist_max_distance)
+	var steer_weight: float = clampf(alignment_factor * 0.7 + distance_factor * 0.3, 0.2, 1.0)
+
+	var lateral_force: Vector2 = perp * lateral_sign * (aim_assist_force * steer_weight)
+	apply_central_force(lateral_force)
+
+func _find_best_aim_target() -> void:
+	var tree: SceneTree = get_tree()
+	if tree == null:
+		_current_aim_target = null
+		return
+
+	var enemies: Array[Node] = tree.get_nodes_in_group(&"enemies")
+	if enemies.is_empty():
+		_current_aim_target = null
+		return
+
+	var vel_len: float = linear_velocity.length()
+	if vel_len < 100.0:
+		_current_aim_target = null
+		return
+
+	var vel_dir: Vector2 = linear_velocity / vel_len
+	var max_angle_rad: float = deg_to_rad(aim_assist_max_angle_deg)
+	var best_score: float = -1.0
+	var chosen: Enemy = null
+
+	for node in enemies:
+		var enemy: Enemy = node as Enemy
+		if enemy == null or not is_instance_valid(enemy) or enemy.is_dying():
+			continue
+
+		var to_enemy: Vector2 = enemy.global_position - global_position
+		if to_enemy.y >= 0.0:
+			continue
+
+		var dist: float = to_enemy.length()
+		if dist > aim_assist_max_distance or dist < 20.0:
+			continue
+
+		var to_dir: Vector2 = to_enemy / dist
+		var angle_diff: float = absf(vel_dir.angle_to(to_dir))
+		if angle_diff <= max_angle_rad:
+			var alignment_factor: float = 1.0 - (angle_diff / max_angle_rad)
+			var distance_factor: float = 1.0 - (dist / aim_assist_max_distance)
+			var score: float = alignment_factor * 0.7 + distance_factor * 0.3
+			if score > best_score:
+				best_score = score
+				chosen = enemy
+
+	_current_aim_target = chosen
 
 ## Appelé lors d'un choc avec un ennemi spécifique
 func hit_enemy_with_target(enemy: Enemy, durability_loss: int = 1) -> void:

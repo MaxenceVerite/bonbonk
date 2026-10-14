@@ -1,136 +1,308 @@
 extends Node
 
-## Gestionnaire d'état persistant : or, inventaire de bonbons, montée de niveau et boosters.
+## Gestionnaire d'état persistant & Comptes joueurs :
+## - Chiffrement local AES-256 via SaveCipher
+## - Architecture multi-profils (Profil Joueur & Profil Sandbox Dev)
+## - Synchronisation Cloud offline-first avec résolution de conflits
 
-var gold: int = 250
-var diamonds: int = 30
+const PlayerProfileScript = preload("res://scripts/data/player_profile.gd")
+const SaveCipher = preload("res://scripts/core/account/save_cipher.gd")
+const CloudSyncService = preload("res://scripts/core/account/cloud_sync_service.gd")
 
-# Structure pour chaque bonbon : { "unlocked": bool, "level": int, "cards": int }
-var cards_inventory: Dictionary = {
-	&"standard": { "unlocked": true, "level": 1, "cards": 3 },
-	&"fizz":     { "unlocked": true, "level": 1, "cards": 1 },
-	&"caramel":  { "unlocked": true, "level": 1, "cards": 2 },
-	&"cherry":   { "unlocked": false, "level": 1, "cards": 0 },
-	&"mint":     { "unlocked": false, "level": 1, "cards": 0 },
-	&"dragibump":{ "unlocked": true,  "level": 1, "cards": 2 },
-}
+const PROFILES_DIR: String = "user://profiles/"
+const ACTIVE_PROFILE_FILE: String = "user://active_profile.cfg"
 
-# Nombre de boosters en attente dans chaque catégorie
+var current_profile: PlayerProfileScript = null
+var active_profile_id: String = "main"
+
+
+# Propriétés avec accesseurs délégués au profil actif
+var gold: int:
+	get:
+		return current_profile.gold if current_profile != null else 0
+	set(val):
+		if current_profile != null:
+			current_profile.gold = val
+			request_save()
+
+var diamonds: int:
+	get:
+		return current_profile.diamonds if current_profile != null else 0
+	set(val):
+		if current_profile != null:
+			current_profile.diamonds = val
+			request_save()
+
+var cards_inventory: Dictionary:
+	get:
+		return current_profile.cards_inventory if current_profile != null else {}
+	set(val):
+		if current_profile != null:
+			current_profile.cards_inventory = val
+			request_save()
+
+var decks: Array:
+	get:
+		return current_profile.decks if current_profile != null else []
+	set(val):
+		if current_profile != null:
+			current_profile.decks = val
+			request_save()
+
+var active_deck_index: int:
+	get:
+		return current_profile.active_deck_index if current_profile != null else 0
+	set(val):
+		if current_profile != null:
+			current_profile.active_deck_index = val
+			request_save()
+
+# Boosters instanciés en mémoire
 var available_boosters: Array[BoosterData] = []
 var registered_card_defs: Dictionary = {} # id -> CandyCardData
 var shop_catalog: Array[ShopItemData] = []
 
-# Système de Decks : 3 decks de 6 cartes max
-var active_deck_index: int = 0
-var decks: Array = [
-	[&"standard", &"fizz", &"caramel", &"standard", &"fizz", &"dragibump"],
-	[&"standard", &"caramel", &"caramel", &"dragibump", &"standard", &"standard"],
-	[&"fizz", &"fizz", &"caramel", &"dragibump", &"standard", &"caramel"]
-]
+# Service Cloud Sync
+var cloud_sync: Node = null
+var _save_timer: Timer = null
 
 func _ready() -> void:
+	_init_save_timer()
+	_init_cloud_service()
 	_init_default_definitions()
-	_init_default_boosters()
 	_init_shop_catalog()
+	_init_profile_and_storage()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		save_to_disk()
+
+func _init_save_timer() -> void:
+	_save_timer = Timer.new()
+	_save_timer.wait_time = 0.4
+	_save_timer.one_shot = true
+	_save_timer.timeout.connect(save_to_disk)
+	add_child(_save_timer)
+
+func _init_cloud_service() -> void:
+	cloud_sync = CloudSyncService.new()
+	add_child(cloud_sync)
+	cloud_sync.sync_completed.connect(_on_cloud_sync_completed)
+	cloud_sync.status_changed.connect(_on_cloud_status_changed)
+
+func request_save() -> void:
+	if _save_timer != null:
+		_save_timer.start()
+
+# ==============================================================================
+# GESTION DES PROFILS & PERSISTANCE CHIFFRÉE
+# ==============================================================================
+
+func _init_profile_and_storage() -> void:
+	if not DirAccess.dir_exists_absolute(PROFILES_DIR):
+		DirAccess.make_dir_recursive_absolute(PROFILES_DIR)
+
+	# 1. Lire le dernier profil utilisé
+	active_profile_id = _read_last_active_profile_id()
+
+	# 2. Charger la sauvegarde chiffrée
+	if not load_profile(active_profile_id):
+		# Création d'un nouveau profil par défaut
+		current_profile = PlayerProfileScript.create_default(active_profile_id, active_profile_id == "sandbox")
+		save_to_disk()
+
+	_sync_boosters_from_profile()
 	_validate_decks()
 
+	# 3. Tentative de synchronisation cloud transparente en tâche de fond (si non-sandbox)
+	if active_profile_id != "sandbox":
+		cloud_sync.sync_profile(current_profile)
+
+func get_profile_path(p_id: String) -> String:
+	return PROFILES_DIR + p_id + ".sav"
+
+func save_to_disk() -> bool:
+	if current_profile == null:
+		return false
+
+	_sync_boosters_to_profile()
+	current_profile.last_saved_at = int(Time.get_unix_time_from_system())
+
+	var path: String = get_profile_path(current_profile.profile_id)
+	var success: bool = SaveCipher.save_encrypted_json(path, current_profile.to_dict())
+
+	_write_last_active_profile_id(current_profile.profile_id)
+	return success
+
+func load_profile(p_id: String) -> bool:
+	var path: String = get_profile_path(p_id)
+	var data: Dictionary = SaveCipher.load_encrypted_json(path)
+	if data.is_empty():
+		return false
+
+	current_profile = PlayerProfileScript.new()
+	current_profile.from_dict(data)
+	active_profile_id = p_id
+	_sync_boosters_from_profile()
+	_validate_decks()
+	return true
+
+func switch_profile(target_profile_id: String) -> void:
+	if current_profile != null and current_profile.profile_id == target_profile_id:
+		return
+
+	# Sauvegarder l'état actuel avant bascule
+	save_to_disk()
+
+	active_profile_id = target_profile_id
+	if not load_profile(active_profile_id):
+		current_profile = PlayerProfileScript.create_default(active_profile_id, active_profile_id == "sandbox")
+		save_to_disk()
+
+	_sync_boosters_from_profile()
+	_validate_decks()
+	_write_last_active_profile_id(active_profile_id)
+
+	# Émettre les signaux de rafraîchissement global
+	EventBus.gold_changed.emit(gold, 0)
+	EventBus.diamonds_changed.emit(diamonds, 0)
+	EventBus.deck_changed.emit(active_deck_index)
+	EventBus.profile_loaded.emit(active_profile_id)
+
+	# Déclencher la synchro cloud si profil standard
+	if active_profile_id != "sandbox":
+		cloud_sync.sync_profile(current_profile)
+
+func sync_cloud() -> void:
+	if current_profile == null:
+		return
+	cloud_sync.sync_profile(current_profile)
+
+func _on_cloud_sync_completed(merged: PlayerProfileScript) -> void:
+	if current_profile != null and current_profile.profile_id == merged.profile_id:
+		current_profile = merged
+		_sync_boosters_from_profile()
+		_validate_decks()
+		save_to_disk()
+		EventBus.gold_changed.emit(gold, 0)
+		EventBus.diamonds_changed.emit(diamonds, 0)
+		EventBus.deck_changed.emit(active_deck_index)
+		EventBus.cloud_sync_completed.emit(true)
+
+func _on_cloud_status_changed(status: int, message: String) -> void:
+	var status_str: String = "IDLE"
+	match status:
+		1: status_str = "SYNCING"
+		2: status_str = "SUCCESS"
+		4: status_str = "OFFLINE"
+		3: status_str = "ERROR"
+	EventBus.cloud_sync_status_changed.emit(status_str, message)
+
+func _read_last_active_profile_id() -> String:
+	if FileAccess.file_exists(ACTIVE_PROFILE_FILE):
+		var f: FileAccess = FileAccess.open(ACTIVE_PROFILE_FILE, FileAccess.READ)
+		if f != null:
+			var id_str: String = f.get_as_text().strip_edges()
+			f.close()
+			if not id_str.is_empty():
+				return id_str
+	return "main"
+
+func _write_last_active_profile_id(p_id: String) -> void:
+	var f: FileAccess = FileAccess.open(ACTIVE_PROFILE_FILE, FileAccess.WRITE)
+	if f != null:
+		f.store_string(p_id)
+		f.close()
+
+func _sync_boosters_to_profile() -> void:
+	if current_profile == null:
+		return
+	var serialized: Array = []
+	for b in available_boosters:
+		serialized.append({
+			"id": String(b.id),
+			"display_name": b.display_name,
+			"booster_type": b.booster_type,
+			"min_gold": b.min_gold,
+			"max_gold": b.max_gold
+		})
+	current_profile.available_boosters = serialized
+
+func _sync_boosters_from_profile() -> void:
+	available_boosters.clear()
+	if current_profile == null:
+		return
+	for item in current_profile.available_boosters:
+		var b: BoosterData = BoosterData.new()
+		b.id = StringName(item.get("id", "classic_solo"))
+		b.display_name = item.get("display_name", "Sachet")
+		b.booster_type = item.get("booster_type", BoosterData.BoosterType.CLASSIC_SOLO)
+		b.min_gold = item.get("min_gold", 40)
+		b.max_gold = item.get("max_gold", 80)
+		available_boosters.append(b)
+
+# ==============================================================================
+# OUTILS SANDBOX (DÉVELOPPEUR SANS BIDOUILLE DANS LE GAMEPLAY)
+# ==============================================================================
+
+func is_sandbox_active() -> bool:
+	return active_profile_id == "sandbox"
+
+func sandbox_unlock_all() -> void:
+	if not is_sandbox_active():
+		return
+	for cid in registered_card_defs:
+		if not cards_inventory.has(cid):
+			cards_inventory[cid] = { "unlocked": true, "level": 1, "cards": 50 }
+		else:
+			cards_inventory[cid]["unlocked"] = true
+			cards_inventory[cid]["cards"] = maxi(cards_inventory[cid].get("cards", 0), 50)
+	save_to_disk()
+	EventBus.deck_changed.emit(active_deck_index)
+
+func sandbox_add_resources(gold_amount: int = 10000, dia_amount: int = 500) -> void:
+	if not is_sandbox_active():
+		return
+	add_gold(gold_amount)
+	add_diamonds(dia_amount)
+	save_to_disk()
+
+func sandbox_set_all_max_level(target_lvl: int = 5) -> void:
+	if not is_sandbox_active():
+		return
+	for cid in registered_card_defs:
+		if not cards_inventory.has(cid):
+			cards_inventory[cid] = { "unlocked": true, "level": target_lvl, "cards": 20 }
+		else:
+			cards_inventory[cid]["unlocked"] = true
+			cards_inventory[cid]["level"] = target_lvl
+	save_to_disk()
+	EventBus.deck_changed.emit(active_deck_index)
+
+func sandbox_reset() -> void:
+	if not is_sandbox_active():
+		return
+	current_profile = PlayerProfileScript.create_default("sandbox", true)
+	_sync_boosters_from_profile()
+	_validate_decks()
+	save_to_disk()
+	EventBus.gold_changed.emit(gold, 0)
+	EventBus.diamonds_changed.emit(diamonds, 0)
+	EventBus.deck_changed.emit(active_deck_index)
+
+# ==============================================================================
+# INITIALISATIONS DES DÉFINITIONS DE CARTES & BOUTIQUE
+# ==============================================================================
+
 func _init_default_definitions() -> void:
-	# Bille Sucrée (Standard)
-	var std_card: CandyCardData = CandyCardData.new()
-	std_card.id = &"standard"
-	std_card.display_name = "Bille Sucrée"
-	std_card.subtitle = "Classique & Gourmande"
-	std_card.description = "Une bille équilibrée et croustillante, parfaite pour éliminer les premiers bonbons."
-	std_card.rarity = CandyCardData.Rarity.COMMON
-	std_card.base_damage = 10
-	std_card.damage_per_level = 3
-	std_card.base_bounce = 1.0
-	std_card.icon_texture = load("res://assets/ui/icon_ball_standard.png")
-	registered_card_defs[&"standard"] = std_card
+	registered_card_defs = CardCatalog.get_default_definitions()
 
-	# Fizzball
-	var fizz_card: CandyCardData = CandyCardData.new()
-	fizz_card.id = &"fizz"
-	fizz_card.display_name = "Fizzball"
-	fizz_card.subtitle = "Acidulée & Électrique"
-	fizz_card.description = "Diffuse des décharges acidulées qui frappent plusieurs ennemis proches."
-	fizz_card.rarity = CandyCardData.Rarity.RARE
-	fizz_card.base_damage = 14
-	fizz_card.damage_per_level = 4
-	fizz_card.base_bounce = 1.15
-	fizz_card.icon_texture = load("res://assets/ui/icon_ball_fizz.png")
-	registered_card_defs[&"fizz"] = fizz_card
+func _init_shop_catalog() -> void:
+	shop_catalog = ShopCatalog.get_default_catalog()
 
-	# Bille Caramel (Collante & Gluante)
-	var caramel_card: CandyCardData = CandyCardData.new()
-	caramel_card.id = &"caramel"
-	caramel_card.display_name = "Bille Caramel"
-	caramel_card.subtitle = "Collante & Ralentissante"
-	caramel_card.description = "Englue les bonbons adverses à chaque contact pour ralentir leur descente."
-	caramel_card.rarity = CandyCardData.Rarity.RARE
-	caramel_card.base_damage = 12
-	caramel_card.damage_per_level = 3
-	caramel_card.base_bounce = 0.95
-	caramel_card.icon_texture = load("res://assets/ui/icon_ball_caramel.png")
-	registered_card_defs[&"caramel"] = caramel_card
-
-	# Bonbon Cerise Explosif
-	var cherry_card: CandyCardData = CandyCardData.new()
-	cherry_card.id = &"cherry"
-	cherry_card.display_name = "Cerise Pop"
-	cherry_card.subtitle = "Déflagration Fruitée"
-	cherry_card.description = "Provoque une violente explosion fruitée dévastatrice lors des rebonds appuyés."
-	cherry_card.rarity = CandyCardData.Rarity.EPIC
-	cherry_card.base_damage = 22
-	cherry_card.damage_per_level = 6
-	cherry_card.base_bounce = 1.25
-	cherry_card.icon_texture = load("res://assets/ui/icon_ball_fizz.png")
-	registered_card_defs[&"cherry"] = cherry_card
-
-	# Menthe Givrée
-	var mint_card: CandyCardData = CandyCardData.new()
-	mint_card.id = &"mint"
-	mint_card.display_name = "Menthe Givrée"
-	mint_card.subtitle = "Frisson Glacé"
-	mint_card.description = "Diffuse une brise glaciale rafraîchissante qui immobilise brièvement les cibles."
-	mint_card.rarity = CandyCardData.Rarity.COMMON
-	mint_card.base_damage = 9
-	mint_card.damage_per_level = 2
-	mint_card.base_bounce = 1.05
-	mint_card.icon_texture = load("res://assets/ui/icon_ball_standard.png")
-	registered_card_defs[&"mint"] = mint_card
-
-	# Dragibump (Bumper Bonbon)
-	var dragi_card: CandyCardData = CandyCardData.new()
-	dragi_card.id = &"dragibump"
-	dragi_card.display_name = "Dragibump"
-	dragi_card.subtitle = "Bumper Magnétique"
-	dragi_card.description = "Bumper gélifié très rebondissant qui renvoie les billes avec une vélocité accrue."
-	dragi_card.rarity = CandyCardData.Rarity.RARE
-	dragi_card.card_type = CandyCardData.CardType.BUMPER
-	dragi_card.base_damage = 16
-	dragi_card.damage_per_level = 4
-	dragi_card.base_bounce = 1.3
-	dragi_card.icon_texture = load("res://assets/ui/icon_bumper_dragibump.png")
-	registered_card_defs[&"dragibump"] = dragi_card
-
-func _init_default_boosters() -> void:
-	# Donner 2 boosters de départ au joueur
-	var b1: BoosterData = BoosterData.new()
-	b1.id = &"classic_solo"
-	b1.display_name = "🍬 Sachet Classique"
-	b1.booster_type = BoosterData.BoosterType.CLASSIC_SOLO
-	b1.min_gold = 40
-	b1.max_gold = 80
-	available_boosters.append(b1)
-
-	var b2: BoosterData = BoosterData.new()
-	b2.id = &"pop_solo"
-	b2.display_name = "⭐ Sachet Pop Acidulé"
-	b2.booster_type = BoosterData.BoosterType.POP_SOLO
-	b2.min_gold = 120
-	b2.max_gold = 220
-	available_boosters.append(b2)
+# ==============================================================================
+# GESTION DES RESSOURCES & CARTES
+# ==============================================================================
 
 func get_unlocked_card_ids() -> Array[StringName]:
 	var res: Array[StringName] = []
@@ -142,11 +314,26 @@ func get_unlocked_card_ids() -> Array[StringName]:
 func add_gold(amount: int) -> void:
 	gold += amount
 	EventBus.gold_changed.emit(gold, amount)
+	request_save()
 
 func spend_gold(amount: int) -> bool:
 	if gold >= amount:
 		gold -= amount
 		EventBus.gold_changed.emit(gold, -amount)
+		request_save()
+		return true
+	return false
+
+func add_diamonds(amount: int) -> void:
+	diamonds += amount
+	EventBus.diamonds_changed.emit(diamonds, amount)
+	request_save()
+
+func spend_diamonds(amount: int) -> bool:
+	if diamonds >= amount:
+		diamonds -= amount
+		EventBus.diamonds_changed.emit(diamonds, -amount)
+		request_save()
 		return true
 	return false
 
@@ -156,28 +343,29 @@ func can_upgrade_card(card_id: StringName) -> bool:
 	var inv: Dictionary = cards_inventory[card_id]
 	if not inv.get("unlocked", false):
 		return false
-		
+
 	var def: CandyCardData = registered_card_defs[card_id]
 	var cur_lvl: int = inv.get("level", 1)
 	var req_cards: int = def.get_required_cards_for_level(cur_lvl)
 	var req_gold: int = def.get_gold_cost_for_level(cur_lvl)
-	
+
 	return inv.get("cards", 0) >= req_cards and gold >= req_gold
 
 func upgrade_card(card_id: StringName) -> bool:
 	if not can_upgrade_card(card_id):
 		return false
-		
+
 	var inv: Dictionary = cards_inventory[card_id]
 	var def: CandyCardData = registered_card_defs[card_id]
 	var cur_lvl: int = inv.get("level", 1)
 	var req_cards: int = def.get_required_cards_for_level(cur_lvl)
 	var req_gold: int = def.get_gold_cost_for_level(cur_lvl)
-	
+
 	if spend_gold(req_gold):
 		inv["cards"] -= req_cards
 		inv["level"] = cur_lvl + 1
 		EventBus.card_upgraded.emit(card_id, inv["level"])
+		request_save()
 		return true
 	return false
 
@@ -194,7 +382,7 @@ func get_card_state(card_id: StringName) -> Dictionary:
 	var has_enough_cards: bool = (cards >= req_cards)
 	var has_enough_gold: bool = (gold >= req_gold)
 	var can_up: bool = is_unlocked and has_enough_cards and has_enough_gold
-	
+
 	return {
 		"id": card_id,
 		"def": def,
@@ -209,149 +397,6 @@ func get_card_state(card_id: StringName) -> Dictionary:
 		"ratio": float(cards) / float(maxi(1, req_cards))
 	}
 
-func _init_shop_catalog() -> void:
-	shop_catalog.clear()
-
-	# 1. Boosters
-	var it_pack_classic: ShopItemData = ShopItemData.new()
-	it_pack_classic.id = &"shop_pack_classic"
-	it_pack_classic.display_name = "🍬 Sachet Solo"
-	it_pack_classic.description = "1 bonbon commun en quantité + Or sucré"
-	it_pack_classic.category = ShopItemData.Category.BOOSTERS
-	it_pack_classic.icon_texture = load("res://assets/ui/pack_classic_solo.png")
-	it_pack_classic.gold_price = 200
-	it_pack_classic.diamond_price = 15
-	it_pack_classic.reward_payload = {
-		"type": "booster",
-		"id": &"classic_solo",
-		"display_name": "🍬 Sachet Classique",
-		"booster_type": BoosterData.BoosterType.CLASSIC_SOLO,
-		"min_gold": 40,
-		"max_gold": 80
-	}
-	shop_catalog.append(it_pack_classic)
-
-	var it_pack_pop: ShopItemData = ShopItemData.new()
-	it_pack_pop.id = &"shop_pack_pop"
-	it_pack_pop.display_name = "⭐ Sachet Pop"
-	it_pack_pop.description = "Garanti un bonbon Rare ou Épique !"
-	it_pack_pop.category = ShopItemData.Category.BOOSTERS
-	it_pack_pop.icon_texture = load("res://assets/ui/pack_pop_solo.png")
-	it_pack_pop.gold_price = 500
-	it_pack_pop.diamond_price = 35
-	it_pack_pop.reward_payload = {
-		"type": "booster",
-		"id": &"pop_solo",
-		"display_name": "⭐ Sachet Pop Acidulé",
-		"booster_type": BoosterData.BoosterType.POP_SOLO,
-		"min_gold": 120,
-		"max_gold": 220
-	}
-	shop_catalog.append(it_pack_pop)
-
-	var it_pack_piquant: ShopItemData = ShopItemData.new()
-	it_pack_piquant.id = &"shop_pack_piquant"
-	it_pack_piquant.display_name = "🔥 Mix Acidulé"
-	it_pack_piquant.description = "Mélange généreux de cartes rares & or abondant"
-	it_pack_piquant.category = ShopItemData.Category.BOOSTERS
-	it_pack_piquant.icon_texture = load("res://assets/ui/pack_mix_piquant.png")
-	it_pack_piquant.gold_price = -1 # Achat exclusif en diamants
-	it_pack_piquant.diamond_price = 70
-	it_pack_piquant.reward_payload = {
-		"type": "booster",
-		"id": &"piquant_mix",
-		"display_name": "🔥 Sachet Piquant Mix",
-		"booster_type": BoosterData.BoosterType.PIQUANT_MIX,
-		"min_gold": 250,
-		"max_gold": 450
-	}
-	shop_catalog.append(it_pack_piquant)
-
-	# 2. Cartes quotidiennes
-	var it_card_caramel: ShopItemData = ShopItemData.new()
-	it_card_caramel.id = &"daily_caramel_5"
-	it_card_caramel.display_name = "x5 Bille Caramel"
-	it_card_caramel.description = "Ralentit les bonbons adverses"
-	it_card_caramel.category = ShopItemData.Category.CARDS_DAILY
-	it_card_caramel.icon_texture = load("res://assets/ui/icon_ball_caramel.png")
-	it_card_caramel.gold_price = 150
-	it_card_caramel.diamond_price = 10
-	it_card_caramel.reward_payload = {
-		"type": "cards",
-		"card_id": &"caramel",
-		"count": 5
-	}
-	shop_catalog.append(it_card_caramel)
-
-	var it_card_cherry: ShopItemData = ShopItemData.new()
-	it_card_cherry.id = &"daily_cherry_3"
-	it_card_cherry.display_name = "x3 Cerise Pop"
-	it_card_cherry.description = "Cartes Épiques explosives !"
-	it_card_cherry.category = ShopItemData.Category.CARDS_DAILY
-	it_card_cherry.icon_texture = load("res://assets/ui/icon_ball_locked.png")
-	it_card_cherry.gold_price = 300
-	it_card_cherry.diamond_price = 25
-	it_card_cherry.reward_payload = {
-		"type": "cards",
-		"card_id": &"cherry",
-		"count": 3
-	}
-	shop_catalog.append(it_card_cherry)
-
-	# 3. Monnaies & Trésorerie
-	var it_gold_pouch: ShopItemData = ShopItemData.new()
-	it_gold_pouch.id = &"currency_gold_small"
-	it_gold_pouch.display_name = "🪙 Bourse de 500 Pièces"
-	it_gold_pouch.description = "Échangez vos diamants contre de l'or immédiat"
-	it_gold_pouch.category = ShopItemData.Category.CURRENCY
-	it_gold_pouch.icon_texture = load("res://assets/ui/patch_badge_gold.png")
-	it_gold_pouch.gold_price = -1
-	it_gold_pouch.diamond_price = 20
-	it_gold_pouch.reward_payload = {
-		"type": "gold",
-		"amount": 500
-	}
-	shop_catalog.append(it_gold_pouch)
-
-	var it_gold_chest: ShopItemData = ShopItemData.new()
-	it_gold_chest.id = &"currency_gold_large"
-	it_gold_chest.display_name = "🪙 Coffre de 1 500 Pièces"
-	it_gold_chest.description = "Grosse réserve d'or sucré pour vos améliorations"
-	it_gold_chest.category = ShopItemData.Category.CURRENCY
-	it_gold_chest.icon_texture = load("res://assets/ui/patch_badge_gold.png")
-	it_gold_chest.gold_price = -1
-	it_gold_chest.diamond_price = 50
-	it_gold_chest.reward_payload = {
-		"type": "gold",
-		"amount": 1500
-	}
-	shop_catalog.append(it_gold_chest)
-
-	var it_dia_pack: ShopItemData = ShopItemData.new()
-	it_dia_pack.id = &"currency_dia_reward"
-	it_dia_pack.display_name = "💎 Lot Découverte (Offert)"
-	it_dia_pack.description = "Pack de bienvenue : 50 Diamants pour tester la boutique"
-	it_dia_pack.category = ShopItemData.Category.CURRENCY
-	it_dia_pack.icon_texture = load("res://assets/ui/sparkle_star.png")
-	it_dia_pack.gold_price = 50 # Accessible pour un peu d'or !
-	it_dia_pack.diamond_price = -1
-	it_dia_pack.reward_payload = {
-		"type": "diamonds",
-		"amount": 50
-	}
-	shop_catalog.append(it_dia_pack)
-
-func add_diamonds(amount: int) -> void:
-	diamonds += amount
-	EventBus.diamonds_changed.emit(diamonds, amount)
-
-func spend_diamonds(amount: int) -> bool:
-	if diamonds >= amount:
-		diamonds -= amount
-		EventBus.diamonds_changed.emit(diamonds, -amount)
-		return true
-	return false
-
 func purchase_item(item: ShopItemData, use_diamonds: bool) -> bool:
 	if use_diamonds:
 		if item.diamond_price < 0 or diamonds < item.diamond_price:
@@ -364,7 +409,6 @@ func purchase_item(item: ShopItemData, use_diamonds: bool) -> bool:
 		if not spend_gold(item.gold_price):
 			return false
 
-	# Appliquer la récompense
 	var payload: Dictionary = item.reward_payload
 	var ptype: String = payload.get("type", "")
 	match ptype:
@@ -392,29 +436,30 @@ func purchase_item(item: ShopItemData, use_diamonds: bool) -> bool:
 				inv["cards"] = inv.get("cards", 0) + count
 
 	EventBus.shop_item_purchased.emit(item.id, "diamonds" if use_diamonds else "gold")
+	request_save()
 	return true
 
 func apply_booster_rewards(result: Dictionary) -> void:
 	if result.has("gold"):
 		add_gold(result["gold"])
-		
+
 	if result.has("drops"):
 		for drop in result["drops"]:
 			var card_def: CandyCardData = drop["card"]
 			var cid: StringName = card_def.id
 			var count: int = drop["count"]
-			
+
 			if not cards_inventory.has(cid):
 				cards_inventory[cid] = { "unlocked": true, "level": 1, "cards": count }
 			else:
 				var inv: Dictionary = cards_inventory[cid]
 				inv["unlocked"] = true
 				inv["cards"] = inv.get("cards", 0) + count
-				
+
+	request_save()
 	EventBus.booster_opened.emit(result)
 
 func _validate_decks() -> void:
-	# S'assurer que chaque deck a 6 slots et des cartes valides
 	for i in range(decks.size()):
 		var d: Array = decks[i]
 		while d.size() < 6:
@@ -431,6 +476,7 @@ func set_active_deck(index: int) -> void:
 	if index >= 0 and index < decks.size():
 		active_deck_index = index
 		EventBus.deck_changed.emit(active_deck_index)
+		request_save()
 
 func set_card_in_deck(deck_idx: int, slot_idx: int, card_id: StringName) -> void:
 	if deck_idx >= 0 and deck_idx < decks.size():
@@ -438,6 +484,7 @@ func set_card_in_deck(deck_idx: int, slot_idx: int, card_id: StringName) -> void
 		if slot_idx >= 0 and slot_idx < d.size():
 			d[slot_idx] = card_id
 			EventBus.deck_changed.emit(deck_idx)
+			request_save()
 
 func get_active_deck_balls() -> Array[StringName]:
 	var balls: Array[StringName] = []

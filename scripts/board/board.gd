@@ -6,6 +6,8 @@ extends Node2D
 @export var ball_scene: PackedScene
 @export var fizzball_scene: PackedScene
 @export var caramel_ball_scene: PackedScene
+@export var mentox_ball_scene: PackedScene
+@export var jawbreaker_ball_scene: PackedScene
 @export var enemy_tomato_scene: PackedScene
 @export var enemy_ananas_scene: PackedScene
 @export var enemy_watermelon_scene: PackedScene
@@ -31,11 +33,12 @@ var _spawn_timer: float = 0.0
 @export var max_tube_capacity: int = 5
 @export var synthesis_time_seconds: float = 2.8
 
-# File ordonnée de types de billes : [0] = bas du tube (prochaine sortie), [max-1] = haut
-var tube_ball_queue: Array[StringName] = []
-var next_synthesis_type: StringName = &"standard"
-var _synthesis_timer: float = 0.0
-var _is_synthesizing: bool = false
+var ball_tube: BallTubeController = BallTubeController.new()
+
+# Accesseur de rétrocompatibilité
+var tube_ball_queue: Array[StringName]:
+	get:
+		return ball_tube.queue if ball_tube != null else []
 
 signal factory_state_changed(types_queue: Array[StringName], is_synthesizing: bool, next_type: StringName, progress: float)
 
@@ -43,6 +46,9 @@ var is_game_running: bool = false
 
 func _ready() -> void:
 	danger_zone.body_entered.connect(_on_danger_zone_body_entered)
+	ball_tube.initialize(max_tube_capacity, synthesis_time_seconds)
+	ball_tube.factory_state_changed.connect(func(q, s, n, p): factory_state_changed.emit(q, s, n, p))
+	ball_tube.ball_ready_to_launch.connect(func(b_type): _spawn_active_ball(b_type))
 
 func start_game() -> void:
 	is_game_running = true
@@ -53,7 +59,6 @@ func start_game() -> void:
 func reset_board() -> void:
 	is_game_running = false
 	_spawn_timer = 0.0
-	_synthesis_timer = 0.0
 	
 	# Nettoie les balles et ennemis en cours
 	if active_ball != null and is_instance_valid(active_ball):
@@ -64,13 +69,7 @@ func reset_board() -> void:
 		child.queue_free()
 		
 	# Remplissage du tube avec les bonbons-balles du Deck actif
-	tube_ball_queue.clear()
-	var deck_balls: Array[StringName] = SaveManager.get_active_deck_balls()
-	for i in range(max_tube_capacity):
-		var picked_type: StringName = deck_balls[randi() % deck_balls.size()]
-		tube_ball_queue.append(picked_type)
-	_pick_next_synthesis_from_deck()
-	_emit_factory_state()
+	ball_tube.reset(SaveManager.get_active_deck_balls())
 
 func set_bumper_slots_placement_mode(active: bool) -> void:
 	if bumper_slot_container != null:
@@ -102,120 +101,133 @@ func place_bumper_at_slot(slot: BumperSlot, bumper_id: StringName) -> bool:
 	slot.attach_bumper(bumper)
 	return true
 
-func _pick_next_synthesis_from_deck() -> void:
-	var deck_balls: Array[StringName] = SaveManager.get_active_deck_balls()
-	next_synthesis_type = deck_balls[randi() % deck_balls.size()]
-
 func _physics_process(delta: float) -> void:
 	if not is_game_running:
 		return
 		
 	# 1. Machine de synthèse de balles continue dès qu'un slot est libre
-	_update_ball_synthesis(delta)
+	var has_active_ball: bool = (active_ball != null and is_instance_valid(active_ball))
+	ball_tube.update(delta, has_active_ball)
 	
 	# 3. Sécurité absolue : si aucune balle n'est présente sur le terrain (détruite ou sortie), on injecte immédiatement
-	if active_ball == null or not is_instance_valid(active_ball):
-		if not tube_ball_queue.is_empty() and not _is_synthesizing:
+	if not has_active_ball:
+		if ball_tube.has_balls() and not ball_tube.is_synthesizing:
 			feed_next_ball_from_tube()
 	elif active_ball.global_position.y > 1250.0 or active_ball.global_position.x > 620.0 or active_ball.global_position.x < 10.0:
 		active_ball.queue_free()
 		active_ball = null
-		if not tube_ball_queue.is_empty():
+		if ball_tube.has_balls():
 			feed_next_ball_from_tube()
 
-func _update_ball_synthesis(delta: float) -> void:
-	if tube_ball_queue.size() < max_tube_capacity:
-		_is_synthesizing = true
-		_synthesis_timer += delta
-		var progress: float = clampf(_synthesis_timer / synthesis_time_seconds, 0.0, 1.0)
-		_emit_factory_state(progress)
-		
-		if _synthesis_timer >= synthesis_time_seconds:
-			# Une balle est achevée, elle entre en haut du tube
-			_synthesis_timer = 0.0
-			tube_ball_queue.append(next_synthesis_type)
-			
-			# Tire aléatoirement le prochain bonbon parmi les balles du deck actif
-			_pick_next_synthesis_from_deck()
-					
-			_is_synthesizing = (tube_ball_queue.size() < max_tube_capacity)
-			_emit_factory_state(0.0)
-			
-			if active_ball == null or not is_instance_valid(active_ball):
-				feed_next_ball_from_tube()
-	else:
-		if _is_synthesizing:
-			_is_synthesizing = false
-			_synthesis_timer = 0.0
-			_emit_factory_state(0.0)
-
-func _emit_factory_state(progress: float = 0.0) -> void:
-	factory_state_changed.emit(tube_ball_queue, _is_synthesizing, next_synthesis_type, progress)
+func get_ball_scene_for_type(ball_type: StringName) -> PackedScene:
+	match ball_type:
+		&"fizz":
+			return fizzball_scene if fizzball_scene != null else ball_scene
+		&"caramel":
+			return caramel_ball_scene if caramel_ball_scene != null else ball_scene
+		&"mentox", &"mint":
+			return mentox_ball_scene if mentox_ball_scene != null else ball_scene
+		&"jawbreaker":
+			return jawbreaker_ball_scene if jawbreaker_ball_scene != null else ball_scene
+		_:
+			return ball_scene
 
 func feed_next_ball_from_tube() -> void:
-	if tube_ball_queue.is_empty():
+	if not ball_tube.has_balls():
 		return
 
 	if active_ball != null and is_instance_valid(active_ball):
 		active_ball.queue_free()
 
-	# La balle en bas du tube (indice 0) est extraite
-	var ball_type_to_spawn: StringName = tube_ball_queue.pop_front()
-	_emit_factory_state()
-	
-	var chosen_scene: PackedScene = ball_scene
-	if ball_type_to_spawn == &"fizz" and fizzball_scene != null:
-		chosen_scene = fizzball_scene
-	elif ball_type_to_spawn == &"caramel" and caramel_ball_scene != null:
-		chosen_scene = caramel_ball_scene
-	
+	var ball_type_to_spawn: StringName = ball_tube.pop_next_ball()
+	if not ball_type_to_spawn.is_empty():
+		_spawn_active_ball(ball_type_to_spawn)
+
+func _spawn_active_ball(ball_type: StringName) -> void:
+	var chosen_scene: PackedScene = get_ball_scene_for_type(ball_type)
 	if chosen_scene != null:
 		active_ball = chosen_scene.instantiate() as Ball
 		active_ball.position = tube_exit_position
 		active_ball.ball_shattered.connect(_on_active_ball_shattered)
+		active_ball.split_requested.connect(_on_ball_split_requested)
+		_apply_card_stats_to_ball(active_ball, ball_type)
 		# Impulsion diagonale vers la gauche et le flipper
 		active_ball.linear_velocity = Vector2(-220.0, 180.0)
 		ball_container.add_child(active_ball)
 
 func _on_active_ball_shattered() -> void:
 	active_ball = null
-	if not tube_ball_queue.is_empty():
+	if ball_tube.has_balls():
 		feed_next_ball_from_tube()
 
+func _on_ball_split_requested(sub_types: Array[StringName], spawn_pos: Vector2, dirs: Array[Vector2], speed: float) -> void:
+	for i in range(mini(sub_types.size(), dirs.size())):
+		var scn: PackedScene = get_ball_scene_for_type(sub_types[i])
+		if scn != null:
+			var sub_ball: Ball = scn.instantiate() as Ball
+			sub_ball.position = spawn_pos + dirs[i] * 22.0
+			sub_ball.linear_velocity = dirs[i] * speed
+			sub_ball.max_durability = 1
+			sub_ball.current_durability = 1
+			_apply_card_stats_to_ball(sub_ball, sub_types[i])
+			ball_container.add_child(sub_ball)
+
+func _apply_card_stats_to_ball(ball: Ball, ball_type: StringName) -> void:
+	if ball == null:
+		return
+	var card_state: Dictionary = SaveManager.get_card_state(ball_type)
+	if card_state.is_empty():
+		return
+	var def: CandyCardData = card_state.get("def", null)
+	var lvl: int = card_state.get("level", 1)
+	if def != null:
+		ball.configure_from_card(def, lvl)
+
+
+func spawn_sub_ball(sub_ball: Ball) -> void:
+	if sub_ball == null or ball_container == null:
+		return
+	ball_container.add_child(sub_ball)
+
+var _scene_cache: Dictionary = {}
+
 func spawn_enemy_by_path(scene_path: String, spawn_x: float) -> void:
-	var enemy_scn: PackedScene = load(scene_path) as PackedScene
+	if not _scene_cache.has(scene_path):
+		_scene_cache[scene_path] = load(scene_path)
+	var enemy_scn: PackedScene = _scene_cache.get(scene_path) as PackedScene
 	if enemy_scn != null:
 		var enemy: Enemy = enemy_scn.instantiate() as Enemy
 		enemy.position = Vector2(spawn_x, 80.0)
 		enemy_container.add_child(enemy)
 
 func spawn_enemy() -> void:
-	var available_scenes: Array[PackedScene] = []
-	if enemy_tomato_scene != null:
-		# Tomate fréquente (poids 5)
-		for i in range(5):
-			available_scenes.append(enemy_tomato_scene)
-	if enemy_ananas_scene != null:
-		# Ananas intermédiaire (poids 3)
-		for i in range(3):
-			available_scenes.append(enemy_ananas_scene)
-	if enemy_watermelon_scene != null:
-		# Pastèque mini-tank (poids 2)
-		for i in range(2):
-			available_scenes.append(enemy_watermelon_scene)
-			
-	if available_scenes.is_empty():
+	var pool: Array[PackedScene] = _get_default_enemy_pool()
+	if pool.is_empty():
 		return
 		
-	var chosen_scene: PackedScene = available_scenes.pick_random()
+	var chosen_scene: PackedScene = pool.pick_random()
 	var enemy: Enemy = chosen_scene.instantiate() as Enemy
 	var spawn_x: float = randf_range(90.0, 510.0)
 	enemy.position = Vector2(spawn_x, 80.0)
 	enemy_container.add_child(enemy)
 
+var _cached_enemy_pool: Array[PackedScene] = []
+func _get_default_enemy_pool() -> Array[PackedScene]:
+	if _cached_enemy_pool.is_empty():
+		if enemy_tomato_scene != null:
+			for i in range(5):
+				_cached_enemy_pool.append(enemy_tomato_scene)
+		if enemy_ananas_scene != null:
+			for i in range(3):
+				_cached_enemy_pool.append(enemy_ananas_scene)
+		if enemy_watermelon_scene != null:
+			for i in range(2):
+				_cached_enemy_pool.append(enemy_watermelon_scene)
+	return _cached_enemy_pool
+
 func _on_danger_zone_body_entered(body: Node2D) -> void:
 	if body is Ball:
-		if not tube_ball_queue.is_empty():
+		if ball_tube.has_balls():
 			feed_next_ball_from_tube()
 		else:
 			if active_ball != null and is_instance_valid(active_ball):

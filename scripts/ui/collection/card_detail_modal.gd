@@ -20,10 +20,6 @@ signal replace_requested(slot_index: int, current_card_id: StringName)
 
 # Stats rows
 @onready var stats_vbox: VBoxContainer = $CenterAnchor/ModalCard/VBox/StatsBox
-@onready var dmg_val_label: Label = $CenterAnchor/ModalCard/VBox/StatsBox/RowDamage/ValLabel
-@onready var dmg_gain_label: Label = $CenterAnchor/ModalCard/VBox/StatsBox/RowDamage/GainLabel
-@onready var bnc_val_label: Label = $CenterAnchor/ModalCard/VBox/StatsBox/RowBounce/ValLabel
-@onready var bnc_gain_label: Label = $CenterAnchor/ModalCard/VBox/StatsBox/RowBounce/GainLabel
 
 # Gauge & Upgrade button
 @onready var gauge_bar: TextureProgressBar = $CenterAnchor/ModalCard/VBox/GaugeContainer/GaugeBar
@@ -118,20 +114,10 @@ func _refresh_data() -> void:
 			rarity_badge.text = "LÉGENDAIRE"
 			rarity_badge.modulate = Color(1.0, 0.75, 0.2)
 			
-	# Niveau transition
+	# Niveau transition & Statistiques
 	if is_unlocked:
 		level_transition_label.text = "NIVEAU %d  ➔  NIVEAU %d" % [lvl, lvl + 1]
-		
-		# Stats
-		var cur_dmg: int = def.get_damage_for_level(lvl)
-		var next_dmg: int = def.get_damage_for_level(lvl + 1)
-		dmg_val_label.text = "%d" % cur_dmg
-		dmg_gain_label.text = "➔ %d (+%d)" % [next_dmg, (next_dmg - cur_dmg)]
-		
-		var cur_bnc: float = def.get_bounce_for_level(lvl)
-		var next_bnc: float = def.get_bounce_for_level(lvl + 1)
-		bnc_val_label.text = "%.2f" % cur_bnc
-		bnc_gain_label.text = "➔ %.2f" % next_bnc
+		_refresh_stats_rows(def, lvl)
 		
 		# Jauge
 		gauge_bar.max_value = float(maxi(1, req_cards))
@@ -157,14 +143,80 @@ func _refresh_data() -> void:
 			btn_upgrade.modulate = Color.WHITE
 	else:
 		level_transition_label.text = "CARTE VERROUILLÉE"
-		dmg_val_label.text = "?"
-		dmg_gain_label.text = ""
-		bnc_val_label.text = "?"
-		bnc_gain_label.text = ""
+		_refresh_locked_stats(def)
 		gauge_bar.value = 0
 		gauge_text.text = "À débloquer dans les sachets"
 		btn_upgrade.disabled = true
 		btn_upgrade.text = "VERROUILLÉ"
+
+func _refresh_stats_rows(def: CandyCardData, lvl: int) -> void:
+	for child in stats_vbox.get_children():
+		child.queue_free()
+
+	if def == null:
+		return
+
+	var stats: Array[Dictionary] = def.get_displayed_stats(lvl)
+	for stat in stats:
+		var row: HBoxContainer = HBoxContainer.new()
+		row.custom_minimum_size = Vector2(340, 24)
+		row.add_theme_constant_override(&"separation", 6)
+
+		var name_lbl: Label = Label.new()
+		name_lbl.text = "%s %s" % [stat.get("icon", "✨"), stat.get("label", "Stat")]
+		name_lbl.add_theme_font_size_override(&"font_size", 14)
+		name_lbl.add_theme_color_override(&"font_color", Color(0.35, 0.22, 0.15, 1.0))
+		row.add_child(name_lbl)
+
+		var spacer: Control = Control.new()
+		spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(spacer)
+
+		var val_lbl: Label = Label.new()
+		val_lbl.text = stat.get("cur_str", "")
+		val_lbl.add_theme_font_size_override(&"font_size", 14)
+		val_lbl.add_theme_color_override(&"font_color", Color(0.20, 0.12, 0.06, 1.0))
+		row.add_child(val_lbl)
+
+		if stat.get("has_gain", false):
+			var gain_lbl: Label = Label.new()
+			gain_lbl.text = "➔ %s (%s)" % [stat.get("next_str", ""), stat.get("gain_str", "")]
+			gain_lbl.add_theme_font_size_override(&"font_size", 14)
+			gain_lbl.add_theme_color_override(&"font_color", Color(0.18, 0.65, 0.25, 1.0))
+			row.add_child(gain_lbl)
+
+		stats_vbox.add_child(row)
+
+func _refresh_locked_stats(def: CandyCardData) -> void:
+	for child in stats_vbox.get_children():
+		child.queue_free()
+
+	if def == null:
+		return
+
+	var stats: Array[Dictionary] = def.get_displayed_stats(1)
+	for stat in stats:
+		var row: HBoxContainer = HBoxContainer.new()
+		row.custom_minimum_size = Vector2(340, 24)
+		row.add_theme_constant_override(&"separation", 6)
+
+		var name_lbl: Label = Label.new()
+		name_lbl.text = "%s %s" % [stat.get("icon", "✨"), stat.get("label", "Stat")]
+		name_lbl.add_theme_font_size_override(&"font_size", 14)
+		name_lbl.add_theme_color_override(&"font_color", Color(0.55, 0.50, 0.45, 1.0))
+		row.add_child(name_lbl)
+
+		var spacer: Control = Control.new()
+		spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(spacer)
+
+		var val_lbl: Label = Label.new()
+		val_lbl.text = "?"
+		val_lbl.add_theme_font_size_override(&"font_size", 14)
+		val_lbl.add_theme_color_override(&"font_color", Color(0.55, 0.50, 0.45, 1.0))
+		row.add_child(val_lbl)
+
+		stats_vbox.add_child(row)
 
 func _on_upgrade_pressed() -> void:
 	if _state.is_empty():

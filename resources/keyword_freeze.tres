@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="KeywordFreeze" load_steps=2 format=3 uid="uid://cx4j1keywordfreeze01"]
+
+[ext_resource type="Script" path="res://scripts/keywords/keyword_freeze.gd" id="1_freeze"]
+
+[resource]
+script = ExtResource("1_freeze")
+id = &"freeze"
+display_name = "Givré"
+description = "Immobilise l'ennemi percuté sous un bloc de givre pendant 2 secondes."
+freeze_duration = 2.0
+impact_damage = 1

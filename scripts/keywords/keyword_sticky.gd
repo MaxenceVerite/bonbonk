@@ -11,7 +11,14 @@ extends BallKeyword
 func _init() -> void:
 	id = &"sticky"
 	display_name = "Collant"
-	description = "S'accroche à l'ennemi à l'impact, le ralentit de 65% et explose à sa mort."
+	description = "S'accroche à l'ennemi à l'impact, le ralentit fortement et explose à sa mort."
+
+func apply_card_scaling(card_def: CandyCardData, lvl: int) -> void:
+	if card_def == null:
+		return
+	initial_impact_damage = card_def.get_damage_for_level(lvl)
+	var slow_power: float = card_def.get_keyword_stat_value(&"slow_power", lvl, 0.65)
+	slow_multiplier = clampf(1.0 - slow_power, 0.05, 0.85)
 
 func on_hit_enemy(ball: Ball, enemy: Enemy) -> void:
 	if ball == null or not is_instance_valid(ball):

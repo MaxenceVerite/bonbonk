@@ -20,10 +20,13 @@ signal play_pressed
 @onready var btn_leaderboard: Button = $NavBar/HBoxContainer/BtnLeaderboard
 
 # Éléments Header
+@onready var btn_account: Button = $TopGoldBar/HBox/BtnAccount
 @onready var gold_label: Label = $TopGoldBar/HBox/GoldBadge/HBoxG/GoldLabel
 @onready var diamond_label: Label = $TopGoldBar/HBox/DiamondBadge/HBoxD/DiamondLabel
 @onready var btn_add_gold: Button = $TopGoldBar/HBox/GoldBadge/HBoxG/BtnAddGold
 @onready var btn_add_diamonds: Button = $TopGoldBar/HBox/DiamondBadge/HBoxD/BtnAddDiamonds
+@onready var account_modal: Control = $AccountModal
+
 
 # Éléments Collection
 @onready var booster_title_label: Label = $ContentContainer/CollectionTab/VBox/BoostersCard/HBox/VBoxB/Title
@@ -125,12 +128,43 @@ func _ready() -> void:
 			_refresh_deck_ui()
 		)
 
+	if btn_account != null and account_modal != null:
+		btn_account.pressed.connect(account_modal.open)
+
+	EventBus.profile_loaded.connect(func(_pid: String) -> void:
+		_refresh_account_button()
+		_update_currency_display()
+		_refresh_collection_ui()
+		_refresh_deck_ui()
+	)
+	EventBus.cloud_sync_status_changed.connect(func(_s: String, _m: String) -> void:
+		_refresh_account_button()
+	)
+	EventBus.open_account_modal_requested.connect(func() -> void:
+		if account_modal != null:
+			account_modal.open()
+	)
+
 	_animate_booster_banner()
 	_update_currency_display()
+	_refresh_account_button()
 	_refresh_collection_ui()
 	_refresh_shop_ui()
 	_refresh_deck_ui()
 	switch_tab(&"play")
+
+func _refresh_account_button() -> void:
+	if btn_account == null or SaveManager.current_profile == null:
+		return
+	var prof: RefCounted = SaveManager.current_profile
+	var is_sandbox: bool = SaveManager.is_sandbox_active()
+	var cloud_icon: String = "⚪"
+	if SaveManager.cloud_sync != null and SaveManager.cloud_sync.is_online():
+		cloud_icon = "🟢"
+	if is_sandbox:
+		btn_account.text = "%s 🧪 %s" % [cloud_icon, prof.display_name]
+	else:
+		btn_account.text = "%s 👤 %s" % [cloud_icon, prof.display_name]
 
 func set_last_score(val: int) -> void:
 	last_score = val

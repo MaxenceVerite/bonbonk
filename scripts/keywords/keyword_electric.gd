@@ -13,7 +13,15 @@ extends BallKeyword
 func _init() -> void:
 	id = &"electric"
 	display_name = "Électrique"
-	description = "Propulse des arcs d'éclairs en chaîne et étourdit jusqu'à 3 ennemis."
+	description = "Propulse des arcs d'éclairs en chaîne et étourdit plusieurs ennemis."
+
+func apply_card_scaling(card_def: CandyCardData, lvl: int) -> void:
+	if card_def == null:
+		return
+	zap_damage = card_def.get_damage_for_level(lvl)
+	max_chain_targets = maxi(1, int(roundf(card_def.get_keyword_stat_value(&"chain_targets", lvl, 2.0))))
+	primary_stun_duration = card_def.get_keyword_stat_value(&"stun_duration", lvl, 1.0)
+	secondary_stun_duration = primary_stun_duration * 0.5
 
 func on_hit_enemy(ball: Ball, primary_enemy: Enemy) -> void:
 	if primary_enemy == null or not is_instance_valid(primary_enemy):
@@ -50,12 +58,24 @@ func on_hit_enemy(ball: Ball, primary_enemy: Enemy) -> void:
 		_draw_lightning_bolt(ball, last_pos, chained_enemy.global_position)
 		last_pos = chained_enemy.global_position
 
+static var _bolt_pool: Array[Line2D] = []
+
 func _draw_lightning_bolt(ball: Ball, from: Vector2, to: Vector2) -> void:
-	var bolt: Line2D = Line2D.new()
-	bolt.width = 4.5
-	bolt.default_color = Color(0.7, 1.5, 0.4, 1.0)
-	bolt.top_level = true
-	
+	var bolt: Line2D = null
+	while not _bolt_pool.is_empty():
+		var candidate: Line2D = _bolt_pool.pop_back()
+		if is_instance_valid(candidate):
+			bolt = candidate
+			break
+
+	if bolt == null:
+		bolt = Line2D.new()
+		bolt.width = 4.5
+		bolt.default_color = Color(0.7, 1.5, 0.4, 1.0)
+		bolt.top_level = true
+
+	bolt.modulate.a = 1.0
+
 	var steps: int = 6
 	var points_array: PackedVector2Array = PackedVector2Array()
 	points_array.append(from)
@@ -72,8 +92,14 @@ func _draw_lightning_bolt(ball: Ball, from: Vector2, to: Vector2) -> void:
 	points_array.append(to)
 	bolt.points = points_array
 	
-	ball.get_tree().root.add_child(bolt)
+	if bolt.get_parent() == null:
+		ball.get_tree().root.add_child(bolt)
 	
 	var tween: Tween = bolt.create_tween()
 	tween.tween_property(bolt, "modulate:a", 0.0, 0.18)
-	tween.tween_callback(bolt.queue_free)
+	tween.tween_callback(func() -> void:
+		if bolt != null and is_instance_valid(bolt):
+			if bolt.get_parent() != null:
+				bolt.get_parent().remove_child(bolt)
+			_bolt_pool.append(bolt)
+	)

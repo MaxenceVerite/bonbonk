@@ -32,3 +32,8 @@ func on_attached_enemy_died(ball: Ball, enemy: Enemy) -> void:
 ## Déclenché à chaque frame physique si le mot-clé a un effet continu
 func on_physics_tick(ball: Ball, delta: float) -> void:
 	pass
+
+## Permet d'injecter la configuration de scaling issue d'une CandyCardData selon son niveau
+func apply_card_scaling(card_def: CandyCardData, lvl: int) -> void:
+	pass
+

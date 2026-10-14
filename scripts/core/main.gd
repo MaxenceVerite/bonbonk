@@ -48,6 +48,7 @@ func _ready() -> void:
 	# Signaux TitleScreen & MainMenu
 	title_screen.screen_tapped.connect(show_main_menu)
 	btn_back_to_menu.pressed.connect(show_main_menu)
+
 	
 	# Initialisation du WaveDirector
 	wave_director = WaveDirector.new()

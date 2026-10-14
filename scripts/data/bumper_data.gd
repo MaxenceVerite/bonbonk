@@ -12,6 +12,7 @@ enum TriggerType { ON_HIT, PERIODIC, BOTH }
 @export var sprite_texture: Texture2D
 
 @export var trigger_type: TriggerType = TriggerType.ON_HIT
+@export var effect_strategy: BumperEffect = null
 @export var bounce_force: float = 650.0 # Force de répulsion sur la bille
 @export var attraction_radius: float = 240.0 # Rayon d'attraction vers le bumper
 @export var attraction_strength: float = 480.0
