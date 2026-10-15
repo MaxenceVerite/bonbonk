@@ -61,6 +61,23 @@ func start_game() -> void:
 	set_bumper_slots_placement_mode(false)
 	# Le joueur choisit quand lancer sa première bille en touchant un Pod !
 
+func on_wave_cleared_stability() -> void:
+	is_game_running = false
+	# Fait exploser en cascade toutes les billes actives restantes sur le terrain
+	for b in active_balls:
+		if is_instance_valid(b) and not b.is_queued_for_deletion():
+			b.shatter()
+	active_balls.clear()
+	
+	# Remise au repos des batteurs
+	if left_gate != null:
+		left_gate.deactivate()
+	if right_gate != null:
+		right_gate.deactivate()
+
+func resume_for_next_wave() -> void:
+	is_game_running = true
+
 func reset_board() -> void:
 	is_game_running = false
 	_spawn_timer = 0.0
@@ -153,6 +170,8 @@ func get_ball_scene_for_type(ball_type: StringName) -> PackedScene:
 			return mentox_ball_scene if mentox_ball_scene != null else ball_scene
 		&"jawbreaker":
 			return jawbreaker_ball_scene if jawbreaker_ball_scene != null else ball_scene
+		&"cherry":
+			return ball_scene
 		_:
 			return ball_scene
 
@@ -204,6 +223,12 @@ func _on_ball_split_requested(sub_types: Array[StringName], spawn_pos: Vector2, 
 func _apply_card_stats_to_ball(ball: Ball, ball_type: StringName) -> void:
 	if ball == null:
 		return
+	ball.ball_id = ball_type
+
+	# Application des couleurs du bonbon pour cohérence parfaite avec les Pods
+	var pal: Dictionary = CardCatalog.get_candy_palette(ball_type)
+	ball.apply_skin(pal.color, pal.core, pal.ring)
+
 	var card_state: Dictionary = SaveManager.get_card_state(ball_type)
 	if card_state.is_empty():
 		return

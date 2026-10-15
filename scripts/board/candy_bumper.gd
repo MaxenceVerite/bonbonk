@@ -22,6 +22,7 @@ var _spin_boost: float = 1.0
 
 func _ready() -> void:
 	z_index = 10
+	add_to_group(&"bumpers")
 	if sprite != null:
 		_original_scale = sprite.scale
 	update_visuals()
@@ -118,6 +119,9 @@ func _trigger_dragon_breath() -> void:
 		3.5,
 		1
 	)
+
+func play_jiggle() -> void:
+	_play_jiggle_animation()
 
 func _play_jiggle_animation() -> void:
 	if _is_jiggling:

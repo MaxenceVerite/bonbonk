@@ -48,6 +48,8 @@ var _current_move_speed: float = 50.0
 
 # Stratégie de déplacement modulaire (Strategy Pattern)
 var movement_strategy: EnemyMovementStrategy = null
+# Préférence organique de contournement d'obstacles (-1.0 = gauche, 1.0 = droite)
+var bypass_bias: float = 0.0
 
 func attach_caramel_ball(caramel_ball: Node2D, speed_multiplier: float = 0.35) -> void:
 	if _is_dying or _is_expelled:
@@ -92,6 +94,7 @@ func _ready() -> void:
 		_current_move_speed = enemy_data.get_speed_from_tier()
 	health_component.died.connect(_on_died)
 	_time_alive = randf_range(0.0, 5.0)
+	bypass_bias = -1.0 if randf() < 0.5 else 1.0
 	_init_movement_strategy()
 
 func _init_movement_strategy() -> void:
@@ -103,6 +106,50 @@ func _init_movement_strategy() -> void:
 			movement_strategy = DiagonalHopStrategy.new()
 		_:
 			movement_strategy = WalkStraightStrategy.new()
+
+func _compute_bumper_avoidance(current_dir: Vector2, speed: float) -> Vector2:
+	var tree: SceneTree = get_tree()
+	if tree == null:
+		return Vector2.ZERO
+	var bumpers: Array[Node] = tree.get_nodes_in_group(&"bumpers")
+	if bumpers.is_empty():
+		return Vector2.ZERO
+
+	var avoid_force: Vector2 = Vector2.ZERO
+	var my_pos: Vector2 = global_position
+	var lookahead_dist: float = 135.0
+	var bumper_safe_radius: float = 78.0
+
+	for node in bumpers:
+		var bumper: Node2D = node as Node2D
+		if bumper == null or not is_instance_valid(bumper):
+			continue
+
+		var to_bumper: Vector2 = bumper.global_position - my_pos
+		# Le bumper doit être situé devant l'ennemi (vers le bas)
+		if to_bumper.y <= 0.0 or to_bumper.y > lookahead_dist:
+			continue
+
+		var dist: float = to_bumper.length()
+		var lateral_offset: float = to_bumper.x
+
+		# Si le bumper se dresse dans le couloir de descente
+		if absf(lateral_offset) < bumper_safe_radius:
+			# Décision organique : contourner selon son biais préférentiel (gauche ou droite)
+			var chosen_dir_x: float = bypass_bias
+			if my_pos.x < 110.0:
+				# Trop proche du mur gauche -> sécurise vers la droite
+				chosen_dir_x = 1.0
+			elif my_pos.x > 490.0:
+				# Trop proche du mur droit -> sécurise vers la gauche
+				chosen_dir_x = -1.0
+
+			var proximity: float = 1.0 - (dist / lookahead_dist)
+			var steer_strength: float = proximity * speed * 2.5
+			avoid_force.x += chosen_dir_x * steer_strength
+			avoid_force.y -= proximity * speed * 0.35
+			break # Évite en priorité l'obstacle le plus imminent
+	return avoid_force
 
 func _physics_process(delta: float) -> void:
 	# Trajectoire balistique en cloche hors de l'arène (Expulsion)
@@ -161,6 +208,9 @@ func _physics_process(delta: float) -> void:
 		effective_speed = _current_move_speed * slow_factor
 		if movement_strategy != null:
 			walk_velocity = movement_strategy.compute_velocity(self, delta, effective_speed, Vector2(_target_door_x, target_door_y))
+			var avoidance: Vector2 = _compute_bumper_avoidance(walk_velocity, effective_speed)
+			if avoidance != Vector2.ZERO:
+				walk_velocity = (walk_velocity + avoidance).normalized() * effective_speed
 
 	# 2. Gestion knockback & Projection par le flipper
 	if _knockback_velocity.length() > 5.0:
@@ -191,6 +241,18 @@ func _physics_process(delta: float) -> void:
 		# Collision avec la bille : résolution gérée par le RigidBody2D de la Ball (_on_body_entered)
 		if collider is Ball:
 			pass
+
+		# Collision avec un Bumper : glissement fluide le long du cercle ou rebond si projeté
+		elif collider is CandyBumper:
+			var collision_normal: Vector2 = collision.get_normal()
+			if _is_projected_by_gate:
+				_knockback_velocity = _knockback_velocity.bounce(collision_normal) * 0.75
+				var bumper_obj: CandyBumper = collider as CandyBumper
+				if bumper_obj != null:
+					bumper_obj.play_jiggle()
+			else:
+				var slide_vel: Vector2 = velocity.slide(collision_normal)
+				move_and_collide(slide_vel * delta)
 
 		# Collision avec la porte / batteur en chocolat
 		elif collider is WoodenGateFlipper:

@@ -210,6 +210,12 @@ static func get_candy_palette(b_type: StringName) -> Dictionary:
 				"core": Color(1.0, 0.82, 0.25, 1.0),
 				"ring": Color(0.85, 0.2, 0.45, 0.9)
 			}
+		&"cherry":
+			return {
+				"color": Color(0.94, 0.12, 0.25, 1.0),
+				"core": Color(1.0, 0.45, 0.55, 1.0),
+				"ring": Color(0.60, 0.05, 0.15, 0.9)
+			}
 		_:
 			return {
 				"color": Color(1.0, 0.28, 0.48, 1.0),

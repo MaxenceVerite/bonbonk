@@ -91,15 +91,24 @@ func set_factory_state(_types_queue: Array[StringName], synthesizing: bool, next
 
 	queue_redraw()
 
+var _last_launch_time: float = -999.0
+
 func _on_pod_input(pod_index: int, event: InputEvent) -> void:
 	var is_press: bool = false
-	if event is InputEventScreenTouch and event.pressed:
-		is_press = true
-	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		is_press = true
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			is_press = true
+		accept_event()
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			is_press = true
+		accept_event()
 
 	if is_press:
-		_trigger_pod_launch(pod_index)
+		var now: float = float(Time.get_ticks_msec()) / 1000.0
+		if (now - _last_launch_time) >= 0.22:
+			_last_launch_time = now
+			_trigger_pod_launch(pod_index)
 
 func _trigger_pod_launch(pod_index: int) -> void:
 	if pod_index < 0 or pod_index >= pod_slots.size():
