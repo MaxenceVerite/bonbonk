@@ -68,7 +68,7 @@ static func get_default_catalog() -> Array[ShopItemData]:
 	it_card_caramel.display_name = "x5 Bille Caramel"
 	it_card_caramel.description = "Ralentit les bonbons adverses"
 	it_card_caramel.category = ShopItemData.Category.CARDS_DAILY
-	it_card_caramel.icon_texture = load("res://assets/ui/icon_ball_caramel.png")
+	it_card_caramel.icon_texture = CandyTextureHelper.load_texture("res://assets/ui/cards/sticky_caramel_ball_sprite.png")
 	it_card_caramel.gold_price = 150
 	it_card_caramel.diamond_price = 10
 	it_card_caramel.reward_payload = {
@@ -78,20 +78,20 @@ static func get_default_catalog() -> Array[ShopItemData]:
 	}
 	catalog.append(it_card_caramel)
 
-	var it_card_cherry: ShopItemData = ShopItemData.new()
-	it_card_cherry.id = &"daily_cherry_3"
-	it_card_cherry.display_name = "x3 Cerise Pop"
-	it_card_cherry.description = "Cartes Épiques explosives !"
-	it_card_cherry.category = ShopItemData.Category.CARDS_DAILY
-	it_card_cherry.icon_texture = load("res://assets/ui/icon_ball_locked.png")
-	it_card_cherry.gold_price = 300
-	it_card_cherry.diamond_price = 25
-	it_card_cherry.reward_payload = {
+	var it_card_fizz: ShopItemData = ShopItemData.new()
+	it_card_fizz.id = &"daily_fizz_5"
+	it_card_fizz.display_name = "x5 Fizzball"
+	it_card_fizz.description = "Billes survoltées à cadence ultra-rapide !"
+	it_card_fizz.category = ShopItemData.Category.CARDS_DAILY
+	it_card_fizz.icon_texture = CandyTextureHelper.load_texture("res://assets/ui/cards/fizzball_ball_sprite.png")
+	it_card_fizz.gold_price = 200
+	it_card_fizz.diamond_price = 15
+	it_card_fizz.reward_payload = {
 		"type": "cards",
-		"card_id": &"cherry",
-		"count": 3
+		"card_id": &"fizz",
+		"count": 5
 	}
-	catalog.append(it_card_cherry)
+	catalog.append(it_card_fizz)
 
 	# 3. Monnaies & Trésorerie
 	var it_gold_pouch: ShopItemData = ShopItemData.new()

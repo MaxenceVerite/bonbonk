@@ -11,7 +11,7 @@ signal durability_changed(current: int, max_val: int)
 signal ball_shattered
 signal split_requested(ball_types: Array[StringName], spawn_pos: Vector2, directions: Array[Vector2], speed: float)
 
-@export var ball_id: StringName = &"standard"
+@export var ball_id: StringName = &"fizz"
 @export var impact_damage: int = 1
 @export var max_durability: int = 3
 @export var max_linear_velocity: float = 2400.0

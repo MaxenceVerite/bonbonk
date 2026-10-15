@@ -81,7 +81,7 @@ func _fragment_and_split() -> void:
 		if b != &"jawbreaker":
 			candidate_pool.append(b)
 	if candidate_pool.is_empty():
-		candidate_pool.append(&"standard")
+		candidate_pool.append(&"fizz")
 
 	var normal_dir: Vector2 = base_velocity.normalized().orthogonal()
 	var dirs: Array[Vector2] = [

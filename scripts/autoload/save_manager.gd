@@ -426,7 +426,7 @@ func purchase_item(item: ShopItemData, use_diamonds: bool) -> bool:
 			b.icon_texture = item.icon_texture
 			available_boosters.append(b)
 		"cards":
-			var cid: StringName = payload.get("card_id", &"standard")
+			var cid: StringName = payload.get("card_id", &"fizz")
 			var count: int = payload.get("count", 1)
 			if not cards_inventory.has(cid):
 				cards_inventory[cid] = { "unlocked": true, "level": 1, "cards": count }
@@ -462,8 +462,11 @@ func apply_booster_rewards(result: Dictionary) -> void:
 func _validate_decks() -> void:
 	for i in range(decks.size()):
 		var d: Array = decks[i]
+		for j in range(d.size()):
+			if d[j] == &"standard" or d[j] == &"cherry" or d[j] == &"mint":
+				d[j] = &"fizz"
 		while d.size() < 6:
-			d.append(&"standard")
+			d.append(&"fizz")
 		if d.size() > 6:
 			d.resize(6)
 
@@ -495,7 +498,7 @@ func get_active_deck_balls() -> Array[StringName]:
 		if c_def != null and c_def.card_type == CandyCardData.CardType.BALL:
 			balls.append(c_id)
 	if balls.is_empty():
-		balls.append(&"standard")
+		balls.append(&"fizz")
 	return balls
 
 func get_active_deck_bumpers() -> Array[StringName]:

@@ -1,29 +1,11 @@
 class_name CardCatalog
 extends RefCounted
 
-const CandyTextureHelper = preload("res://scripts/core/candy_texture_helper.gd")
-
 ## Répertoire centralisé et définitions des cartes de bonbons (Balles & Bumpers).
 ## Isole la configuration des cartes pour alléger SaveManager.
 
 static func get_default_definitions() -> Dictionary:
 	var defs: Dictionary = {}
-
-	# Bille Sucrée (Standard)
-	var std_card: CandyCardData = CandyCardData.new()
-	std_card.id = &"standard"
-	std_card.display_name = "Bille Sucrée"
-	std_card.subtitle = "Classique & Gourmande"
-	std_card.description = "Une bille équilibrée et croustillante, parfaite pour éliminer les premiers bonbons."
-	std_card.rarity = CandyCardData.Rarity.COMMON
-	std_card.base_damage = 1
-	std_card.damage_per_level = 0.35
-	std_card.base_magnetism = 380.0
-	std_card.magnetism_per_level = 35.0
-	std_card.base_bounce = 1.0
-	std_card.bounce_per_level = 0.03
-	std_card.icon_texture = load("res://assets/ui/icon_ball_standard.png")
-	defs[&"standard"] = std_card
 
 	# Fizzball
 	var fizz_card: CandyCardData = CandyCardData.new()
@@ -42,7 +24,7 @@ static func get_default_definitions() -> Dictionary:
 		{ "id": &"chain_targets", "name": "Cibles foudroyées", "icon": "⚡", "base": 2.0, "step": 0.4, "format": "int", "unit": " cibles" },
 		{ "id": &"stun_duration", "name": "Durée étourdissement", "icon": "💫", "base": 1.0, "step": 0.15, "format": "duration" }
 	]
-	fizz_card.icon_texture = load("res://assets/ui/icon_ball_fizz.png")
+	fizz_card.icon_texture = CandyTextureHelper.load_texture("res://assets/ui/cards/fizzball_ball_sprite.png")
 	defs[&"fizz"] = fizz_card
 
 	# Bille Caramel (Collante & Gluante)
@@ -61,27 +43,8 @@ static func get_default_definitions() -> Dictionary:
 	caramel_card.keyword_stats = [
 		{ "id": &"slow_power", "name": "Ralentissement", "icon": "🍯", "base": 0.65, "step": 0.04, "format": "percent" }
 	]
-	caramel_card.icon_texture = load("res://assets/ui/icon_ball_caramel.png")
+	caramel_card.icon_texture = CandyTextureHelper.load_texture("res://assets/ui/cards/sticky_caramel_ball_sprite.png")
 	defs[&"caramel"] = caramel_card
-
-	# Bonbon Cerise Pop Explosif
-	var cherry_card: CandyCardData = CandyCardData.new()
-	cherry_card.id = &"cherry"
-	cherry_card.display_name = "Cerise Pop"
-	cherry_card.subtitle = "Déflagration Fruitée"
-	cherry_card.description = "Provoque une violente explosion fruitée dévastatrice lors des rebonds appuyés."
-	cherry_card.rarity = CandyCardData.Rarity.EPIC
-	cherry_card.base_damage = 2
-	cherry_card.damage_per_level = 0.5
-	cherry_card.base_magnetism = 310.0
-	cherry_card.magnetism_per_level = 25.0
-	cherry_card.base_bounce = 1.20
-	cherry_card.bounce_per_level = 0.05
-	cherry_card.keyword_stats = [
-		{ "id": &"explosion_radius", "name": "Rayon d'explosion", "icon": "💥", "base": 120.0, "step": 15.0, "format": "int", "unit": "px" }
-	]
-	cherry_card.icon_texture = load("res://assets/ui/icon_ball_fizz.png")
-	defs[&"cherry"] = cherry_card
 
 	# Mentox Givrée (Inspiration bonbon Menthise)
 	var mentox_card: CandyCardData = CandyCardData.new()
@@ -99,11 +62,10 @@ static func get_default_definitions() -> Dictionary:
 	mentox_card.keyword_stats = [
 		{ "id": &"freeze_duration", "name": "Durée de gel", "icon": "❄️", "base": 1.8, "step": 0.25, "format": "duration" }
 	]
-	mentox_card.icon_texture = load("res://assets/ui/icon_ball_standard.png")
+	mentox_card.icon_texture = CandyTextureHelper.load_texture("res://assets/ui/cards/mentox_givre_ball_sprite.png")
 	defs[&"mentox"] = mentox_card
-	defs[&"mint"] = mentox_card
 
-	# Casse-bonbon (Inspiration Jawbreaker)
+	# Casse-bonbon (Inspiration Jawbreaker / Joybreaker)
 	var jaw_card: CandyCardData = CandyCardData.new()
 	jaw_card.id = &"jawbreaker"
 	jaw_card.display_name = "Casse-bonbon"
@@ -119,7 +81,7 @@ static func get_default_definitions() -> Dictionary:
 	jaw_card.keyword_stats = [
 		{ "id": &"split_count", "name": "Sous-bonbons projetés", "icon": "🍬", "base": 2.0, "step": 0.35, "format": "int", "unit": " bonbons" }
 	]
-	jaw_card.icon_texture = load("res://assets/ui/icon_ball_caramel.png")
+	jaw_card.icon_texture = CandyTextureHelper.load_texture("res://assets/ui/cards/joybreaker_ball_sprite.png")
 	defs[&"jawbreaker"] = jaw_card
 
 	# Dragiburst (Bumper Dragon Flamboyant)
@@ -140,10 +102,10 @@ static func get_default_definitions() -> Dictionary:
 		{ "id": &"burst_radius", "name": "Rayon du souffle", "icon": "🔥", "base": 240.0, "step": 20.0, "format": "int", "unit": "px" },
 		{ "id": &"burn_duration", "name": "Durée brûlure", "icon": "⏳", "base": 3.0, "step": 0.4, "format": "float", "unit": "s" }
 	]
-	dragi_card.icon_texture = _load_dragiburst_icon()
+	dragi_card.icon_texture = CandyTextureHelper.load_texture("res://assets/ui/cards/dragiburst_bumper_sprite.png")
 	defs[&"dragiburst"] = dragi_card
 
-	# Twistypop (Bumper Légendaire Sucette Tournoyante)
+	# Twistypop (Bumper Sucette Tournoyante)
 	var twisty_card: CandyCardData = CandyCardData.new()
 	twisty_card.id = &"twistypop"
 	twisty_card.display_name = "Twistypop"
@@ -160,16 +122,30 @@ static func get_default_definitions() -> Dictionary:
 	twisty_card.keyword_stats = [
 		{ "id": &"shard_count", "name": "Éclats traqueurs", "icon": "✨", "base": 2.0, "step": 2.0, "format": "int", "unit": "" }
 	]
-	twisty_card.icon_texture = _load_twistypop_icon()
+	twisty_card.icon_texture = CandyTextureHelper.load_texture("res://assets/ui/cards/lolipop_burster_sprite.png")
 	defs[&"twistypop"] = twisty_card
 
+	# Soucoupe Piquante (Bumper Anti-Gravité / Flying Saucer)
+	var saucer_card: CandyCardData = CandyCardData.new()
+	saucer_card.id = &"flying_saucer"
+	saucer_card.display_name = "Soucoupe Piquante"
+	saucer_card.subtitle = "Bumper Anti-Gravité"
+	saucer_card.description = "Soucoupe en bonbon acide ! Propulse violemment la bille vers le haut et électrocute les ennemis proches."
+	saucer_card.rarity = CandyCardData.Rarity.EPIC
+	saucer_card.card_type = CandyCardData.CardType.BUMPER
+	saucer_card.base_damage = 2
+	saucer_card.damage_per_level = 0.4
+	saucer_card.base_magnetism = 0.0
+	saucer_card.magnetism_per_level = 0.0
+	saucer_card.base_bounce = 1.40
+	saucer_card.bounce_per_level = 0.04
+	saucer_card.keyword_stats = [
+		{ "id": &"zap_range", "name": "Rayon électrique", "icon": "⚡", "base": 200.0, "step": 20.0, "format": "int", "unit": "px" }
+	]
+	saucer_card.icon_texture = CandyTextureHelper.load_texture("res://assets/ui/cards/flying_saucer_bumper_sprite.png")
+	defs[&"flying_saucer"] = saucer_card
+
 	return defs
-
-static func _load_dragiburst_icon() -> Texture2D:
-	return CandyTextureHelper.load_texture("res://assets/ui/icon_bumper_dragibump.png")
-
-static func _load_twistypop_icon() -> Texture2D:
-	return CandyTextureHelper.load_texture("res://assets/ui/icon_bumper_twistypop.png")
 
 ## Palette de couleurs standardisée des bonbons (partagée entre Gameplay et UI)
 static func get_candy_palette(b_type: StringName) -> Dictionary:
@@ -186,6 +162,12 @@ static func get_candy_palette(b_type: StringName) -> Dictionary:
 				"core": Color(1.0, 0.88, 0.35, 1.0),
 				"ring": Color(0.65, 0.08, 0.12, 0.9)
 			}
+		&"flying_saucer":
+			return {
+				"color": Color(0.85, 0.45, 0.95, 1.0),
+				"core": Color(1.0, 0.92, 0.35, 1.0),
+				"ring": Color(0.45, 0.15, 0.75, 0.9)
+			}
 		&"fizz":
 			return {
 				"color": Color(0.20, 0.96, 0.76, 1.0),
@@ -198,7 +180,7 @@ static func get_candy_palette(b_type: StringName) -> Dictionary:
 				"core": Color(1.0, 0.82, 0.35, 1.0),
 				"ring": Color(0.65, 0.32, 0.08, 0.9)
 			}
-		&"mentox", &"mint":
+		&"mentox":
 			return {
 				"color": Color(0.92, 0.98, 1.0, 1.0),
 				"core": Color(0.55, 0.88, 0.98, 1.0),
@@ -210,16 +192,10 @@ static func get_candy_palette(b_type: StringName) -> Dictionary:
 				"core": Color(1.0, 0.82, 0.25, 1.0),
 				"ring": Color(0.85, 0.2, 0.45, 0.9)
 			}
-		&"cherry":
-			return {
-				"color": Color(0.94, 0.12, 0.25, 1.0),
-				"core": Color(1.0, 0.45, 0.55, 1.0),
-				"ring": Color(0.60, 0.05, 0.15, 0.9)
-			}
 		_:
 			return {
-				"color": Color(1.0, 0.28, 0.48, 1.0),
-				"core": Color(1.0, 0.65, 0.78, 1.0),
-				"ring": Color(0.72, 0.12, 0.28, 0.9)
+				"color": Color(0.20, 0.96, 0.76, 1.0),
+				"core": Color(0.88, 1.0, 0.38, 1.0),
+				"ring": Color(0.10, 0.52, 0.42, 0.9)
 			}
 

@@ -14,7 +14,7 @@ var synthesis_duration: float = 2.4
 var pod_slots: Array[StringName] = [&"", &""]
 var reserve_queue: Array[StringName] = []
 
-var next_synthesis_type: StringName = &"standard"
+var next_synthesis_type: StringName = &"fizz"
 var is_synthesizing: bool = false
 var synthesis_timer: float = 0.0
 
@@ -37,7 +37,7 @@ func initialize(_capacity: int = 5, duration: float = 2.4) -> void:
 func reset(deck_types: Array[StringName]) -> void:
 	_active_deck_types = deck_types.duplicate()
 	if _active_deck_types.is_empty():
-		_active_deck_types.append(&"standard")
+		_active_deck_types.append(&"fizz")
 
 	pod_slots = [&"", &""]
 	reserve_queue.clear()
@@ -129,11 +129,11 @@ func _deposit_synthesized_ball(ball_type: StringName) -> void:
 
 func _pick_next_synthesis() -> void:
 	if _active_deck_types.is_empty():
-		next_synthesis_type = &"standard"
+		next_synthesis_type = &"fizz"
 	else:
 		next_synthesis_type = _active_deck_types[randi() % _active_deck_types.size()]
 
 func _pick_random_deck_ball() -> StringName:
 	if _active_deck_types.is_empty():
-		return &"standard"
+		return &"fizz"
 	return _active_deck_types[randi() % _active_deck_types.size()]

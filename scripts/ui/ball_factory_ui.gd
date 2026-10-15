@@ -19,7 +19,7 @@ var _tex_machine_cap: Texture2D = preload("res://assets/ui/candy_machine_cap.png
 var reserve_balls: Array[StringName] = []
 var pod_slots: Array[StringName] = [&"", &""]
 var is_synthesizing: bool = false
-var next_synthesis_type: StringName = &"standard"
+var next_synthesis_type: StringName = &"fizz"
 var synthesis_progress: float = 0.0 # 0.0 à 1.0
 var drum_rotation_angle: float = 0.0
 var _pulse_timer: float = 0.0
@@ -311,7 +311,7 @@ func _draw_candy_ball(pos: Vector2, radius: float, b_type: StringName, alpha: fl
 	elif b_type == &"caramel":
 		draw_circle(pos, radius * 0.28, Color(0.65, 0.3, 0.05, 0.95 * alpha))
 		draw_circle(pos + Vector2(-1, -1), radius * 0.12, Color(1.0, 0.95, 0.7, 0.95 * alpha))
-	elif b_type == &"mentox" or b_type == &"mint":
+	elif b_type == &"mentox":
 		draw_line(pos + Vector2(-5.0, 0.0), pos + Vector2(5.0, 0.0), Color(0.2, 0.65, 0.88, 0.95 * alpha), 2.0)
 		draw_line(pos + Vector2(0.0, -5.0), pos + Vector2(0.0, 5.0), Color(0.2, 0.65, 0.88, 0.95 * alpha), 2.0)
 	elif b_type == &"jawbreaker":

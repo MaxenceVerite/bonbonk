@@ -6,10 +6,10 @@ extends Resource
 enum Rarity { COMMON, RARE, EPIC, LEGENDARY }
 enum CardType { BALL, BUMPER }
 
-@export var id: StringName = &"standard"
-@export var display_name: String = "Bille Sucrée"
-@export var subtitle: String = "Classique & Croustillante"
-@export var description: String = "Une bille équilibrée et croustillante, parfaite pour débuter."
+@export var id: StringName = &"fizz"
+@export var display_name: String = "Fizzball"
+@export var subtitle: String = "Pétillante & Électrisante"
+@export var description: String = "Une bille pétillante qui fend les airs à toute vitesse."
 @export var rarity: Rarity = Rarity.COMMON
 @export var card_type: CardType = CardType.BALL
 @export var icon_texture: Texture2D

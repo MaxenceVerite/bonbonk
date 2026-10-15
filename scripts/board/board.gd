@@ -166,12 +166,10 @@ func get_ball_scene_for_type(ball_type: StringName) -> PackedScene:
 			return fizzball_scene if fizzball_scene != null else ball_scene
 		&"caramel":
 			return caramel_ball_scene if caramel_ball_scene != null else ball_scene
-		&"mentox", &"mint":
+		&"mentox":
 			return mentox_ball_scene if mentox_ball_scene != null else ball_scene
 		&"jawbreaker":
 			return jawbreaker_ball_scene if jawbreaker_ball_scene != null else ball_scene
-		&"cherry":
-			return ball_scene
 		_:
 			return ball_scene
 

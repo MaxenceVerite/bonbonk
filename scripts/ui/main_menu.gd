@@ -402,7 +402,7 @@ func _create_shop_item_card(item: ShopItemData) -> Control:
 	icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.texture = item.icon_texture if item.icon_texture != null else load("res://assets/ui/icon_ball_standard.png")
+	icon.texture = item.icon_texture if item.icon_texture != null else CandyTextureHelper.load_texture("res://assets/ui/cards/fizzball_ball_sprite.png")
 	vb.add_child(icon)
 
 	# Nom

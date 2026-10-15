@@ -110,22 +110,30 @@ func _apply_migrations() -> void:
 			burst_data["unlocked"] = burst_data.get("unlocked", false) or old_data.get("unlocked", false)
 		cards_inventory.erase(&"dragibump")
 
-	# Remplacer toute occurrence de dragibump dans les decks par dragiburst
+	# 2. Nettoyage des cartes obsolètes supprimées (standard, cherry, mint)
+	cards_inventory.erase(&"standard")
+	cards_inventory.erase(&"cherry")
+	cards_inventory.erase(&"mint")
+
+	# Remplacer toute occurrence d'anciennes cartes dans les decks
 	for d in decks:
 		for i in range(d.size()):
 			if d[i] == &"dragibump":
 				d[i] = &"dragiburst"
+			elif d[i] == &"mint":
+				d[i] = &"mentox"
+			elif d[i] == &"standard" or d[i] == &"cherry":
+				d[i] = &"fizz"
 
-	# 2. S'assurer que les cartes obligatoires existent
+	# 3. S'assurer que les cartes obligatoires du catalogue existent
 	var required_defaults: Dictionary = {
-		&"standard":   { "unlocked": true,  "level": 1, "cards": 3 },
-		&"fizz":       { "unlocked": true,  "level": 1, "cards": 1 },
-		&"caramel":    { "unlocked": true,  "level": 1, "cards": 2 },
-		&"cherry":     { "unlocked": false, "level": 1, "cards": 0 },
-		&"mentox":     { "unlocked": true,  "level": 1, "cards": 2 },
-		&"jawbreaker": { "unlocked": false, "level": 1, "cards": 0 },
-		&"dragiburst": { "unlocked": true,  "level": 1, "cards": 2 },
-		&"twistypop":  { "unlocked": true,  "level": 1, "cards": 2 },
+		&"fizz":          { "unlocked": true,  "level": 1, "cards": 3 },
+		&"caramel":       { "unlocked": true,  "level": 1, "cards": 2 },
+		&"mentox":        { "unlocked": true,  "level": 1, "cards": 2 },
+		&"jawbreaker":    { "unlocked": false, "level": 1, "cards": 0 },
+		&"dragiburst":    { "unlocked": true,  "level": 1, "cards": 2 },
+		&"twistypop":     { "unlocked": true,  "level": 1, "cards": 2 },
+		&"flying_saucer": { "unlocked": false, "level": 1, "cards": 0 },
 	}
 	for cid in required_defaults:
 		if not cards_inventory.has(cid):
@@ -133,11 +141,11 @@ func _apply_migrations() -> void:
 
 	# S'assurer de 3 decks valides
 	while decks.size() < 3:
-		decks.append([&"standard", &"fizz", &"caramel", &"standard", &"twistypop", &"dragiburst"])
+		decks.append([&"fizz", &"caramel", &"mentox", &"fizz", &"twistypop", &"dragiburst"])
 	for i in range(decks.size()):
 		var d: Array = decks[i]
 		while d.size() < 6:
-			d.append(&"standard")
+			d.append(&"fizz")
 		if d.size() > 6:
 			d.resize(6)
 
@@ -151,19 +159,18 @@ static func create_default(p_id: String, is_sandbox: bool = false) -> RefCounted
 		profile.gold = 99999
 		profile.diamonds = 5000
 		profile.cards_inventory = {
-			&"standard":   { "unlocked": true, "level": 5, "cards": 50 },
-			&"fizz":       { "unlocked": true, "level": 5, "cards": 50 },
-			&"caramel":    { "unlocked": true, "level": 5, "cards": 50 },
-			&"cherry":     { "unlocked": true, "level": 5, "cards": 50 },
-			&"mentox":     { "unlocked": true, "level": 5, "cards": 50 },
-			&"jawbreaker": { "unlocked": true, "level": 5, "cards": 50 },
-			&"dragiburst": { "unlocked": true, "level": 5, "cards": 50 },
-			&"twistypop":  { "unlocked": true, "level": 5, "cards": 50 },
+			&"fizz":          { "unlocked": true, "level": 5, "cards": 50 },
+			&"caramel":       { "unlocked": true, "level": 5, "cards": 50 },
+			&"mentox":        { "unlocked": true, "level": 5, "cards": 50 },
+			&"jawbreaker":    { "unlocked": true, "level": 5, "cards": 50 },
+			&"dragiburst":    { "unlocked": true, "level": 5, "cards": 50 },
+			&"twistypop":     { "unlocked": true, "level": 5, "cards": 50 },
+			&"flying_saucer": { "unlocked": true, "level": 5, "cards": 50 },
 		}
 		profile.decks = [
-			[&"jawbreaker", &"mentox", &"fizz", &"twistypop", &"dragiburst", &"standard"],
-			[&"jawbreaker", &"jawbreaker", &"mentox", &"fizz", &"dragiburst", &"twistypop"],
-			[&"standard", &"fizz", &"caramel", &"dragiburst", &"mentox", &"twistypop"]
+			[&"jawbreaker", &"mentox", &"fizz", &"twistypop", &"dragiburst", &"flying_saucer"],
+			[&"jawbreaker", &"caramel", &"mentox", &"fizz", &"dragiburst", &"twistypop"],
+			[&"flying_saucer", &"fizz", &"caramel", &"dragiburst", &"mentox", &"twistypop"]
 		]
 	else:
 		profile.display_name = "Gourmand"
@@ -171,19 +178,18 @@ static func create_default(p_id: String, is_sandbox: bool = false) -> RefCounted
 		profile.gold = 250
 		profile.diamonds = 30
 		profile.cards_inventory = {
-			&"standard":   { "unlocked": true,  "level": 1, "cards": 3 },
-			&"fizz":       { "unlocked": true,  "level": 1, "cards": 1 },
-			&"caramel":    { "unlocked": true,  "level": 1, "cards": 2 },
-			&"cherry":     { "unlocked": false, "level": 1, "cards": 0 },
-			&"mentox":     { "unlocked": true,  "level": 1, "cards": 2 },
-			&"jawbreaker": { "unlocked": false, "level": 1, "cards": 0 },
-			&"dragiburst": { "unlocked": true,  "level": 1, "cards": 2 },
-			&"twistypop":  { "unlocked": true,  "level": 1, "cards": 2 },
+			&"fizz":          { "unlocked": true,  "level": 1, "cards": 3 },
+			&"caramel":       { "unlocked": true,  "level": 1, "cards": 2 },
+			&"mentox":        { "unlocked": true,  "level": 1, "cards": 2 },
+			&"jawbreaker":    { "unlocked": false, "level": 1, "cards": 0 },
+			&"dragiburst":    { "unlocked": true,  "level": 1, "cards": 2 },
+			&"twistypop":     { "unlocked": true,  "level": 1, "cards": 2 },
+			&"flying_saucer": { "unlocked": false, "level": 1, "cards": 0 },
 		}
 		profile.decks = [
-			[&"standard", &"fizz", &"twistypop", &"standard", &"fizz", &"dragiburst"],
-			[&"standard", &"caramel", &"twistypop", &"dragiburst", &"standard", &"standard"],
-			[&"fizz", &"fizz", &"caramel", &"dragiburst", &"twistypop", &"caramel"]
+			[&"fizz", &"caramel", &"twistypop", &"mentox", &"fizz", &"dragiburst"],
+			[&"fizz", &"caramel", &"twistypop", &"dragiburst", &"mentox", &"caramel"],
+			[&"fizz", &"fizz", &"caramel", &"dragiburst", &"twistypop", &"mentox"]
 		]
 
 	# Boosters de bienvenue
