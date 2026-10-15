@@ -63,9 +63,10 @@ func _ready() -> void:
 	if bumper_placement_overlay != null:
 		bumper_placement_overlay.placement_completed.connect(_on_bumper_placement_completed)
 	
-	# Liaison Fabrique & Tube
+	# Liaison Fabrique, Tube & Dual-Pods
 	if board != null and ball_factory_ui != null:
 		board.factory_state_changed.connect(ball_factory_ui.set_factory_state)
+		ball_factory_ui.pod_launch_requested.connect(board.launch_ball_from_pod)
 		
 	# Démarrage au TitleScreen
 	show_title_screen()
@@ -162,10 +163,6 @@ func _on_next_wave_pressed() -> void:
 	current_wave += 1
 	_update_wave_display()
 	
-	# Réinjection d'une balle si nécessaire et départ de la manche suivante
-	if board != null and (board.active_ball == null or not is_instance_valid(board.active_ball)):
-		board.feed_next_ball_from_tube()
-		
 	if wave_director != null:
 		wave_director.start_wave(current_wave)
 

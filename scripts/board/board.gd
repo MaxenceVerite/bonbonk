@@ -25,13 +25,20 @@ extends Node2D
 @onready var bumper_container: Node2D = $BumperContainer
 @onready var bumper_slot_container: Node2D = $BumperSlotContainer
 
-var active_ball: Ball = null
+var active_balls: Array[Ball] = []
+var active_ball: Ball:
+	get:
+		for b in active_balls:
+			if is_instance_valid(b) and not b.is_queued_for_deletion():
+				return b
+		return null
+
 var _spawn_timer: float = 0.0
 @export var enemy_spawn_interval: float = 3.5
 
 # --- SYSTÈME DE FABRIQUE & TUBE DE MUNITIONS ---
 @export var max_tube_capacity: int = 5
-@export var synthesis_time_seconds: float = 2.8
+@export var synthesis_time_seconds: float = 2.4
 
 var ball_tube: BallTubeController = BallTubeController.new()
 
@@ -40,30 +47,29 @@ var tube_ball_queue: Array[StringName]:
 	get:
 		return ball_tube.queue if ball_tube != null else []
 
-signal factory_state_changed(types_queue: Array[StringName], is_synthesizing: bool, next_type: StringName, progress: float)
+signal factory_state_changed(types_queue: Array[StringName], is_synthesizing: bool, next_type: StringName, progress: float, pod_slots: Array[StringName])
 
 var is_game_running: bool = false
 
 func _ready() -> void:
 	danger_zone.body_entered.connect(_on_danger_zone_body_entered)
 	ball_tube.initialize(max_tube_capacity, synthesis_time_seconds)
-	ball_tube.factory_state_changed.connect(func(q, s, n, p): factory_state_changed.emit(q, s, n, p))
-	ball_tube.ball_ready_to_launch.connect(func(b_type): _spawn_active_ball(b_type))
+	ball_tube.factory_state_changed.connect(func(q, s, n, p, pods): factory_state_changed.emit(q, s, n, p, pods))
 
 func start_game() -> void:
 	is_game_running = true
 	set_bumper_slots_placement_mode(false)
-	# Injection de la première bille au départ de la partie
-	feed_next_ball_from_tube()
+	# Le joueur choisit quand lancer sa première bille en touchant un Pod !
 
 func reset_board() -> void:
 	is_game_running = false
 	_spawn_timer = 0.0
 	
 	# Nettoie les balles et ennemis en cours
-	if active_ball != null and is_instance_valid(active_ball):
-		active_ball.queue_free()
-		active_ball = null
+	for b in active_balls:
+		if is_instance_valid(b):
+			b.queue_free()
+	active_balls.clear()
 		
 	for child in enemy_container.get_children():
 		child.queue_free()
@@ -124,19 +130,18 @@ func _physics_process(delta: float) -> void:
 	if not is_game_running:
 		return
 		
-	# 1. Machine de synthèse de balles continue dès qu'un slot est libre
-	var has_active_ball: bool = (active_ball != null and is_instance_valid(active_ball))
-	ball_tube.update(delta, has_active_ball)
+	# 1. Machine de synthèse de balles continue (Dual-Pods + Réserve)
+	var has_balls_in_arena: bool = not active_balls.is_empty()
+	ball_tube.update(delta, has_balls_in_arena)
 	
-	# 3. Sécurité absolue : si aucune balle n'est présente sur le terrain (détruite ou sortie), on injecte immédiatement
-	if not has_active_ball:
-		if ball_tube.has_balls() and not ball_tube.is_synthesizing:
-			feed_next_ball_from_tube()
-	elif active_ball.global_position.y > 1250.0 or active_ball.global_position.x > 620.0 or active_ball.global_position.x < 10.0:
-		active_ball.queue_free()
-		active_ball = null
-		if ball_tube.has_balls():
-			feed_next_ball_from_tube()
+	# 2. Nettoyage des billes sorties des limites de l'arène
+	for i in range(active_balls.size() - 1, -1, -1):
+		var b: Ball = active_balls[i]
+		if not is_instance_valid(b) or b.is_queued_for_deletion():
+			active_balls.remove_at(i)
+		elif b.global_position.y > 1250.0 or b.global_position.x > 620.0 or b.global_position.x < 10.0:
+			b.queue_free()
+			active_balls.remove_at(i)
 
 func get_ball_scene_for_type(ball_type: StringName) -> PackedScene:
 	match ball_type:
@@ -151,33 +156,38 @@ func get_ball_scene_for_type(ball_type: StringName) -> PackedScene:
 		_:
 			return ball_scene
 
+func launch_ball_from_pod(pod_index: int) -> bool:
+	if not is_game_running:
+		return false
+	var b_type: StringName = ball_tube.launch_pod(pod_index)
+	if b_type.is_empty():
+		return false
+	_spawn_active_ball(b_type)
+	return true
+
 func feed_next_ball_from_tube() -> void:
 	if not ball_tube.has_balls():
 		return
+	var b_type: StringName = ball_tube.pop_next_ball()
+	if not b_type.is_empty():
+		_spawn_active_ball(b_type)
 
-	if active_ball != null and is_instance_valid(active_ball):
-		active_ball.queue_free()
-
-	var ball_type_to_spawn: StringName = ball_tube.pop_next_ball()
-	if not ball_type_to_spawn.is_empty():
-		_spawn_active_ball(ball_type_to_spawn)
-
-func _spawn_active_ball(ball_type: StringName) -> void:
+func _spawn_active_ball(ball_type: StringName) -> Ball:
 	var chosen_scene: PackedScene = get_ball_scene_for_type(ball_type)
-	if chosen_scene != null:
-		active_ball = chosen_scene.instantiate() as Ball
-		active_ball.position = tube_exit_position
-		active_ball.ball_shattered.connect(_on_active_ball_shattered)
-		active_ball.split_requested.connect(_on_ball_split_requested)
-		_apply_card_stats_to_ball(active_ball, ball_type)
-		# Impulsion diagonale vers la gauche et le flipper
-		active_ball.linear_velocity = Vector2(-220.0, 180.0)
-		ball_container.add_child(active_ball)
-
-func _on_active_ball_shattered() -> void:
-	active_ball = null
-	if ball_tube.has_balls():
-		feed_next_ball_from_tube()
+	if chosen_scene == null:
+		return null
+	var b: Ball = chosen_scene.instantiate() as Ball
+	b.position = tube_exit_position
+	b.ball_shattered.connect(func() -> void:
+		active_balls.erase(b)
+	)
+	b.split_requested.connect(_on_ball_split_requested)
+	_apply_card_stats_to_ball(b, ball_type)
+	# Impulsion diagonale douce vers la gauche et le flipper
+	b.linear_velocity = Vector2(-220.0, 180.0)
+	ball_container.add_child(b)
+	active_balls.append(b)
+	return b
 
 func _on_ball_split_requested(sub_types: Array[StringName], spawn_pos: Vector2, dirs: Array[Vector2], speed: float) -> void:
 	for i in range(mini(sub_types.size(), dirs.size())):
@@ -246,12 +256,8 @@ func _get_default_enemy_pool() -> Array[PackedScene]:
 
 func _on_danger_zone_body_entered(body: Node2D) -> void:
 	if body is Ball:
-		if ball_tube.has_balls():
-			feed_next_ball_from_tube()
-		else:
-			if active_ball != null and is_instance_valid(active_ball):
-				active_ball.queue_free()
-				active_ball = null
+		active_balls.erase(body as Ball)
+		body.queue_free()
 	elif body is Enemy:
 		var dmg: int = body.enemy_data.damage_on_escape if (body.enemy_data != null) else 1
 		EventBus.enemy_escaped.emit(dmg)
