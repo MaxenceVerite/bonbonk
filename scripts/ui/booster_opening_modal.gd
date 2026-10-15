@@ -270,7 +270,13 @@ func _complete_pack_rip() -> void:
 
 func _zoom_pack_to_bottom() -> void:
 	_state = ModalState.ZOOMING_TO_BOTTOM
-	instruction_label.text = "🍬 TOUCHEZ POUR SORTIR LES BONBONS ! 🍬"
+
+	# S'il y a plus d'un bonbon dans le sachet, inviter à sortir les bonbons
+	if _sorted_drops.size() > 1:
+		instruction_label.visible = true
+		instruction_label.text = "🍬 TOUCHEZ POUR SORTIR LES BONBONS ! 🍬"
+	else:
+		instruction_label.visible = false
 
 	var screen_w: float = 720.0
 	var screen_h: float = 1280.0
@@ -311,23 +317,22 @@ func _reveal_next_candy() -> void:
 	var count: int = drop["count"]
 	var is_new: bool = drop.get("is_new", false)
 
+	# Gestion de la mention en haut : ne s'affiche que s'il reste d'autres bonbons après celui-ci
+	var remaining_after_this: int = _sorted_drops.size() - 1 - _current_drop_index
+	if remaining_after_this > 0:
+		instruction_label.visible = true
+		instruction_label.text = "🍬 TOUCHEZ POUR SORTIR LES BONBONS ! 🍬"
+	else:
+		instruction_label.visible = false
+
 	# Préparation de l'affichage unitaire
 	single_reveal_area.visible = true
 	candy_title.text = "%s%s" % [card.display_name, " (NOUVEAU !)" if is_new else ""]
 	candy_icon.texture = card.icon_texture
 	candy_count_badge.text = "x %d" % count
 
-	# Couleur du titre selon la rareté
-	match card.rarity:
-		CandyCardData.Rarity.RARE:
-			candy_title.add_theme_color_override("font_color", Color(0.1, 0.35, 0.8, 1))
-			rarity_subtitle.text = "★ RARE ★ TOUCHEZ POUR CONTINUER"
-		CandyCardData.Rarity.EPIC:
-			candy_title.add_theme_color_override("font_color", Color(0.7, 0.15, 0.75, 1))
-			rarity_subtitle.text = "★★ ÉPIQUE ! ★★ TOUCHEZ POUR CONTINUER"
-		_:
-			candy_title.add_theme_color_override("font_color", Color(0.18, 0.08, 0.02, 1))
-			rarity_subtitle.text = "TOUCHEZ POUR CONTINUER"
+	# Habillage thématique du cadre selon la rareté
+	_apply_rarity_style_to_banner(card.rarity)
 
 	# Animation 1 : Le sachet en bas tressaute (squeeze & pop)
 	var pack_squash: Tween = create_tween()
@@ -354,6 +359,7 @@ func _reveal_next_candy() -> void:
 	banner_panel.modulate.a = 0.0
 	banner_panel.scale = Vector2(0.7, 0.7)
 	banner_panel.pivot_offset = banner_panel.size * 0.5
+	rarity_subtitle.modulate.a = 0.0
 
 	Input.vibrate_handheld(45)
 
@@ -362,15 +368,72 @@ func _reveal_next_candy() -> void:
 	burst_tw.tween_property(big_candy_center, "scale", Vector2(1.3, 1.3), 0.38).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	burst_tw.tween_property(big_candy_center, "modulate:a", 1.0, 0.15)
 
-	# Banderole de titre qui apparaît au-dessus
+	# Banderole de titre qui apparaît au-dessus et sous-titre distinct en-dessous
 	burst_tw.chain().tween_property(banner_panel, "modulate:a", 1.0, 0.18)
 	burst_tw.tween_property(banner_panel, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	burst_tw.tween_property(rarity_subtitle, "modulate:a", 1.0, 0.22)
 
 	# Étincelles festives au centre
 	burst_tw.chain().tween_callback(func() -> void:
 		_spawn_sparkle_burst(target_pos + Vector2(100.0, 100.0), 16)
 		_state = ModalState.READY_FOR_NEXT_CANDY
 	)
+
+func _apply_rarity_style_to_banner(rarity: CandyCardData.Rarity) -> void:
+	var style: StyleBoxFlat = StyleBoxFlat.new()
+	style.corner_radius_top_left = 22
+	style.corner_radius_top_right = 22
+	style.corner_radius_bottom_left = 22
+	style.corner_radius_bottom_right = 22
+	style.content_margin_left = 28.0
+	style.content_margin_right = 28.0
+	style.content_margin_top = 12.0
+	style.content_margin_bottom = 12.0
+	style.border_width_left = 4
+	style.border_width_top = 4
+	style.border_width_right = 4
+	style.border_width_bottom = 4
+	style.shadow_size = 14
+	style.shadow_offset = Vector2(0, 4)
+
+	match rarity:
+		CandyCardData.Rarity.RARE:
+			style.bg_color = Color(0.91, 0.95, 1.0, 0.98) # Bleu glacier très doux
+			style.border_color = Color(0.18, 0.58, 0.98, 1.0) # Bleu électrique néon
+			style.shadow_color = Color(0.1, 0.45, 0.95, 0.55) # Lueur bleue
+			candy_title.add_theme_color_override("font_color", Color(0.05, 0.22, 0.62, 1.0))
+			candy_title.add_theme_color_override("font_shadow_color", Color(0.85, 0.95, 1.0, 0.9))
+			rarity_subtitle.text = "★ RARE ★   Touchez pour continuer"
+			rarity_subtitle.add_theme_color_override("font_color", Color(0.72, 0.90, 1.0, 0.98))
+
+		CandyCardData.Rarity.EPIC:
+			style.bg_color = Color(0.96, 0.90, 1.0, 0.98) # Doux éclat violet
+			style.border_color = Color(0.80, 0.20, 0.92, 1.0) # Violet améthyste
+			style.shadow_color = Color(0.70, 0.15, 0.85, 0.55) # Lueur violette
+			candy_title.add_theme_color_override("font_color", Color(0.40, 0.06, 0.52, 1.0))
+			candy_title.add_theme_color_override("font_shadow_color", Color(0.95, 0.85, 1.0, 0.9))
+			rarity_subtitle.text = "★★ ÉPIQUE ! ★★   Touchez pour continuer"
+			rarity_subtitle.add_theme_color_override("font_color", Color(0.95, 0.75, 1.0, 0.98))
+
+		CandyCardData.Rarity.LEGENDARY:
+			style.bg_color = Color(1.0, 0.97, 0.88, 0.98) # Champagne lumineux
+			style.border_color = Color(1.0, 0.78, 0.12, 1.0) # Or étincelant
+			style.shadow_color = Color(0.95, 0.65, 0.05, 0.65) # Lueur dorée
+			candy_title.add_theme_color_override("font_color", Color(0.52, 0.30, 0.0, 1.0))
+			candy_title.add_theme_color_override("font_shadow_color", Color(1.0, 0.95, 0.75, 0.9))
+			rarity_subtitle.text = "★★★ LÉGENDAIRE ! ★★★   Touchez pour continuer"
+			rarity_subtitle.add_theme_color_override("font_color", Color(1.0, 0.92, 0.60, 0.98))
+
+		_: # COMMON
+			style.bg_color = Color(0.98, 0.94, 0.88, 0.98) # Crème biscuit
+			style.border_color = Color(0.65, 0.45, 0.32, 1.0) # Chocolat noisette
+			style.shadow_color = Color(0.30, 0.15, 0.05, 0.35)
+			candy_title.add_theme_color_override("font_color", Color(0.26, 0.12, 0.04, 1.0))
+			candy_title.add_theme_color_override("font_shadow_color", Color(1.0, 1.0, 1.0, 0.8))
+			rarity_subtitle.text = "Touchez pour continuer"
+			rarity_subtitle.add_theme_color_override("font_color", Color(1.0, 0.95, 0.85, 0.95))
+
+	banner_panel.add_theme_stylebox_override("panel", style)
 
 func _show_factual_summary() -> void:
 	_state = ModalState.SUMMARY
