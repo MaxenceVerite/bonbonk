@@ -329,23 +329,14 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 30.0
-offset_top = 40.0
-offset_right = -30.0
+offset_left = 24.0
+offset_top = 20.0
+offset_right = -24.0
 offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 28
 alignment = 1
-
-[node name="GameTitle" type="Label" parent="ContentContainer/PlayTab/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
-theme_override_colors/font_shadow_color = Color(1, 1, 1, 0.9)
-theme_override_constants/shadow_offset_y = 3
-theme_override_font_sizes/font_size = 44
-text = "🍭 FLIP DEFENSE"
-horizontal_alignment = 1
 
 [node name="DeckCard" type="PanelContainer" parent="ContentContainer/PlayTab/VBox"]
 layout_mode = 2
@@ -353,47 +344,47 @@ theme_override_styles/panel = SubResource("StyleBox_BlueCard")
 
 [node name="VBox" type="VBoxContainer" parent="ContentContainer/PlayTab/VBox/DeckCard"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 14
 alignment = 1
 
 [node name="DeckTabsRow" type="HBoxContainer" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 16
 alignment = 1
 
 [node name="BtnDeck1" type="Button" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckTabsRow"]
-custom_minimum_size = Vector2(100, 46)
+custom_minimum_size = Vector2(120, 52)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 18
 toggle_mode = true
 text = "DECK 1"
 
 [node name="BtnDeck2" type="Button" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckTabsRow"]
-custom_minimum_size = Vector2(100, 46)
+custom_minimum_size = Vector2(120, 52)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 18
 toggle_mode = true
 text = "DECK 2"
 
 [node name="BtnDeck3" type="Button" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckTabsRow"]
-custom_minimum_size = Vector2(100, 46)
+custom_minimum_size = Vector2(120, 52)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 18
 toggle_mode = true
 text = "DECK 3"
 
 [node name="DeckSubtitle" type="Label" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 0.8)
-theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 0.85)
+theme_override_font_sizes/font_size = 15
 text = "6 BONBONS DE DÉPART (TOUCHER POUR MODIFIER)"
 horizontal_alignment = 1
 
 [node name="DeckSlotsGrid" type="GridContainer" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox"]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_constants/h_separation = 14
-theme_override_constants/v_separation = 14
+theme_override_constants/h_separation = 18
+theme_override_constants/v_separation = 18
 columns = 3
 
 [node name="Slot0" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("20_deck_slot")]
@@ -420,11 +411,11 @@ layout_mode = 2
 slot_index = 5
 
 [node name="BtnLaunchGame" type="Button" parent="ContentContainer/PlayTab/VBox"]
-custom_minimum_size = Vector2(360, 94)
+custom_minimum_size = Vector2(400, 100)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_type_variation = &"ButtonPink"
-theme_override_font_sizes/font_size = 40
+theme_override_font_sizes/font_size = 42
 text = "▶ JOUER"
 
 [node name="LeaderboardTab" type="Control" parent="ContentContainer"]
