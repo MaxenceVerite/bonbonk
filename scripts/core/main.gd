@@ -156,6 +156,8 @@ func _on_wave_cleared(cleared_wave_num: int) -> void:
 		return
 	if board != null:
 		board.on_wave_cleared_stability()
+	if ball_factory_ui != null:
+		ball_factory_ui.is_interaction_enabled = false
 	var next_w: int = cleared_wave_num + 1
 	var next_budget: int = wave_director.calculate_budget_for_wave(next_w) if wave_director != null else 12
 	intermission_overlay.show_intermission(cleared_wave_num, next_w, next_budget)
@@ -165,6 +167,9 @@ func _on_next_wave_pressed() -> void:
 	current_wave += 1
 	_update_wave_display()
 	
+	if ball_factory_ui != null:
+		ball_factory_ui.is_interaction_enabled = true
+
 	if board != null:
 		board.resume_for_next_wave()
 

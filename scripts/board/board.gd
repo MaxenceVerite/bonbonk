@@ -63,13 +63,22 @@ func start_game() -> void:
 
 func on_wave_cleared_stability() -> void:
 	is_game_running = false
-	# Fait exploser en cascade toutes les billes actives restantes sur le terrain
+
+	# 1. Stopper immédiatement la fabrique de billes
+	if ball_tube != null:
+		ball_tube.pause_synthesis()
+
+	# 2. Faire exploser toutes les billes actives restantes sur le terrain (enfants du container + active_balls)
+	if ball_container != null:
+		for child in ball_container.get_children():
+			if child is Ball and is_instance_valid(child) and not child.is_queued_for_deletion():
+				child.shatter()
 	for b in active_balls:
 		if is_instance_valid(b) and not b.is_queued_for_deletion():
 			b.shatter()
 	active_balls.clear()
-	
-	# Remise au repos des batteurs
+
+	# 3. Remise au repos des batteurs
 	if left_gate != null:
 		left_gate.deactivate()
 	if right_gate != null:
@@ -215,8 +224,12 @@ func _on_ball_split_requested(sub_types: Array[StringName], spawn_pos: Vector2, 
 			sub_ball.linear_velocity = dirs[i] * speed
 			sub_ball.max_durability = 1
 			sub_ball.current_durability = 1
+			sub_ball.ball_shattered.connect(func() -> void:
+				active_balls.erase(sub_ball)
+			)
 			_apply_card_stats_to_ball(sub_ball, sub_types[i])
 			ball_container.add_child(sub_ball)
+			active_balls.append(sub_ball)
 
 func _apply_card_stats_to_ball(ball: Ball, ball_type: StringName) -> void:
 	if ball == null:

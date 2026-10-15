@@ -84,6 +84,11 @@ func update(delta: float, _has_active_ball: bool = true) -> void:
 			synthesis_timer = 0.0
 			emit_state(0.0)
 
+func pause_synthesis() -> void:
+	is_synthesizing = false
+	synthesis_timer = 0.0
+	emit_state(0.0)
+
 func launch_pod(pod_index: int) -> StringName:
 	if pod_index < 0 or pod_index >= pod_slots.size():
 		return &""

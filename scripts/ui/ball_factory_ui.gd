@@ -23,6 +23,7 @@ var next_synthesis_type: StringName = &"fizz"
 var synthesis_progress: float = 0.0 # 0.0 à 1.0
 var drum_rotation_angle: float = 0.0
 var _pulse_timer: float = 0.0
+var is_interaction_enabled: bool = true
 
 # Animation de pression sur les pods
 var _pod_scales: Array[float] = [1.0, 1.0]
@@ -111,6 +112,8 @@ func _on_pod_input(pod_index: int, event: InputEvent) -> void:
 			_trigger_pod_launch(pod_index)
 
 func _trigger_pod_launch(pod_index: int) -> void:
+	if not is_interaction_enabled:
+		return
 	if pod_index < 0 or pod_index >= pod_slots.size():
 		return
 	if pod_slots[pod_index].is_empty():
