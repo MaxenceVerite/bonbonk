@@ -46,7 +46,12 @@ func is_occupied() -> bool:
 
 func attach_bumper(bumper_node: Node2D) -> void:
 	occupied_bumper_instance = bumper_node
-	bumper_node.position = global_position
+	if bumper_node.get_parent() != self:
+		if bumper_node.get_parent() != null:
+			bumper_node.get_parent().remove_child(bumper_node)
+		add_child(bumper_node)
+	bumper_node.position = Vector2.ZERO
+	bumper_node.visible = true
 	queue_redraw()
 
 func clear_bumper() -> void:
@@ -56,8 +61,8 @@ func clear_bumper() -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	# Si un bumper est posé et qu'on n'est pas en placement, ne rien dessiner
-	if is_occupied() and not is_placement_active:
+	# Si un bumper est posé sur ce slot, laisser le bumper visible au premier plan
+	if is_occupied():
 		return
 
 	var center: Vector2 = Vector2.ZERO

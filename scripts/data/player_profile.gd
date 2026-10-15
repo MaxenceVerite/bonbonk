@@ -98,7 +98,25 @@ func from_dict(data: Dictionary) -> void:
 	_apply_migrations()
 
 func _apply_migrations() -> void:
-	# S'assurer que les cartes obligatoires existent
+	# 1. Remplacement absolu de dragibump par dragiburst
+	if cards_inventory.has(&"dragibump"):
+		var old_data: Dictionary = cards_inventory[&"dragibump"]
+		if not cards_inventory.has(&"dragiburst"):
+			cards_inventory[&"dragiburst"] = old_data.duplicate(true)
+		else:
+			var burst_data: Dictionary = cards_inventory[&"dragiburst"]
+			burst_data["level"] = maxi(burst_data.get("level", 1), old_data.get("level", 1))
+			burst_data["cards"] = maxi(burst_data.get("cards", 0), old_data.get("cards", 0))
+			burst_data["unlocked"] = burst_data.get("unlocked", false) or old_data.get("unlocked", false)
+		cards_inventory.erase(&"dragibump")
+
+	# Remplacer toute occurrence de dragibump dans les decks par dragiburst
+	for d in decks:
+		for i in range(d.size()):
+			if d[i] == &"dragibump":
+				d[i] = &"dragiburst"
+
+	# 2. S'assurer que les cartes obligatoires existent
 	var required_defaults: Dictionary = {
 		&"standard":   { "unlocked": true,  "level": 1, "cards": 3 },
 		&"fizz":       { "unlocked": true,  "level": 1, "cards": 1 },
@@ -106,7 +124,8 @@ func _apply_migrations() -> void:
 		&"cherry":     { "unlocked": false, "level": 1, "cards": 0 },
 		&"mentox":     { "unlocked": true,  "level": 1, "cards": 2 },
 		&"jawbreaker": { "unlocked": false, "level": 1, "cards": 0 },
-		&"dragibump":  { "unlocked": true,  "level": 1, "cards": 2 },
+		&"dragiburst": { "unlocked": true,  "level": 1, "cards": 2 },
+		&"twistypop":  { "unlocked": true,  "level": 1, "cards": 2 },
 	}
 	for cid in required_defaults:
 		if not cards_inventory.has(cid):
@@ -114,7 +133,7 @@ func _apply_migrations() -> void:
 
 	# S'assurer de 3 decks valides
 	while decks.size() < 3:
-		decks.append([&"standard", &"fizz", &"caramel", &"standard", &"fizz", &"dragibump"])
+		decks.append([&"standard", &"fizz", &"caramel", &"standard", &"twistypop", &"dragiburst"])
 	for i in range(decks.size()):
 		var d: Array = decks[i]
 		while d.size() < 6:
@@ -138,12 +157,13 @@ static func create_default(p_id: String, is_sandbox: bool = false) -> RefCounted
 			&"cherry":     { "unlocked": true, "level": 5, "cards": 50 },
 			&"mentox":     { "unlocked": true, "level": 5, "cards": 50 },
 			&"jawbreaker": { "unlocked": true, "level": 5, "cards": 50 },
-			&"dragibump":  { "unlocked": true, "level": 5, "cards": 50 },
+			&"dragiburst": { "unlocked": true, "level": 5, "cards": 50 },
+			&"twistypop":  { "unlocked": true, "level": 5, "cards": 50 },
 		}
 		profile.decks = [
-			[&"jawbreaker", &"mentox", &"fizz", &"caramel", &"dragibump", &"standard"],
-			[&"jawbreaker", &"jawbreaker", &"mentox", &"fizz", &"dragibump", &"dragibump"],
-			[&"standard", &"fizz", &"caramel", &"dragibump", &"mentox", &"jawbreaker"]
+			[&"jawbreaker", &"mentox", &"fizz", &"twistypop", &"dragiburst", &"standard"],
+			[&"jawbreaker", &"jawbreaker", &"mentox", &"fizz", &"dragiburst", &"twistypop"],
+			[&"standard", &"fizz", &"caramel", &"dragiburst", &"mentox", &"twistypop"]
 		]
 	else:
 		profile.display_name = "Gourmand"
@@ -157,12 +177,13 @@ static func create_default(p_id: String, is_sandbox: bool = false) -> RefCounted
 			&"cherry":     { "unlocked": false, "level": 1, "cards": 0 },
 			&"mentox":     { "unlocked": true,  "level": 1, "cards": 2 },
 			&"jawbreaker": { "unlocked": false, "level": 1, "cards": 0 },
-			&"dragibump":  { "unlocked": true,  "level": 1, "cards": 2 },
+			&"dragiburst": { "unlocked": true,  "level": 1, "cards": 2 },
+			&"twistypop":  { "unlocked": true,  "level": 1, "cards": 2 },
 		}
 		profile.decks = [
-			[&"standard", &"fizz", &"caramel", &"standard", &"fizz", &"dragibump"],
-			[&"standard", &"caramel", &"caramel", &"dragibump", &"standard", &"standard"],
-			[&"fizz", &"fizz", &"caramel", &"dragibump", &"standard", &"caramel"]
+			[&"standard", &"fizz", &"twistypop", &"standard", &"fizz", &"dragiburst"],
+			[&"standard", &"caramel", &"twistypop", &"dragiburst", &"standard", &"standard"],
+			[&"fizz", &"fizz", &"caramel", &"dragiburst", &"twistypop", &"caramel"]
 		]
 
 	# Boosters de bienvenue

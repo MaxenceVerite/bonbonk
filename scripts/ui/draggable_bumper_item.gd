@@ -8,7 +8,7 @@ signal drag_started(item: DraggableBumperItem)
 signal drag_moved(item: DraggableBumperItem, global_pos: Vector2)
 signal drag_ended(item: DraggableBumperItem, global_drop_pos: Vector2)
 
-@export var bumper_card_id: StringName = &"dragibump"
+@export var bumper_card_id: StringName = &"dragiburst"
 
 @onready var icon_rect: TextureRect = $Panel/VBox/IconRect
 @onready var name_label: Label = $Panel/VBox/NameLabel
@@ -32,23 +32,20 @@ func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
-				_start_drag(event.global_position)
+				_start_drag(get_global_mouse_position())
 			else:
 				if is_dragging:
-					_end_drag(event.global_position)
+					_end_drag(get_global_mouse_position())
 	elif event is InputEventMouseMotion and is_dragging:
-		_update_drag(event.global_position)
+		_update_drag(get_global_mouse_position())
 	elif event is InputEventScreenTouch:
 		if event.pressed:
-			_start_drag(event.position if event is not InputEventScreenTouch else _to_global_pos(event.position))
+			_start_drag(get_global_mouse_position())
 		else:
 			if is_dragging:
-				_end_drag(_to_global_pos(event.position))
+				_end_drag(get_global_mouse_position())
 	elif event is InputEventScreenDrag and is_dragging:
-		_update_drag(_to_global_pos(event.position))
-
-func _to_global_pos(local_pos: Vector2) -> Vector2:
-	return global_position + local_pos
+		_update_drag(get_global_mouse_position())
 
 func _start_drag(start_global_pos: Vector2) -> void:
 	is_dragging = true

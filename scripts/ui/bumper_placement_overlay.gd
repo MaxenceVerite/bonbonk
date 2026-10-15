@@ -77,27 +77,30 @@ func _on_item_dropped(item: DraggableBumperItem, drop_pos: Vector2) -> void:
 		if slot is BumperSlot:
 			slot.set_highlight(false)
 
-	# Trouver le slot le plus proche dans un rayon ergonomique
-	var nearest_slot: BumperSlot = _find_nearest_free_slot(drop_pos, 140.0)
+	# Trouver le slot le plus proche dans un rayon ergonomique généreux (180px)
+	var nearest_slot: BumperSlot = _find_nearest_free_slot(drop_pos, 180.0)
 
 	if nearest_slot != null:
-		# Succès : instanciation sur le slot
-		board.place_bumper_at_slot(nearest_slot, item.bumper_card_id)
-		_placed_count += 1
-		# Retirer l'item du volet
-		item.queue_free()
-		
-		# Feedback visuel et haptique
-		if Input.has_method("vibrate_handheld"):
-			Input.vibrate_handheld(30)
+		var placed: bool = board.place_bumper_at_slot(nearest_slot, item.bumper_card_id)
+		if placed:
+			_placed_count += 1
+			item.queue_free()
 			
-		if _placed_count >= _total_bumpers:
-			if instruction_label != null:
-				instruction_label.text = "TOUS LES BUMPERS SONT PLACÉS ! ▶"
+			if Input.has_method("vibrate_handheld"):
+				Input.vibrate_handheld(30)
+				
+			if _placed_count >= _total_bumpers:
+				if instruction_label != null:
+					instruction_label.text = "TOUS LES BUMPERS SONT PLACÉS ! ▶"
+			else:
+				if instruction_label != null:
+					instruction_label.text = "GLISSE LE PROCHAIN BUMPER"
 		else:
-			if instruction_label != null:
-				instruction_label.text = "GLISSE LE PROCHAIN BUMPER"
+			item.visible = true
+			item.modulate = Color(1, 1, 1, 1.0)
 	else:
+		item.visible = true
+		item.modulate = Color(1, 1, 1, 1.0)
 		if instruction_label != null:
 			instruction_label.text = "GLISSE TES BUMPERS SUR LE PLATEAU"
 

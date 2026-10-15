@@ -1,6 +1,8 @@
 class_name CardCatalog
 extends RefCounted
 
+const CandyTextureHelper = preload("res://scripts/core/candy_texture_helper.gd")
+
 ## Répertoire centralisé et définitions des cartes de bonbons (Balles & Bumpers).
 ## Isole la configuration des cartes pour alléger SaveManager.
 
@@ -120,31 +122,70 @@ static func get_default_definitions() -> Dictionary:
 	jaw_card.icon_texture = load("res://assets/ui/icon_ball_caramel.png")
 	defs[&"jawbreaker"] = jaw_card
 
-	# Dragibump (Bumper Bonbon)
+	# Dragiburst (Bumper Dragon Flamboyant)
 	var dragi_card: CandyCardData = CandyCardData.new()
-	dragi_card.id = &"dragibump"
-	dragi_card.display_name = "Dragibump"
-	dragi_card.subtitle = "Bumper Magnétique"
-	dragi_card.description = "Bumper gélifié très rebondissant qui attire les ennemis proches et renvoie les billes."
+	dragi_card.id = &"dragiburst"
+	dragi_card.display_name = "Dragiburst"
+	dragi_card.subtitle = "Bumper Draconique"
+	dragi_card.description = "Souffle de dragon circulaire ! Inflige de lourds dégâts d'impact et brûle les ennemis proches."
 	dragi_card.rarity = CandyCardData.Rarity.RARE
 	dragi_card.card_type = CandyCardData.CardType.BUMPER
-	dragi_card.base_damage = 1
-	dragi_card.damage_per_level = 0.3
-	dragi_card.base_magnetism = 450.0
-	dragi_card.magnetism_per_level = 50.0
-	dragi_card.base_bounce = 1.30
+	dragi_card.base_damage = 2
+	dragi_card.damage_per_level = 0.5
+	dragi_card.base_magnetism = 0.0
+	dragi_card.magnetism_per_level = 0.0
+	dragi_card.base_bounce = 1.35
 	dragi_card.bounce_per_level = 0.05
 	dragi_card.keyword_stats = [
-		{ "id": &"attraction_radius", "name": "Rayon magnétique", "icon": "🧲", "base": 180.0, "step": 20.0, "format": "int", "unit": "px" }
+		{ "id": &"burst_radius", "name": "Rayon du souffle", "icon": "🔥", "base": 240.0, "step": 20.0, "format": "int", "unit": "px" },
+		{ "id": &"burn_duration", "name": "Durée brûlure", "icon": "⏳", "base": 3.0, "step": 0.4, "format": "float", "unit": "s" }
 	]
-	dragi_card.icon_texture = load("res://assets/ui/icon_bumper_dragibump.png")
-	defs[&"dragibump"] = dragi_card
+	dragi_card.icon_texture = _load_dragiburst_icon()
+	defs[&"dragiburst"] = dragi_card
+
+	# Twistypop (Bumper Légendaire Sucette Tournoyante)
+	var twisty_card: CandyCardData = CandyCardData.new()
+	twisty_card.id = &"twistypop"
+	twisty_card.display_name = "Twistypop"
+	twisty_card.subtitle = "Sucette Tournoyante"
+	twisty_card.description = "Sucette arc-en-ciel légendaire ! Au contact de la bille, projette une salve d'éclats magiques traquant les ennemis."
+	twisty_card.rarity = CandyCardData.Rarity.LEGENDARY
+	twisty_card.card_type = CandyCardData.CardType.BUMPER
+	twisty_card.base_damage = 1
+	twisty_card.damage_per_level = 0.0
+	twisty_card.base_magnetism = 0.0
+	twisty_card.magnetism_per_level = 0.0
+	twisty_card.base_bounce = 1.45
+	twisty_card.bounce_per_level = 0.05
+	twisty_card.keyword_stats = [
+		{ "id": &"shard_count", "name": "Éclats traqueurs", "icon": "✨", "base": 2.0, "step": 2.0, "format": "int", "unit": "" }
+	]
+	twisty_card.icon_texture = _load_twistypop_icon()
+	defs[&"twistypop"] = twisty_card
 
 	return defs
+
+static func _load_dragiburst_icon() -> Texture2D:
+	return CandyTextureHelper.load_texture("res://assets/ui/icon_bumper_dragibump.png")
+
+static func _load_twistypop_icon() -> Texture2D:
+	return CandyTextureHelper.load_texture("res://assets/ui/icon_bumper_twistypop.png")
 
 ## Palette de couleurs standardisée des bonbons (partagée entre Gameplay et UI)
 static func get_candy_palette(b_type: StringName) -> Dictionary:
 	match b_type:
+		&"twistypop":
+			return {
+				"color": Color(0.95, 0.25, 0.65, 1.0),
+				"core": Color(1.0, 0.92, 0.20, 1.0),
+				"ring": Color(0.12, 0.78, 0.95, 0.9)
+			}
+		&"dragiburst":
+			return {
+				"color": Color(0.95, 0.15, 0.18, 1.0),
+				"core": Color(1.0, 0.88, 0.35, 1.0),
+				"ring": Color(0.65, 0.08, 0.12, 0.9)
+			}
 		&"fizz":
 			return {
 				"color": Color(0.20, 0.96, 0.76, 1.0),

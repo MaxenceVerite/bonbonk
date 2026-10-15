@@ -75,6 +75,12 @@ func apply_freeze(damage: int = 1, freeze_duration: float = 2.0) -> void:
 		status_component.apply_freeze(freeze_duration)
 	take_hit(damage, null, Vector2.ZERO)
 
+func apply_burn(duration: float = 3.0, damage_per_tick: int = 1, tick_interval: float = 0.5) -> void:
+	if _is_dying or _is_expelled:
+		return
+	if status_component != null:
+		status_component.apply_burn(duration, damage_per_tick, tick_interval)
+
 func _ready() -> void:
 	add_to_group(&"enemies")
 	status_component = StatusEffectComponent.new()

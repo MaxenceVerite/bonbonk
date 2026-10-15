@@ -94,10 +94,29 @@ func clear_all_bumpers() -> void:
 func place_bumper_at_slot(slot: BumperSlot, bumper_id: StringName) -> bool:
 	if slot == null or slot.is_occupied():
 		return false
-	if bumper_scene == null:
+	var scene_to_use: PackedScene = bumper_scene
+	if scene_to_use == null:
+		scene_to_use = load("res://scenes/board/candy_bumper.tscn")
+	if scene_to_use == null:
+		push_error("Flip: Impossible de charger candy_bumper.tscn")
 		return false
-	var bumper: CandyBumper = bumper_scene.instantiate() as CandyBumper
-	bumper_container.add_child(bumper)
+
+	var bumper: CandyBumper = scene_to_use.instantiate() as CandyBumper
+	if bumper == null:
+		return false
+
+	var res_path: String = "res://resources/%s_bumper.tres" % [String(bumper_id)]
+	var b_data: BumperData = null
+	if ResourceLoader.exists(res_path):
+		b_data = load(res_path) as BumperData
+	if b_data == null:
+		b_data = load("res://resources/dragiburst_bumper.tres") as BumperData
+	if b_data != null:
+		bumper.setup_bumper(b_data)
+
+	var st: Dictionary = SaveManager.get_card_state(bumper_id)
+	bumper.current_level = st.get("level", 1)
+
 	slot.attach_bumper(bumper)
 	return true
 
