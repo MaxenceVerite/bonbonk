@@ -18,8 +18,8 @@ signal replace_requested(slot_index: int, current_card_id: StringName)
 @onready var level_transition_label: Label = $CenterAnchor/ModalCard/VBox/LevelTransitionLabel
 @onready var desc_label: Label = $CenterAnchor/ModalCard/VBox/DescLabel
 
-# Stats rows
-@onready var stats_vbox: VBoxContainer = $CenterAnchor/ModalCard/VBox/StatsBox
+# Stats grid (2 colonnes aérées)
+@onready var stats_grid: GridContainer = $CenterAnchor/ModalCard/VBox/StatsGrid
 
 # Gauge & Upgrade button
 @onready var gauge_bar: TextureProgressBar = $CenterAnchor/ModalCard/VBox/GaugeContainer/GaugeBar
@@ -99,20 +99,56 @@ func _refresh_data() -> void:
 	desc_label.text = def.description
 	icon_rect.texture = def.icon_texture if is_unlocked else preload("res://assets/ui/icon_ball_locked.png")
 	
-	# Badge rareté
+	# Badge rareté sous forme de pastille stylisée
+	var rarity_style: StyleBoxFlat = StyleBoxFlat.new()
+	rarity_style.corner_radius_top_left = 10
+	rarity_style.corner_radius_top_right = 10
+	rarity_style.corner_radius_bottom_left = 10
+	rarity_style.corner_radius_bottom_right = 10
+	rarity_style.content_margin_left = 14.0
+	rarity_style.content_margin_right = 14.0
+	rarity_style.content_margin_top = 3.0
+	rarity_style.content_margin_bottom = 3.0
+
 	match def.rarity:
 		CandyCardData.Rarity.COMMON:
-			rarity_badge.text = "COMMUNE"
-			rarity_badge.modulate = Color(0.65, 0.70, 0.75)
+			rarity_badge.text = "★ COMMUNE ★"
+			rarity_style.bg_color = Color(0.65, 0.48, 0.35, 1.0)
+			rarity_style.border_color = Color(0.85, 0.72, 0.62, 1.0)
+			rarity_style.border_width_left = 1
+			rarity_style.border_width_top = 1
+			rarity_style.border_width_right = 1
+			rarity_style.border_width_bottom = 1
 		CandyCardData.Rarity.RARE:
-			rarity_badge.text = "RARE"
-			rarity_badge.modulate = Color(0.30, 0.65, 1.0)
+			rarity_badge.text = "★ RARE ★"
+			rarity_style.bg_color = Color(0.18, 0.55, 0.95, 1.0)
+			rarity_style.border_color = Color(0.65, 0.85, 1.0, 1.0)
+			rarity_style.border_width_left = 1
+			rarity_style.border_width_top = 1
+			rarity_style.border_width_right = 1
+			rarity_style.border_width_bottom = 1
 		CandyCardData.Rarity.EPIC:
-			rarity_badge.text = "ÉPIQUE"
-			rarity_badge.modulate = Color(0.75, 0.35, 0.95)
+			rarity_badge.text = "★★ ÉPIQUE ★★"
+			rarity_style.bg_color = Color(0.75, 0.22, 0.90, 1.0)
+			rarity_style.border_color = Color(0.95, 0.70, 1.0, 1.0)
+			rarity_style.border_width_left = 1
+			rarity_style.border_width_top = 1
+			rarity_style.border_width_right = 1
+			rarity_style.border_width_bottom = 1
 		CandyCardData.Rarity.LEGENDARY:
-			rarity_badge.text = "LÉGENDAIRE"
-			rarity_badge.modulate = Color(1.0, 0.75, 0.2)
+			rarity_badge.text = "★★★ LÉGENDAIRE ★★★"
+			rarity_style.bg_color = Color(0.95, 0.68, 0.10, 1.0)
+			rarity_style.border_color = Color(1.0, 0.92, 0.65, 1.0)
+			rarity_style.border_width_left = 1
+			rarity_style.border_width_top = 1
+			rarity_style.border_width_right = 1
+			rarity_style.border_width_bottom = 1
+
+	rarity_badge.modulate = Color.WHITE
+	rarity_badge.add_theme_color_override("font_color", Color.WHITE)
+	rarity_badge.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
+	rarity_badge.add_theme_constant_override("shadow_offset_y", 1)
+	rarity_badge.add_theme_stylebox_override("normal", rarity_style)
 			
 	# Niveau transition & Statistiques
 	if is_unlocked:
@@ -150,7 +186,7 @@ func _refresh_data() -> void:
 		btn_upgrade.text = "VERROUILLÉ"
 
 func _refresh_stats_rows(def: CandyCardData, lvl: int) -> void:
-	for child in stats_vbox.get_children():
+	for child in stats_grid.get_children():
 		child.queue_free()
 
 	if def == null:
@@ -158,37 +194,78 @@ func _refresh_stats_rows(def: CandyCardData, lvl: int) -> void:
 
 	var stats: Array[Dictionary] = def.get_displayed_stats(lvl)
 	for stat in stats:
-		var row: HBoxContainer = HBoxContainer.new()
-		row.custom_minimum_size = Vector2(340, 24)
-		row.add_theme_constant_override(&"separation", 6)
+		var tile: PanelContainer = PanelContainer.new()
+		tile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		tile.custom_minimum_size = Vector2(230, 64)
 
-		var name_lbl: Label = Label.new()
-		name_lbl.text = "%s %s" % [stat.get("icon", "✨"), stat.get("label", "Stat")]
-		name_lbl.add_theme_font_size_override(&"font_size", 14)
-		name_lbl.add_theme_color_override(&"font_color", Color(0.35, 0.22, 0.15, 1.0))
-		row.add_child(name_lbl)
+		var tile_style: StyleBoxFlat = StyleBoxFlat.new()
+		tile_style.bg_color = Color(0.99, 0.97, 0.94, 0.95)
+		tile_style.border_color = Color(0.88, 0.80, 0.72, 1.0)
+		tile_style.border_width_left = 1
+		tile_style.border_width_top = 1
+		tile_style.border_width_right = 1
+		tile_style.border_width_bottom = 1
+		tile_style.corner_radius_top_left = 12
+		tile_style.corner_radius_top_right = 12
+		tile_style.corner_radius_bottom_left = 12
+		tile_style.corner_radius_bottom_right = 12
+		tile_style.content_margin_left = 12.0
+		tile_style.content_margin_right = 12.0
+		tile_style.content_margin_top = 8.0
+		tile_style.content_margin_bottom = 8.0
+		tile_style.shadow_size = 4
+		tile_style.shadow_color = Color(0.2, 0.1, 0.05, 0.08)
+		tile.add_theme_stylebox_override("panel", tile_style)
 
-		var spacer: Control = Control.new()
-		spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(spacer)
+		var vbox: VBoxContainer = VBoxContainer.new()
+		vbox.add_theme_constant_override(&"separation", 4)
+		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+
+		# Ligne 1 : Icône + Nom court de la stat
+		var top_row: HBoxContainer = HBoxContainer.new()
+		top_row.add_theme_constant_override(&"separation", 6)
+
+		var icon_lbl: Label = Label.new()
+		icon_lbl.text = stat.get("icon", "✨")
+		icon_lbl.add_theme_font_size_override(&"font_size", 14)
+		top_row.add_child(icon_lbl)
+
+		var label_lbl: Label = Label.new()
+		label_lbl.text = stat.get("label", "Stat").to_upper()
+		label_lbl.add_theme_font_size_override(&"font_size", 12)
+		label_lbl.add_theme_color_override(&"font_color", Color(0.50, 0.36, 0.28, 1.0))
+		label_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		top_row.add_child(label_lbl)
+
+		# Ligne 2 : Valeur actuelle (+ Gain en vert)
+		var bottom_row: HBoxContainer = HBoxContainer.new()
+		bottom_row.add_theme_constant_override(&"separation", 8)
+		bottom_row.alignment = BoxContainer.ALIGNMENT_BEGIN
 
 		var val_lbl: Label = Label.new()
-		val_lbl.text = stat.get("cur_str", "")
-		val_lbl.add_theme_font_size_override(&"font_size", 14)
-		val_lbl.add_theme_color_override(&"font_color", Color(0.20, 0.12, 0.06, 1.0))
-		row.add_child(val_lbl)
+		val_lbl.text = stat.get("cur_str", "-")
+		val_lbl.add_theme_font_size_override(&"font_size", 20)
+		val_lbl.add_theme_color_override(&"font_color", Color(0.22, 0.12, 0.06, 1.0))
+		bottom_row.add_child(val_lbl)
 
 		if stat.get("has_gain", false):
-			var gain_lbl: Label = Label.new()
-			gain_lbl.text = "➔ %s (%s)" % [stat.get("next_str", ""), stat.get("gain_str", "")]
-			gain_lbl.add_theme_font_size_override(&"font_size", 14)
-			gain_lbl.add_theme_color_override(&"font_color", Color(0.18, 0.65, 0.25, 1.0))
-			row.add_child(gain_lbl)
+			var gain_badge: Label = Label.new()
+			var gain_clean: String = stat.get("gain_str", "")
+			if not gain_clean.begins_with("+"):
+				gain_clean = "+" + gain_clean
+			gain_badge.text = gain_clean
+			gain_badge.add_theme_font_size_override(&"font_size", 14)
+			gain_badge.add_theme_color_override(&"font_color", Color(0.12, 0.65, 0.22, 1.0))
+			gain_badge.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+			bottom_row.add_child(gain_badge)
 
-		stats_vbox.add_child(row)
+		vbox.add_child(top_row)
+		vbox.add_child(bottom_row)
+		tile.add_child(vbox)
+		stats_grid.add_child(tile)
 
 func _refresh_locked_stats(def: CandyCardData) -> void:
-	for child in stats_vbox.get_children():
+	for child in stats_grid.get_children():
 		child.queue_free()
 
 	if def == null:
@@ -196,27 +273,55 @@ func _refresh_locked_stats(def: CandyCardData) -> void:
 
 	var stats: Array[Dictionary] = def.get_displayed_stats(1)
 	for stat in stats:
-		var row: HBoxContainer = HBoxContainer.new()
-		row.custom_minimum_size = Vector2(340, 24)
-		row.add_theme_constant_override(&"separation", 6)
+		var tile: PanelContainer = PanelContainer.new()
+		tile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		tile.custom_minimum_size = Vector2(230, 64)
 
-		var name_lbl: Label = Label.new()
-		name_lbl.text = "%s %s" % [stat.get("icon", "✨"), stat.get("label", "Stat")]
-		name_lbl.add_theme_font_size_override(&"font_size", 14)
-		name_lbl.add_theme_color_override(&"font_color", Color(0.55, 0.50, 0.45, 1.0))
-		row.add_child(name_lbl)
+		var tile_style: StyleBoxFlat = StyleBoxFlat.new()
+		tile_style.bg_color = Color(0.95, 0.93, 0.90, 0.85)
+		tile_style.border_color = Color(0.82, 0.78, 0.74, 1.0)
+		tile_style.border_width_left = 1
+		tile_style.border_width_top = 1
+		tile_style.border_width_right = 1
+		tile_style.border_width_bottom = 1
+		tile_style.corner_radius_top_left = 12
+		tile_style.corner_radius_top_right = 12
+		tile_style.corner_radius_bottom_left = 12
+		tile_style.corner_radius_bottom_right = 12
+		tile_style.content_margin_left = 12.0
+		tile_style.content_margin_right = 12.0
+		tile_style.content_margin_top = 8.0
+		tile_style.content_margin_bottom = 8.0
+		tile.add_theme_stylebox_override("panel", tile_style)
 
-		var spacer: Control = Control.new()
-		spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(spacer)
+		var vbox: VBoxContainer = VBoxContainer.new()
+		vbox.add_theme_constant_override(&"separation", 4)
+		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+
+		var top_row: HBoxContainer = HBoxContainer.new()
+		top_row.add_theme_constant_override(&"separation", 6)
+
+		var icon_lbl: Label = Label.new()
+		icon_lbl.text = stat.get("icon", "✨")
+		icon_lbl.add_theme_font_size_override(&"font_size", 14)
+		top_row.add_child(icon_lbl)
+
+		var label_lbl: Label = Label.new()
+		label_lbl.text = stat.get("label", "Stat").to_upper()
+		label_lbl.add_theme_font_size_override(&"font_size", 12)
+		label_lbl.add_theme_color_override(&"font_color", Color(0.60, 0.55, 0.50, 1.0))
+		label_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		top_row.add_child(label_lbl)
 
 		var val_lbl: Label = Label.new()
 		val_lbl.text = "?"
-		val_lbl.add_theme_font_size_override(&"font_size", 14)
-		val_lbl.add_theme_color_override(&"font_color", Color(0.55, 0.50, 0.45, 1.0))
-		row.add_child(val_lbl)
+		val_lbl.add_theme_font_size_override(&"font_size", 20)
+		val_lbl.add_theme_color_override(&"font_color", Color(0.60, 0.55, 0.50, 1.0))
 
-		stats_vbox.add_child(row)
+		vbox.add_child(top_row)
+		vbox.add_child(val_lbl)
+		tile.add_child(vbox)
+		stats_grid.add_child(tile)
 
 func _on_upgrade_pressed() -> void:
 	if _state.is_empty():
