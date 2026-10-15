@@ -31,10 +31,10 @@ var _pod_scales: Array[float] = [1.0, 1.0]
 var pod_button_0: Control = null
 var pod_button_1: Control = null
 
-# Coordonnées des Pods
-const POD_0_Y: float = 780.0 # Pod Bas
-const POD_1_Y: float = 620.0 # Pod Haut
-const POD_RADIUS: float = 40.0
+# Coordonnées des Pods (abaissés pour un confort optimal sous le pouce droit)
+const POD_0_Y: float = 1000.0 # Pod Bas (hauteur directe du pouce)
+const POD_1_Y: float = 880.0  # Pod Haut (immédiatement au-dessus)
+const POD_RADIUS: float = 42.0
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -146,7 +146,7 @@ func _draw() -> void:
 
 	# 1. TUBE VERTICAL DE RÉSERVE EN HAUT
 	var tube_top_y: float = 84.0
-	var tube_h: float = 380.0
+	var tube_h: float = (POD_1_Y - POD_RADIUS) - tube_top_y - 18.0
 	var tube_rect: Rect2 = Rect2(8.0, tube_top_y, w - 16.0, tube_h)
 
 	if _tex_tube_bg:
@@ -155,15 +155,17 @@ func _draw() -> void:
 		draw_rect(tube_rect, Color(0.14, 0.08, 0.2, 0.75), true)
 
 	# Étagères en verre de réserve
-	for s in range(1, 4):
-		var shelf_y: float = tube_top_y + (float(s) * 95.0)
+	var num_shelves: int = 4
+	var shelf_step: float = tube_h / float(num_shelves)
+	for s in range(1, num_shelves):
+		var shelf_y: float = tube_top_y + (float(s) * shelf_step)
 		draw_line(Vector2(20.0, shelf_y), Vector2(w - 20.0, shelf_y), Color(0.9, 0.7, 0.4, 0.35), 2.0)
 
 	# Bonbons en réserve dans le tube
 	for i in range(mini(3, reserve_balls.size())):
-		var ball_y: float = tube_top_y + tube_h - (float(i) * 95.0) - 52.0
+		var ball_y: float = tube_top_y + tube_h - (float(i) * shelf_step) - (shelf_step * 0.5)
 		var b_type: StringName = reserve_balls[i]
-		_draw_candy_ball(Vector2(center_x, ball_y), 20.0, b_type, 0.85)
+		_draw_candy_ball(Vector2(center_x, ball_y), 21.0, b_type, 0.85)
 
 	# 2. TOBOGGAN EN SUCRE TRANSPARENT COURBE
 	_draw_delivery_chute(center_x)
@@ -251,9 +253,9 @@ func _draw_pod_chamber(pos: Vector2, pod_index: int, pod_label: String) -> void:
 
 func _draw_delivery_chute(center_x: float) -> void:
 	# Toboggan en verre translucide guidant les bonbons des Pods vers l'arène
-	var p_start: Vector2 = Vector2(center_x, POD_0_Y + POD_RADIUS + 4.0)
-	var p_ctrl: Vector2 = Vector2(center_x - 10.0, 960.0)
-	var p_end: Vector2 = Vector2(-16.0, 1020.0) # S'oriente vers tube_exit_position dans l'arène
+	var p_start: Vector2 = Vector2(center_x, POD_0_Y + POD_RADIUS + 2.0)
+	var p_ctrl: Vector2 = Vector2(center_x - 12.0, POD_0_Y + POD_RADIUS + 35.0)
+	var p_end: Vector2 = Vector2(-16.0, POD_0_Y + POD_RADIUS + 40.0) # S'oriente vers l'arène
 
 	# Courbe de verre extérieure
 	var curve_pts_l: PackedVector2Array = PackedVector2Array()
