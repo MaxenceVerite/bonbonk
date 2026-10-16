@@ -18,6 +18,7 @@ var current_screen_state: ScreenState = ScreenState.TITLE
 @onready var booster_modal: BoosterOpeningModal = $UI/BoosterOpeningModal
 @onready var intermission_overlay: IntermissionOverlay = $UI/IntermissionOverlay
 @onready var bumper_placement_overlay: BumperPlacementOverlay = $UI/BumperPlacementOverlay
+@onready var game_over_modal: GameOverModal = $UI/GameOverModal
 
 # HUD
 @onready var btn_back_to_menu: Button = $UI/HUD/TopBar/VBox/TopRow/BtnBackMenu
@@ -63,13 +64,27 @@ func _ready() -> void:
 	if bumper_placement_overlay != null:
 		bumper_placement_overlay.placement_completed.connect(_on_bumper_placement_completed)
 	
+	if game_over_modal != null:
+		game_over_modal.replay_pressed.connect(launch_game)
+		game_over_modal.return_to_menu_pressed.connect(show_main_menu)
+	
 	# Liaison Fabrique, Tube & Dual-Pods
 	if board != null and ball_factory_ui != null:
 		board.factory_state_changed.connect(ball_factory_ui.set_factory_state)
 		ball_factory_ui.pod_launch_requested.connect(board.launch_ball_from_pod)
 		
+	# Centrage dynamique du plateau lors du redimensionnement (mode plein écran / bureau / tablette)
+	get_viewport().size_changed.connect(_update_board_position)
+	_update_board_position()
+	
 	# Démarrage au TitleScreen
 	show_title_screen()
+
+func _update_board_position() -> void:
+	var vp_width: float = get_viewport_rect().size.x
+	var content_x: float = maxf(0.0, (vp_width - 720.0) * 0.5)
+	if board != null:
+		board.position.x = content_x
 
 func _on_open_booster_requested() -> void:
 	if SaveManager.available_boosters.is_empty():
@@ -83,8 +98,14 @@ func show_title_screen() -> void:
 	main_menu.visible = false
 	hud.visible = false
 	touch_controls.visible = false
+	if intermission_overlay != null:
+		intermission_overlay.visible = false
 	if bumper_placement_overlay != null:
 		bumper_placement_overlay.visible = false
+	if game_over_modal != null:
+		game_over_modal.visible = false
+	if wave_director != null:
+		wave_director.stop_waves()
 	if board != null:
 		board.visible = false
 		board.reset_board()
@@ -95,8 +116,14 @@ func show_main_menu() -> void:
 	main_menu.visible = true
 	hud.visible = false
 	touch_controls.visible = false
+	if intermission_overlay != null:
+		intermission_overlay.visible = false
 	if bumper_placement_overlay != null:
 		bumper_placement_overlay.visible = false
+	if game_over_modal != null:
+		game_over_modal.visible = false
+	if wave_director != null:
+		wave_director.stop_waves()
 	
 	main_menu.set_last_score(last_score)
 	if board != null:
@@ -110,6 +137,10 @@ func launch_game() -> void:
 	hud.visible = true
 	touch_controls.visible = true
 	intermission_overlay.visible = false
+	if game_over_modal != null:
+		game_over_modal.visible = false
+	if wave_director != null:
+		wave_director.stop_waves()
 
 	# Réinitialisation de la partie
 	current_score = 0
@@ -152,7 +183,8 @@ func _on_wave_spawn_enemy(scene_path: String, spawn_x: float) -> void:
 		board.spawn_enemy_by_path(scene_path, spawn_x)
 
 func _on_wave_cleared(cleared_wave_num: int) -> void:
-	if current_hp <= 0:
+	# Sécurité stricte : ignorer si on n'est plus en partie active ou si mort
+	if current_screen_state != ScreenState.GAME or current_hp <= 0:
 		return
 	if board != null:
 		board.on_wave_cleared_stability()
@@ -203,10 +235,29 @@ func _on_score_changed(new_score: int, _delta: int) -> void:
 
 func _on_game_over() -> void:
 	last_score = current_score
-	intermission_overlay.visible = false
+	if intermission_overlay != null:
+		intermission_overlay.visible = false
 	if wave_director != null:
-		wave_director.is_wave_active = false
-	# Petit délai puis retour au menu principal
-	var tween: Tween = create_tween()
-	tween.tween_interval(1.2)
-	tween.tween_callback(show_main_menu)
+		wave_director.stop_waves()
+	if board != null:
+		board.on_wave_cleared_stability()
+	if ball_factory_ui != null:
+		ball_factory_ui.is_interaction_enabled = false
+	touch_controls.visible = false
+	
+	# Calcul du gain d'or : 15 pièces par manche réussie + bonus de 1 pièce par tranche de 200 pts
+	var waves_survived: int = maxi(0, current_wave - 1)
+	var gold_earned: int = (waves_survived * 15) + int(current_score / 200)
+	gold_earned = maxi(5, gold_earned) # Récompense minimale de participation
+	
+	# Enregistrement dans SaveManager & Profil
+	var summary_data: Dictionary = SaveManager.record_game_results(current_score, waves_survived, gold_earned)
+	
+	# Affichage de la modale récapitulative
+	if game_over_modal != null:
+		game_over_modal.show_game_over(summary_data)
+	else:
+		# Fallback vers le menu si absent
+		var tween: Tween = create_tween()
+		tween.tween_interval(1.2)
+		tween.tween_callback(show_main_menu)

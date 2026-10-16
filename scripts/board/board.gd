@@ -14,8 +14,8 @@ extends Node2D
 
 @export var bumper_scene: PackedScene
 
-# Point d'injection où la balle arrive dans l'arène (directement sur le plan incliné droit à x = 540, y = 1010)
-@export var tube_exit_position: Vector2 = Vector2(540, 1010)
+# Point d'injection où la balle arrive dans l'arène (sur le plan incliné droit)
+@export var tube_exit_position: Vector2 = Vector2(530, 1100)
 
 @onready var left_gate: WoodenGateFlipper = $Gates/LeftGate
 @onready var right_gate: WoodenGateFlipper = $Gates/RightGate

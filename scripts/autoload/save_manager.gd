@@ -316,6 +316,28 @@ func add_gold(amount: int) -> void:
 	EventBus.gold_changed.emit(gold, amount)
 	request_save()
 
+func record_game_results(final_score: int, waves_cleared: int, gold_earned: int) -> Dictionary:
+	var is_new_record: bool = false
+	if current_profile != null:
+		var best: int = current_profile.stats.get("best_score", 0)
+		if final_score > best:
+			current_profile.stats["best_score"] = final_score
+			is_new_record = true
+		current_profile.stats["games_played"] = current_profile.stats.get("games_played", 0) + 1
+	
+	if gold_earned > 0:
+		add_gold(gold_earned)
+	else:
+		request_save()
+		
+	return {
+		"final_score": final_score,
+		"waves_cleared": waves_cleared,
+		"gold_earned": gold_earned,
+		"is_new_record": is_new_record,
+		"best_score": current_profile.stats.get("best_score", final_score) if current_profile != null else final_score
+	}
+
 func spend_gold(amount: int) -> bool:
 	if gold >= amount:
 		gold -= amount

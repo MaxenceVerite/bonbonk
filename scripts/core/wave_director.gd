@@ -170,6 +170,11 @@ func _get_unit_scene_path(u_key: String) -> String:
 	var info: Dictionary = unit_costs.get(u_key, {})
 	return info.get("scene_path", "res://scenes/enemies/enemy_tomato.tscn")
 
+func stop_waves() -> void:
+	is_wave_active = false
+	all_enemies_spawned = false
+	_pending_spawns.clear()
+
 func _process(delta: float) -> void:
 	if not is_wave_active:
 		return

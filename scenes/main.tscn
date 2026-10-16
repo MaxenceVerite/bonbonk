@@ -14,6 +14,7 @@
 [ext_resource type="Texture2D" path="res://assets/ui/patch_btn_yellow_n.png" id="12_btn_back"]
 [ext_resource type="PackedScene" path="res://scenes/ui/intermission_overlay.tscn" id="13_intermission"]
 [ext_resource type="PackedScene" path="res://scenes/ui/bumper_placement_overlay.tscn" id="14_placement"]
+[ext_resource type="PackedScene" path="res://scenes/ui/game_over_modal.tscn" id="15_game_over"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBox_ScoreCard"]
 texture = ExtResource("11_card_bg")
@@ -43,9 +44,12 @@ visible = false
 [node name="HUD" type="Control" parent="UI"]
 visible = false
 layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
 anchor_bottom = 1.0
+offset_left = -360.0
+offset_right = 360.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -171,5 +175,8 @@ visible = false
 visible = false
 
 [node name="BoosterOpeningModal" parent="UI" instance=ExtResource("7_booster_modal")]
+visible = false
+
+[node name="GameOverModal" parent="UI" instance=ExtResource("15_game_over")]
 visible = false
 

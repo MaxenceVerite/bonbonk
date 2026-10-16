@@ -1,0 +1,269 @@
+[gd_scene load_steps=7 format=3 uid="uid://gameovermodal01"]
+
+[ext_resource type="Script" path="res://scripts/ui/game_over_modal.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_candy_card.png" id="2_card_bg"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_badge_gold.png" id="3_badge_gold"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_Card"]
+texture = ExtResource("2_card_bg")
+texture_margin_left = 28.0
+texture_margin_top = 24.0
+texture_margin_right = 28.0
+texture_margin_bottom = 30.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_RecordBadge"]
+texture = ExtResource("3_badge_gold")
+texture_margin_left = 16.0
+texture_margin_top = 8.0
+texture_margin_right = 16.0
+texture_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_StatBox"]
+bg_color = Color(0.96, 0.9, 0.82, 0.85)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+
+[node name="GameOverModal" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="DimBackdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.04, 0.12, 0.75)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(460, 480)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_Card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.18, 0.08, 1)
+theme_override_font_sizes/font_size = 32
+text = "💥 FIN DE PARTIE 💥"
+horizontal_alignment = 1
+
+[node name="RecordBadge" type="PanelContainer" parent="CenterContainer/Panel/VBox"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBox_RecordBadge")
+
+[node name="RecordLabel" type="Label" parent="CenterContainer/Panel/VBox/RecordBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.32, 0.14, 0.04, 1)
+theme_override_font_sizes/font_size = 18
+text = "✨ NOUVEAU RECORD ! ✨"
+horizontal_alignment = 1
+
+[node name="StatsGrid" type="GridContainer" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="ScoreBox" type="PanelContainer" parent="CenterContainer/Panel/VBox/StatsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBox_StatBox")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/StatsGrid/ScoreBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="Lbl" type="Label" parent="CenterContainer/Panel/VBox/StatsGrid/ScoreBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.4, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "SCORE"
+horizontal_alignment = 1
+
+[node name="ScoreVal" type="Label" parent="CenterContainer/Panel/VBox/StatsGrid"]
+_import_path = NodePath("")
+unique_name_in_owner = false
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
+visible = true
+modulate = Color(1, 1, 1, 1)
+self_modulate = Color(1, 1, 1, 1)
+show_behind_parent = false
+top_level = false
+clip_children = 0
+light_mask = 1
+visibility_layer = 1
+z_index = 0
+z_as_relative = true
+y_sort_enabled = false
+texture_filter = 0
+texture_repeat = 0
+material = null
+use_parent_material = false
+clip_contents = false
+custom_minimum_size = Vector2(0, 0)
+layout_direction = 0
+layout_mode = 2
+size_flags_horizontal = 1
+size_flags_vertical = 4
+size_flags_stretch_ratio = 1.0
+localize_numeral_system = true
+tooltip_text = ""
+focus_neighbor_left = NodePath("")
+focus_neighbor_top = NodePath("")
+focus_neighbor_right = NodePath("")
+focus_neighbor_bottom = NodePath("")
+focus_next = NodePath("")
+focus_previous = NodePath("")
+focus_mode = 0
+mouse_filter = 2
+mouse_force_pass_scroll_events = true
+mouse_default_cursor_shape = 0
+theme = null
+theme_type_variation = &""
+theme_override_colors/font_color = Color(0.36, 0.18, 0.08, 1)
+theme_override_font_sizes/font_size = 24
+text = "0"
+label_settings = null
+horizontal_alignment = 1
+vertical_alignment = 0
+autowrap_mode = 0
+justification_flags = 163
+clip_text = false
+text_overrun_behavior = 0
+ellipsis_char = "…"
+uppercase = false
+tab_stops = PackedFloat32Array()
+lines_skipped = 0
+max_lines_visible = -1
+visible_characters = -1
+visible_characters_behavior = 0
+visible_ratio = 1.0
+text_direction = 0
+language = ""
+structured_text_bidi_override = 0
+structured_text_bidi_override_options = []
+
+[node name="WavesBox" type="PanelContainer" parent="CenterContainer/Panel/VBox/StatsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBox_StatBox")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/StatsGrid/WavesBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="Lbl" type="Label" parent="CenterContainer/Panel/VBox/StatsGrid/WavesBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.4, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "MANCHES"
+horizontal_alignment = 1
+
+[node name="WavesVal" type="Label" parent="CenterContainer/Panel/VBox/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.18, 0.08, 1)
+theme_override_font_sizes/font_size = 24
+text = "0"
+horizontal_alignment = 1
+
+[node name="GoldBox" type="PanelContainer" parent="CenterContainer/Panel/VBox/StatsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBox_StatBox")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/StatsGrid/GoldBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="Lbl" type="Label" parent="CenterContainer/Panel/VBox/StatsGrid/GoldBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.4, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "OR GAGNÉ"
+horizontal_alignment = 1
+
+[node name="GoldVal" type="Label" parent="CenterContainer/Panel/VBox/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.55, 0.05, 1)
+theme_override_font_sizes/font_size = 24
+text = "+0 🪙"
+horizontal_alignment = 1
+
+[node name="BestBox" type="PanelContainer" parent="CenterContainer/Panel/VBox/StatsGrid"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBox_StatBox")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel/VBox/StatsGrid/BestBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="Lbl" type="Label" parent="CenterContainer/Panel/VBox/StatsGrid/BestBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.4, 0.3, 1)
+theme_override_font_sizes/font_size = 14
+text = "MEILLEUR"
+horizontal_alignment = 1
+
+[node name="BestVal" type="Label" parent="CenterContainer/Panel/VBox/StatsGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.18, 0.08, 1)
+theme_override_font_sizes/font_size = 24
+text = "0"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BtnRow" type="VBoxContainer" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BtnReplay" type="Button" parent="CenterContainer/Panel/VBox/BtnRow"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_type_variation = &"ButtonMint"
+theme_override_font_sizes/font_size = 22
+text = "🔄 REJOUER"
+
+[node name="BtnMenu" type="Button" parent="CenterContainer/Panel/VBox/BtnRow"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_type_variation = &"ButtonOrange"
+theme_override_font_sizes/font_size = 20
+text = "🏠 MENU PRINCIPAL"

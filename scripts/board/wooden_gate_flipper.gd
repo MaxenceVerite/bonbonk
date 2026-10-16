@@ -38,6 +38,11 @@ func _ready() -> void:
 	# Porte droite : orientée vers le centre avec 180° - 7° = 173° (vers le bas)
 	var base_rest: float = (180.0 - 7.0) if is_right else 7.0
 	rotation_degrees = base_rest
+	
+	# Ajuste la projection de l'ombre portée (l'ombre doit toujours tomber vers le bas en coordonnées globales)
+	var shadow: Node2D = get_node_or_null("GateShadow") as Node2D
+	if shadow != null:
+		shadow.position.y = -10.0 if is_right else 10.0
 
 func _physics_process(delta: float) -> void:
 	var is_pressed: bool = Input.is_action_pressed(input_action)
@@ -68,5 +73,12 @@ func _physics_process(delta: float) -> void:
 	if delta > 0.0:
 		current_angular_velocity = (rotation - _prev_rotation) / delta
 	_prev_rotation = rotation
+
+func deactivate() -> void:
+	_was_pressed = false
+	_current_state = State.RETURN
+	var rest_deg: float = (180.0 - 7.0) if is_right else 7.0
+	rotation_degrees = rest_deg
+	current_angular_velocity = 0.0
 
 
