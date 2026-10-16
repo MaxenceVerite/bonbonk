@@ -8,6 +8,7 @@ extends CharacterBody2D
 ## - Pastèque : roulement continu, 30 PV, 20 dégâts, insensibilité au batteur, accélération passive si non touchée
 
 const JuiceSplatScript = preload("res://scripts/effects/juice_splat.gd")
+const DiveTelegraphScript = preload("res://scripts/effects/dive_telegraph_visual.gd")
 
 @export var enemy_data: EnemyData
 @export var target_door_y: float = 1140.0
@@ -18,6 +19,13 @@ const JuiceSplatScript = preload("res://scripts/effects/juice_splat.gd")
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
 var status_component: StatusEffectComponent = null
+var telegraph_visual: DiveTelegraphVisual = null
+
+enum ActionState { NORMAL, DIVE_WINDUP, DIVING }
+var _action_state: ActionState = ActionState.NORMAL
+var _windup_timer: float = 0.0
+var _dive_target_gate: WoodenGateFlipper = null
+var _dive_target_pos: Vector2 = Vector2.ZERO
 
 var _time_alive: float = 0.0
 var _is_dying: bool = false
@@ -89,6 +97,10 @@ func _ready() -> void:
 	add_child(status_component)
 	status_component.setup(self, visual_container)
 
+	telegraph_visual = DiveTelegraphScript.new()
+	add_child(telegraph_visual)
+	telegraph_visual.setup(enemy_data.can_be_parried if enemy_data != null else true)
+
 	if enemy_data != null:
 		health_component.set_max_health(enemy_data.max_health)
 		_current_move_speed = enemy_data.get_speed_from_tier()
@@ -117,8 +129,9 @@ func _compute_bumper_avoidance(current_dir: Vector2, speed: float) -> Vector2:
 
 	var avoid_force: Vector2 = Vector2.ZERO
 	var my_pos: Vector2 = global_position
-	var lookahead_dist: float = 135.0
-	var bumper_safe_radius: float = 78.0
+	# Lookahead augmenté pour anticiper bien plus tôt et rayon de sécurité élargi
+	var lookahead_dist: float = 175.0
+	var bumper_safe_radius: float = 95.0
 
 	for node in bumpers:
 		var bumper: Node2D = node as Node2D
@@ -126,29 +139,37 @@ func _compute_bumper_avoidance(current_dir: Vector2, speed: float) -> Vector2:
 			continue
 
 		var to_bumper: Vector2 = bumper.global_position - my_pos
-		# Le bumper doit être situé devant l'ennemi (vers le bas)
-		if to_bumper.y <= 0.0 or to_bumper.y > lookahead_dist:
+		var dist: float = to_bumper.length()
+
+		# Détection si le bumper est devant (y > -20 pour inclure les contacts directs au sommet)
+		if to_bumper.y < -20.0 or dist > lookahead_dist:
 			continue
 
-		var dist: float = to_bumper.length()
 		var lateral_offset: float = to_bumper.x
 
-		# Si le bumper se dresse dans le couloir de descente
+		# Si l'ennemi est dans le cylindre ou heurte le sommet du bumper
 		if absf(lateral_offset) < bumper_safe_radius:
-			# Décision organique : contourner selon son biais préférentiel (gauche ou droite)
+			# Choix directionnel dynamique :
+			# Si l'ennemi est légèrement à gauche du centre du bumper -> glisser à gauche (-1.0)
+			# S'il est légèrement à droite -> glisser à droite (+1.0)
+			# S'il est exactement au centre (pile à la verticale) -> utiliser son biais organique
 			var chosen_dir_x: float = bypass_bias
-			if my_pos.x < 110.0:
-				# Trop proche du mur gauche -> sécurise vers la droite
+			if absf(lateral_offset) > 2.0:
+				chosen_dir_x = -1.0 if lateral_offset > 0.0 else 1.0
+			
+			# Contraintes de bordures arène (murs latéraux à 28px et 592px)
+			if my_pos.x < 130.0:
 				chosen_dir_x = 1.0
-			elif my_pos.x > 490.0:
-				# Trop proche du mur droit -> sécurise vers la gauche
+			elif my_pos.x > 470.0:
 				chosen_dir_x = -1.0
 
-			var proximity: float = 1.0 - (dist / lookahead_dist)
-			var steer_strength: float = proximity * speed * 2.5
+			var proximity: float = 1.0 - clampf(dist / lookahead_dist, 0.0, 1.0)
+			# Force latérale puissante pour contourner
+			var steer_strength: float = (0.5 + proximity * 1.5) * speed * 2.8
 			avoid_force.x += chosen_dir_x * steer_strength
-			avoid_force.y -= proximity * speed * 0.35
-			break # Évite en priorité l'obstacle le plus imminent
+			# Légère déviation vers le bas pour ne jamais stagner au sommet
+			avoid_force.y += speed * 0.4
+			break # Cible en priorité le bumper le plus proche
 	return avoid_force
 
 func _physics_process(delta: float) -> void:
@@ -187,12 +208,51 @@ func _physics_process(delta: float) -> void:
 	if status_component != null:
 		status_component.update_status(delta)
 
-	# 1. Calcul de la vitesse et de la direction selon le pattern
+	# 1. Calcul du déplacement selon l'état d'action (Normal, Windup télégraphié ou Dive)
 	var effective_speed: float = 0.0
 	var walk_velocity: Vector2 = Vector2.ZERO
-
 	var is_immobile: bool = status_component.is_immobilized() if status_component != null else false
-	if not is_immobile:
+
+	if _action_state == ActionState.DIVE_WINDUP:
+		# En phase de préparation de charge : immobile, télégraphe animé et pulsation d'alerte
+		_windup_timer += delta
+		var windup_duration: float = enemy_data.dive_windup_time if enemy_data != null else 0.35
+		var progress: float = clampf(_windup_timer / windup_duration, 0.0, 1.0)
+		if telegraph_visual != null:
+			telegraph_visual.set_progress(progress)
+
+		# Squash d'anticipation et modulation de couleur rouge/alerte
+		var squash_f: float = 1.0 + sin(progress * PI) * 0.25
+		visual_container.scale = Vector2(1.0 / squash_f, squash_f)
+		if progress >= 0.85:
+			visual_container.modulate = Color(1.8, 1.6, 0.8, 1.0) # Flash doré/vert imminent
+		else:
+			visual_container.modulate = Color(1.8, 0.7, 0.7, 1.0) # Alerte rougeoyante
+
+		if _windup_timer >= windup_duration:
+			# Déclenchement de la ruée
+			_action_state = ActionState.DIVING
+			if telegraph_visual != null:
+				telegraph_visual.stop_telegraph()
+			visual_container.scale = Vector2.ONE
+			visual_container.modulate = Color.WHITE
+
+	elif _action_state == ActionState.DIVING:
+		# En pleine charge : ruée rapide directement vers la porte cible
+		var d_speed: float = enemy_data.dive_speed if enemy_data != null else 520.0
+		var to_target: Vector2 = _dive_target_pos - global_position
+		if to_target.length() > 5.0:
+			walk_velocity = to_target.normalized() * d_speed
+		else:
+			walk_velocity = Vector2.DOWN * d_speed
+
+		# Légère inclinaison dans la direction du plongeon
+		visual_container.rotation = walk_velocity.angle() - (PI * 0.5)
+
+	elif not is_immobile:
+		# Déplacement normal : vérifier si on approche de la porte pour déclencher la charge
+		_check_for_suicide_dive()
+
 		var base_speed: float = enemy_data.get_speed_from_tier() if enemy_data else 80.0
 
 		# Trait Pastèque : Accélération progressive après 3s sans dégât
@@ -251,7 +311,17 @@ func _physics_process(delta: float) -> void:
 				if bumper_obj != null:
 					bumper_obj.play_jiggle()
 			else:
+				# Si l'ennemi percute le sommet du bumper (normale vers le haut y < -0.3)
+				# On injecte une impulsion tangentielle latérale pour le faire glisser sur le flanc
 				var slide_vel: Vector2 = velocity.slide(collision_normal)
+				if collision_normal.y < -0.2:
+					var push_side: float = 1.0 if (collision_normal.x > 0.0 or (collision_normal.x == 0.0 and bypass_bias > 0.0)) else -1.0
+					if global_position.x < 130.0:
+						push_side = 1.0
+					elif global_position.x > 470.0:
+						push_side = -1.0
+					var tangent: Vector2 = Vector2(push_side * absf(collision_normal.y), absf(collision_normal.x)).normalized()
+					slide_vel = tangent * maxi(80, int(velocity.length()))
 				move_and_collide(slide_vel * delta)
 
 		# Collision avec la porte / batteur en chocolat
@@ -262,19 +332,35 @@ func _physics_process(delta: float) -> void:
 			var collision_normal: Vector2 = collision.get_normal()
 			var dmg: int = enemy_data.damage_on_escape if (enemy_data != null) else 1
 
-			if gate.is_kicking() and enemy_data != null and enemy_data.can_be_kicked_by_gate:
-				# Poussée active par le batteur :
-				# Projeté comme une bille, selon son poids, sans infliger de dégâts au joueur
+			# La parade n'est possible que si :
+			# 1. L'ennemi est vulnérable au contre (can_be_parried = true)
+			# 2. Le batteur est dans sa fenêtre active de montée rapide (is_in_parry_window)
+			var is_parry_successful: bool = gate.is_in_parry_window() and enemy_data != null and enemy_data.can_be_parried
+
+			if is_parry_successful:
+				# SUPER CONTRE / PARRY RÉUSSI !
+				# L'ennemi est catapulté en cloche vers le haut sans toucher les PV du joueur
 				var mass: float = maxf(0.3, enemy_data.mass_weight)
-				var kick_speed: float = (1200.0 / mass) * enemy_data.kick_rebound_factor
-				var push_direction: Vector2 = (gate_vel.normalized() * 0.4 + collision_normal * 1.0 + Vector2.UP * 0.8).normalized()
+				var kick_speed: float = (1400.0 / mass) * enemy_data.kick_rebound_factor
+				var push_direction: Vector2 = (gate_vel.normalized() * 0.4 + collision_normal * 1.0 + Vector2.UP * 1.2).normalized()
 
 				_is_projected_by_gate = true
 				_projection_time = 0.0
+				_action_state = ActionState.NORMAL
+				if telegraph_visual != null:
+					telegraph_visual.stop_telegraph()
+				visual_container.rotation = 0.0
 				_knockback_velocity = push_direction * kick_speed
 				_trigger_impact_squash(collision_normal.angle())
+
+				# Flash d'impact doré et micro vibration tactile
+				visual_container.modulate = Color(2.5, 2.5, 1.2, 1.0)
+				var tw: Tween = create_tween()
+				tw.tween_property(visual_container, "modulate", Color.WHITE, 0.15)
+				Input.vibrate_handheld(35)
 			else:
-				# Porte au repos OU ennemie inébranlable (Pastèque) franchissant la porte :
+				# Contre raté (porte statique, maintenue levée, ou ennemie lourde type Pastèque) :
+				# L'ennemi s'écrase sur la porte, éclate en jus et inflige ses dégâts au joueur
 				EventBus.enemy_escaped.emit(dmg)
 				_explode_at_gate(collision_normal)
 
@@ -349,6 +435,47 @@ func _explode_at_gate(normal: Vector2) -> void:
 	tw.tween_property(self, "position", position + normal * 20.0, 0.12)
 	tw.chain().tween_callback(queue_free)
 
+
+func _check_for_suicide_dive() -> void:
+	if enemy_data == null or not enemy_data.can_suicide_dive:
+		return
+	if _action_state != ActionState.NORMAL or _is_projected_by_gate:
+		return
+
+	var trigger_dist: float = enemy_data.dive_trigger_distance
+	var tree: SceneTree = get_tree()
+	if tree == null:
+		return
+	var gates: Array[Node] = tree.get_nodes_in_group(&"flipper_gates")
+	if gates.is_empty():
+		return
+
+	# Recherche de la porte la plus proche
+	var nearest_gate: WoodenGateFlipper = null
+	var min_dist: float = 999999.0
+	var my_pos: Vector2 = global_position
+
+	for g_node in gates:
+		var gate: WoodenGateFlipper = g_node as WoodenGateFlipper
+		if gate == null or not is_instance_valid(gate):
+			continue
+		# On cible le centre utile de la lame de batteur
+		var gate_center: Vector2 = gate.global_position + gate.transform.x * 65.0
+		var d: float = my_pos.distance_to(gate_center)
+		# L'ennemi doit être situé au-dessus de la porte (y < gate.y)
+		if my_pos.y < gate.global_position.y and d < min_dist:
+			min_dist = d
+			nearest_gate = gate
+
+	# Si la porte est à portée de plongeon suicide
+	if nearest_gate != null and min_dist <= trigger_dist:
+		_action_state = ActionState.DIVE_WINDUP
+		_windup_timer = 0.0
+		_dive_target_gate = nearest_gate
+		_dive_target_pos = nearest_gate.global_position + nearest_gate.transform.x * randf_range(40.0, 95.0)
+
+		if telegraph_visual != null:
+			telegraph_visual.start_windup(enemy_data.can_be_parried)
 
 func apply_knockback(impulse: Vector2, hit_angle: float) -> void:
 	if enemy_data != null and not enemy_data.can_be_kicked_by_gate:

@@ -41,6 +41,13 @@ enum MovePattern {
 # Trait spécial : PASTÈQUE (accélération passive si pas touchée)
 @export var can_accelerate_when_idle: bool = false
 
+# Charge suicidaire sur les portes (Suicide Dive & Parry Timing)
+@export var can_suicide_dive: bool = true
+@export var dive_trigger_distance: float = 200.0   # Déclenchement à ~200px de la porte
+@export var dive_windup_time: float = 0.35         # Durée de l'anticipation (telegraph)
+@export var dive_speed: float = 520.0              # Vitesse de la ruée vers la porte
+@export var can_be_parried: bool = true            # False pour les boss/tanks inébranlables comme la Pastèque
+
 @export var move_pattern: MovePattern = MovePattern.WALK_STRAIGHT
 
 # Visuels / Juicy Juice

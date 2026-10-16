@@ -26,6 +26,18 @@ var _prev_rotation: float = 0.0
 func is_kicking() -> bool:
 	return _current_state == State.KICK
 
+## Fenêtre de contre active (Parry Window) :
+## La batte n'est capable d'intercepter et smash l'ennemi QUE lors de son ascension rapide !
+## Si la batte est maintenue levée au repos haut ou si elle redescend, la fenêtre est fermée.
+func is_in_parry_window() -> bool:
+	if _current_state != State.KICK:
+		return false
+	# Vitesse angulaire ascensionnelle significative
+	if is_right:
+		return current_angular_velocity > 2.0
+	else:
+		return current_angular_velocity < -2.0
+
 ## Calcule la vitesse linéaire vectorielle exacte de la porte à un point d'impact donné dans l'espace global
 func get_velocity_at_point(point_global: Vector2) -> Vector2:
 	var r: Vector2 = point_global - global_position
@@ -33,6 +45,7 @@ func get_velocity_at_point(point_global: Vector2) -> Vector2:
 	return Vector2(-current_angular_velocity * r.y, current_angular_velocity * r.x)
 
 func _ready() -> void:
+	add_to_group(&"flipper_gates")
 	# Au repos : légère pente de 7° vers le centre pour que la bille roule naturellement
 	# Porte gauche : orientée vers le centre avec +7° (vers le bas)
 	# Porte droite : orientée vers le centre avec 180° - 7° = 173° (vers le bas)
