@@ -92,7 +92,12 @@ func _ready() -> void:
 	if shadow != null:
 		shadow.position.y = -10.0 if is_right else 10.0
 
+var _is_broken: bool = false
+
 func _physics_process(delta: float) -> void:
+	if _is_broken:
+		return
+
 	var is_pressed: bool = Input.is_action_pressed(input_action)
 	var just_pressed: bool = is_pressed and not _was_pressed
 	_was_pressed = is_pressed
@@ -124,5 +129,36 @@ func deactivate() -> void:
 	var rest_deg: float = (180.0 - 7.0) if is_right else 7.0
 	rotation_degrees = rest_deg
 	current_angular_velocity = 0.0
+
+## Écroulement dramatique lors du Game Over
+func collapse_and_fall() -> void:
+	if _is_broken:
+		return
+	_is_broken = true
+	set_physics_process(false)
+
+	# Désactive la collision pour laisser la horde passer
+	var col: CollisionShape2D = get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if col != null:
+		col.set_deferred(&"disabled", true)
+
+	var target_rot: float = rotation + (1.4 if is_right else -1.4)
+	var target_y: float = position.y + 160.0
+
+	var tw: Tween = create_tween().set_parallel(true)
+	tw.tween_property(self, "position:y", target_y, 0.75).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tw.tween_property(self, "rotation", target_rot, 0.75).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tw.tween_property(self, "modulate:a", 0.0, 0.75)
+
+	Input.vibrate_handheld(40)
+
+func reset_gate() -> void:
+	_is_broken = false
+	set_physics_process(true)
+	var col: CollisionShape2D = get_node_or_null("CollisionShape2D") as CollisionShape2D
+	if col != null:
+		col.disabled = false
+	modulate.a = 1.0
+	deactivate()
 
 

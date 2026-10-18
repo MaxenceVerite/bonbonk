@@ -315,14 +315,46 @@ func _on_score_changed(new_score: int, _delta: int) -> void:
 	current_score += new_score
 	score_label.text = "SCORE: %d" % current_score
 
+var _is_game_over_cinematic: bool = false
+var _game_over_summary_data: Dictionary = {}
+var _game_over_cinematic_tween: Tween = null
+
+func _unhandled_input(event: InputEvent) -> void:
+	# Permet de passer (skip) l'animation de fin de partie en touchant ou cliquant l'écran
+	if _is_game_over_cinematic and (event is InputEventMouseButton or event is InputEventScreenTouch):
+		if event.is_pressed():
+			_skip_game_over_cinematic()
+
+func _skip_game_over_cinematic() -> void:
+	if not _is_game_over_cinematic:
+		return
+	_is_game_over_cinematic = false
+	if _game_over_cinematic_tween != null and _game_over_cinematic_tween.is_valid():
+		_game_over_cinematic_tween.kill()
+
+	# Nettoie les ennemis restants
+	if board != null and board.enemy_container != null:
+		for child in board.enemy_container.get_children():
+			if child.has_method(&"despawn"):
+				child.despawn()
+			else:
+				child.queue_free()
+
+	_display_game_over_modal()
+
+func _display_game_over_modal() -> void:
+	_is_game_over_cinematic = false
+	if game_over_modal != null:
+		game_over_modal.show_game_over(_game_over_summary_data)
+	else:
+		show_main_menu()
+
 func _on_game_over() -> void:
 	last_score = current_score
 	if intermission_overlay != null:
 		intermission_overlay.visible = false
 	if wave_director != null:
 		wave_director.stop_waves()
-	if board != null:
-		board.on_wave_cleared_stability()
 	if ball_factory_ui != null:
 		ball_factory_ui.is_interaction_enabled = false
 	touch_controls.visible = false
@@ -333,13 +365,22 @@ func _on_game_over() -> void:
 	gold_earned = maxi(5, gold_earned) # Récompense minimale de participation
 	
 	# Enregistrement dans SaveManager & Profil
-	var summary_data: Dictionary = SaveManager.record_game_results(current_score, waves_survived, gold_earned)
+	_game_over_summary_data = SaveManager.record_game_results(current_score, waves_survived, gold_earned)
 	
-	# Affichage de la modale récapitulative
-	if game_over_modal != null:
-		game_over_modal.show_game_over(summary_data)
-	else:
-		# Fallback vers le menu si absent
-		var tween: Tween = create_tween()
-		tween.tween_interval(1.2)
-		tween.tween_callback(show_main_menu)
+	# Déclenchement de la cinématique de fin de partie
+	_is_game_over_cinematic = true
+
+	# 1. Écroulement des portes et neutralisation des billes sur le plateau
+	if board != null:
+		board.play_game_over_sequence()
+
+	# 2. Ruée de la horde d'ennemis vers la brèche sous le motif chocolat
+	Enemy.trigger_game_over_horde_rush()
+
+	# 3. Minuteur cinématique (1.8s) avant d'afficher la modale, skippable à tout moment par tap
+	_game_over_cinematic_tween = create_tween()
+	_game_over_cinematic_tween.tween_interval(1.8)
+	_game_over_cinematic_tween.tween_callback(func() -> void:
+		if _is_game_over_cinematic:
+			_display_game_over_modal()
+	)

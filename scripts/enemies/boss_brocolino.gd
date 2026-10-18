@@ -32,7 +32,6 @@ var _special_cascade_timer: float = 9.0
 # Positions précises des cibles (centre des portes en bois)
 const TARGET_LEFT_GATE: Vector2 = Vector2(175.0, 1185.0)
 const TARGET_RIGHT_GATE: Vector2 = Vector2(440.0, 1185.0)
-const TARGET_CENTER_GAP: Vector2 = Vector2(308.0, 1185.0)
 
 func _ready() -> void:
 	boss_name = "Brocolino"
@@ -126,13 +125,21 @@ func _execute_phase_attack() -> void:
 		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_RIGHT_GATE, 100.0, 0.82, 1, 2))
 
 	else:
-		# PHASE 3 : Rafale en trio (Série de 3 tirs très véloces : Gauche, Droite, Centre)
+		# PHASE 3 : Rafale en trio alternée (Gauche -> Droite -> Gauche ou inversement) : 100% parabable sur les portes
+		var start_left: bool = (randf() < 0.5)
+		var t1: Vector2 = TARGET_LEFT_GATE if start_left else TARGET_RIGHT_GATE
+		var t2: Vector2 = TARGET_RIGHT_GATE if start_left else TARGET_LEFT_GATE
+		var t3: Vector2 = TARGET_LEFT_GATE if start_left else TARGET_RIGHT_GATE
+		var c1: float = -120.0 if start_left else 120.0
+		var c2: float = 120.0 if start_left else -120.0
+		var c3: float = -90.0 if start_left else 90.0
+
 		var tw: Tween = create_tween()
-		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_LEFT_GATE, -120.0, 0.76, 0, 3))
-		tw.tween_interval(0.20)
-		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_RIGHT_GATE, 120.0, 0.76, 1, 3))
-		tw.tween_interval(0.20)
-		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_CENTER_GAP, (60.0 if randf() < 0.5 else -60.0), 0.72, 2, 3))
+		tw.tween_callback(func() -> void: _spawn_curved_spore(t1, c1, 0.76, 0, 3))
+		tw.tween_interval(0.22)
+		tw.tween_callback(func() -> void: _spawn_curved_spore(t2, c2, 0.76, 1, 3))
+		tw.tween_interval(0.22)
+		tw.tween_callback(func() -> void: _spawn_curved_spore(t3, c3, 0.74, 2, 3))
 
 func _execute_cascade_pattern() -> void:
 	# Rugissement léger

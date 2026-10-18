@@ -98,6 +98,12 @@ func reset_board() -> void:
 	_spawn_timer = 0.0
 	restore_temporary_bumper_overrides()
 	
+	# Remise à neuf des portes en bois
+	if left_gate != null:
+		left_gate.reset_gate()
+	if right_gate != null:
+		right_gate.reset_gate()
+
 	# Nettoie les balles et ennemis en cours via recyclage
 	for b in active_balls:
 		if is_instance_valid(b):
@@ -112,6 +118,35 @@ func reset_board() -> void:
 		
 	# Remplissage du tube avec les bonbons-balles du Deck actif
 	ball_tube.reset(SaveManager.get_active_deck_balls())
+
+## Cinématique de défaite : écroulement des portes et neutralisation des billes
+func play_game_over_sequence() -> void:
+	is_game_running = false
+
+	# 1. Élimine les billes actives
+	if ball_container != null:
+		for child in ball_container.get_children():
+			if child is Ball and is_instance_valid(child) and not child.is_queued_for_deletion():
+				child.shatter()
+	for b in active_balls:
+		if is_instance_valid(b) and not b.is_queued_for_deletion():
+			b.shatter()
+	active_balls.clear()
+
+	# 2. Stopper la fabrique
+	if ball_tube != null:
+		ball_tube.pause_synthesis()
+
+	# 3. Écroulement physique des deux portes en bois
+	if left_gate != null:
+		left_gate.collapse_and_fall()
+	if right_gate != null:
+		right_gate.collapse_and_fall()
+
+	# 4. Éclaboussures de débris au niveau des portes brisées
+	var JuiceSplatScript = preload("res://scripts/effects/juice_splat.gd")
+	JuiceSplatScript.spawn(self, Vector2(175, 1195), Color(0.35, 0.18, 0.08, 1.0), Color(0.5, 0.28, 0.12, 1.0), Color(1.0, 1.0, 1.0, 1.0), 16)
+	JuiceSplatScript.spawn(self, Vector2(440, 1195), Color(0.35, 0.18, 0.08, 1.0), Color(0.5, 0.28, 0.12, 1.0), Color(1.0, 1.0, 1.0, 1.0), 16)
 
 func set_bumper_slots_placement_mode(active: bool) -> void:
 	if bumper_slot_container != null:

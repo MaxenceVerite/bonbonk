@@ -59,7 +59,20 @@ func _exit_tree() -> void:
 
 var _time_alive: float = 0.0
 var _is_dying: bool = false
+var _is_game_over_charging: bool = false
 var _target_door_x: float = 310.0 # Centre de l'ouverture entre les deux batteurs
+
+static func trigger_game_over_horde_rush() -> void:
+	for e in active_enemies:
+		if e != null and is_instance_valid(e) and not e.is_dying():
+			e.start_game_over_rush()
+
+func start_game_over_rush() -> void:
+	_is_game_over_charging = true
+	_knockback_velocity = Vector2.ZERO
+	_is_projected_by_gate = false
+	if collision_shape != null:
+		collision_shape.set_deferred(&"disabled", true)
 
 # Gestion du knockback (projection physique)
 var _knockback_velocity: Vector2 = Vector2.ZERO
@@ -269,6 +282,21 @@ func _physics_process(delta: float) -> void:
 		return
 
 	if _is_dying or is_boss:
+		return
+
+	# Ruée triomphale de la horde lors du Game Over
+	if _is_game_over_charging:
+		_time_alive += delta
+		var rush_dir: Vector2 = (Vector2(308.0, 1340.0) - global_position).normalized()
+		global_position += rush_dir * 320.0 * delta
+		if visual_container != null:
+			visual_container.rotation = sin(_time_alive * 16.0) * 0.15
+		if global_position.y > 1240.0:
+			var fade: float = clampf((1320.0 - global_position.y) / 80.0, 0.0, 1.0)
+			modulate.a = fade
+			scale = Vector2.ONE * (0.4 + 0.6 * fade)
+			if global_position.y > 1310.0 or fade <= 0.05:
+				despawn()
 		return
 
 	_time_alive += delta
