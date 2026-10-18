@@ -13,6 +13,8 @@ signal next_wave_pressed
 @onready var relics_list: VBoxContainer = $CenterContainer/Panel/VBox/RelicsSection/RelicsList
 @onready var btn_next: Button = $CenterContainer/Panel/VBox/BtnNextWave
 
+@export var enable_relic_draft: bool = false
+
 var _has_chosen_relic: bool = false
 var _relic_buttons: Array[Button] = []
 
@@ -24,7 +26,7 @@ func show_intermission(completed_wave: int, next_wave_num: int, next_budget: int
 	info_label.text = "Manche %d (Menace : %d pts)" % [next_wave_num, next_budget]
 	visible = true
 
-	# Préparer le choix de relique
+	# Préparer le choix de relique (si activé)
 	_populate_relic_offerings()
 
 	# Animation pop-in gourmande
@@ -39,6 +41,13 @@ func _populate_relic_offerings() -> void:
 	for child in relics_list.get_children():
 		child.queue_free()
 	_relic_buttons.clear()
+
+	if not enable_relic_draft:
+		relics_section.visible = false
+		_has_chosen_relic = true
+		btn_next.disabled = false
+		btn_next.text = "MANCHE SUIVANTE ➔"
+		return
 
 	var offerings: Array[Relic] = RelicManager.pick_relic_offerings(3)
 	if offerings.is_empty():

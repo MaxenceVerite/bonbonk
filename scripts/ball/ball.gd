@@ -27,12 +27,12 @@ signal split_requested(ball_types: Array[StringName], spawn_pos: Vector2, direct
 var temporary_keywords: Array[BallKeyword] = []
 var _cached_keywords: Array[BallKeyword] = []
 
-# Assistance à la visée (Magnétisme subtil vers les ennemis)
+# Assistance à la visée (Magnétisme percutant vers les ennemis)
 @export_group("Aim Assist")
 @export var aim_assist_enabled: bool = true
-@export var aim_assist_force: float = 450.0
-@export var aim_assist_max_distance: float = 400.0
-@export var aim_assist_max_angle_deg: float = 28.0
+@export var aim_assist_force: float = 1800.0
+@export var aim_assist_max_distance: float = 680.0
+@export var aim_assist_max_angle_deg: float = 48.0
 
 var current_durability: int = 3
 var _stuck_timer: float = 0.0
@@ -167,7 +167,7 @@ func configure_from_card(card_def: CandyCardData, lvl: int) -> void:
 	if card_def == null:
 		return
 	impact_damage = card_def.get_damage_for_level(lvl)
-	aim_assist_force = card_def.get_magnetism_for_level(lvl)
+	aim_assist_force = card_def.get_magnetism_for_level(lvl) * 4.5
 	if physics_material_override != null:
 		physics_material_override.bounce = clampf(card_def.get_bounce_for_level(lvl) * 0.55, 0.2, 0.98)
 
@@ -203,40 +203,41 @@ func _physics_process(delta: float) -> void:
 	for kw in get_all_keywords():
 		kw.on_physics_tick(self, delta)
 
-## Assistance à la visée par magnétisme centripète
+## Assistance à la visée par magnétisme centripète (courbure naturelle vers les ennemis)
 func _apply_aim_assist(delta: float) -> void:
-	# Ne s'active que si la bille monte de façon dynamique
-	if linear_velocity.y >= -120.0:
-		_current_aim_target = null
-		_aim_assist_scan_timer = 0.0
+	# Ne s'active que si la bille ne chute pas lourdement vers les batteurs
+	if linear_velocity.y >= 100.0:
+		_cancel_aim_assist()
 		return
 
-	# Recherche de cible périodique (~16 Hz) pour éviter toute allocation frame par frame
+	# Recherche de cible dynamique (~30 Hz)
 	_aim_assist_scan_timer -= delta
 	if _aim_assist_scan_timer <= 0.0:
-		_aim_assist_scan_timer = 0.06
+		_aim_assist_scan_timer = 0.033
 		_find_best_aim_target()
 
 	if _current_aim_target == null:
+		_cancel_aim_assist()
 		return
 
 	if not is_instance_valid(_current_aim_target) or _current_aim_target.is_dying():
-		_current_aim_target = null
+		_cancel_aim_assist()
 		return
 
 	var to_enemy: Vector2 = _current_aim_target.global_position - global_position
-	# Doit rester strictement au-dessus de la bille
-	if to_enemy.y >= 0.0:
-		_current_aim_target = null
+	# La cible ne doit pas être loin en-dessous de la bille
+	if to_enemy.y >= 70.0:
+		_cancel_aim_assist()
 		return
 
 	var dist: float = to_enemy.length()
-	if dist > aim_assist_max_distance or dist < 20.0:
-		_current_aim_target = null
+	if dist > aim_assist_max_distance or dist < 15.0:
+		_cancel_aim_assist()
 		return
 
 	var vel_len: float = linear_velocity.length()
-	if vel_len < 100.0:
+	if vel_len < 80.0:
+		_cancel_aim_assist()
 		return
 
 	var vel_dir: Vector2 = linear_velocity / vel_len
@@ -245,18 +246,29 @@ func _apply_aim_assist(delta: float) -> void:
 	var max_angle_rad: float = deg_to_rad(aim_assist_max_angle_deg)
 
 	if angle_diff > max_angle_rad:
-		_current_aim_target = null
+		_cancel_aim_assist()
 		return
 
-	# Composante latérale perpendiculaire (effet centripète pur : incurve sans altérer la vitesse scalaire)
+	# Composante latérale perpendiculaire (effet centripète : incurve sans altérer la vitesse scalaire)
 	var perp: Vector2 = Vector2(-vel_dir.y, vel_dir.x)
 	var lateral_sign: float = signf(perp.dot(to_dir))
 	var alignment_factor: float = 1.0 - (angle_diff / max_angle_rad)
 	var distance_factor: float = 1.0 - (dist / aim_assist_max_distance)
-	var steer_weight: float = clampf(alignment_factor * 0.7 + distance_factor * 0.3, 0.2, 1.0)
+	var steer_weight: float = clampf(alignment_factor * 0.75 + distance_factor * 0.25, 0.25, 1.0)
 
-	var lateral_force: Vector2 = perp * lateral_sign * (aim_assist_force * steer_weight)
+	# La force s'adapte à la vélocité scalaire réelle de la bille
+	var speed_scaling: float = clampf(vel_len / 750.0, 0.85, 2.4)
+	var lateral_force: Vector2 = perp * lateral_sign * (aim_assist_force * steer_weight * speed_scaling)
 	apply_central_force(lateral_force)
+
+	# Feedback visuel : le cœur du bonbon s'illumine sous l'attraction
+	if core_glow != null:
+		core_glow.scale = Vector2(1.28, 1.28)
+
+func _cancel_aim_assist() -> void:
+	_current_aim_target = null
+	if core_glow != null:
+		core_glow.scale = Vector2.ONE
 
 func _find_best_aim_target() -> void:
 	var enemies: Array[Enemy] = Enemy.get_active_enemies()
@@ -265,7 +277,7 @@ func _find_best_aim_target() -> void:
 		return
 
 	var vel_len: float = linear_velocity.length()
-	if vel_len < 100.0:
+	if vel_len < 80.0:
 		_current_aim_target = null
 		return
 
@@ -279,11 +291,11 @@ func _find_best_aim_target() -> void:
 			continue
 
 		var to_enemy: Vector2 = enemy.global_position - global_position
-		if to_enemy.y >= 0.0:
+		if to_enemy.y >= 70.0:
 			continue
 
 		var dist: float = to_enemy.length()
-		if dist > aim_assist_max_distance or dist < 20.0:
+		if dist > aim_assist_max_distance or dist < 15.0:
 			continue
 
 		var to_dir: Vector2 = to_enemy / dist
@@ -291,7 +303,7 @@ func _find_best_aim_target() -> void:
 		if angle_diff <= max_angle_rad:
 			var alignment_factor: float = 1.0 - (angle_diff / max_angle_rad)
 			var distance_factor: float = 1.0 - (dist / aim_assist_max_distance)
-			var score: float = alignment_factor * 0.7 + distance_factor * 0.3
+			var score: float = alignment_factor * 0.75 + distance_factor * 0.25
 			if score > best_score:
 				best_score = score
 				chosen = enemy
