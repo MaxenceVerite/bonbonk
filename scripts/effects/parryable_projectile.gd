@@ -24,25 +24,25 @@ var target_pos: Vector2 = Vector2.ZERO
 var flight_duration: float = 1.35
 var current_progress: float = 0.0
 
-@export var reflected_speed: float = 1100.0
-@export var base_damage: int = 8
-@export var perfect_damage: int = 14
+@export var reflected_speed: float = 1250.0
+@export var damage_to_player: int = 2
 
 var velocity: Vector2 = Vector2.ZERO
 var target_boss: Node2D = null
 var _time_alive: float = 0.0
-var _radius: float = 20.0
+var _radius: float = 22.0
+var _spin_angle: float = 0.0
 
 # Combo & Perfection du renvoi
 var is_perfect_parry: bool = false
 var series_index: int = 0
 var series_total: int = 1
 
-func setup_curved(p_start: Vector2, p_target: Vector2, p_curve_offset_x: float, p_boss: Node2D, p_duration: float = 1.25, p_series_idx: int = 0, p_series_tot: int = 1) -> void:
+func setup_curved(p_start: Vector2, p_target: Vector2, p_curve_offset_x: float, p_boss: Node2D, p_duration: float = 0.85, p_series_idx: int = 0, p_series_tot: int = 1) -> void:
 	start_pos = p_start
 	target_pos = p_target
 	target_boss = p_boss
-	flight_duration = maxf(0.8, p_duration)
+	flight_duration = maxf(0.5, p_duration)
 	series_index = p_series_idx
 	series_total = p_series_tot
 	current_progress = 0.0
@@ -64,6 +64,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_time_alive += delta
+	_spin_angle += delta * 4.5
 	queue_redraw()
 
 	match current_state:
@@ -85,7 +86,7 @@ func _physics_process(delta: float) -> void:
 		State.REFLECTED_TO_BOSS:
 			if target_boss != null and is_instance_valid(target_boss):
 				var to_boss: Vector2 = (target_boss.global_position - global_position).normalized()
-				velocity = velocity.lerp(to_boss * reflected_speed, delta * 14.0)
+				velocity = velocity.lerp(to_boss * reflected_speed, delta * 16.0)
 				if global_position.distance_to(target_boss.global_position) < 75.0:
 					_impact_boss(target_boss)
 					return
@@ -203,55 +204,79 @@ func _explode_at_player() -> void:
 		return
 	current_state = State.EXPLODING
 
-	# Dégât au joueur
-	EventBus.enemy_escaped.emit(1)
+	# Dégât accru au joueur (ex: 2 PV de dégâts car tir massif de Boss)
+	EventBus.enemy_escaped.emit(damage_to_player)
 
 	JuiceSplatScript.spawn(
 		get_parent(),
 		global_position,
-		Color(0.25, 0.65, 0.15, 1.0),
-		Color(0.15, 0.45, 0.1, 1.0),
+		Color(0.22, 0.68, 0.18, 1.0),
+		Color(0.12, 0.45, 0.1, 1.0),
 		Color(0.95, 0.2, 0.2, 1.0),
-		14
+		18
 	)
 
 	queue_free()
 
 func _draw() -> void:
 	var c: Vector2 = Vector2.ZERO
-	var pulse: float = 0.85 + 0.15 * sin(_time_alive * 16.0)
+	var pulse: float = 0.88 + 0.12 * sin(_time_alive * 16.0)
 
 	if current_state == State.FALLING_FROM_BOSS:
-		# 1. Aura toxique de la spore
-		draw_circle(c, _radius * 1.5 * pulse, Color(0.25, 0.85, 0.2, 0.25))
+		# 1. Aura de spores / vapeurs végétales toxiques
+		draw_circle(c, _radius * 1.55 * pulse, Color(0.22, 0.82, 0.2, 0.25))
 
-		# 2. Indicateur de parade vectoriel (identique à DiveTelegraphVisual)
-		# Anneau cible fixe
+		# 2. Indicateur de parade vectoriel (DiveTelegraphVisual synchronisé)
 		var target_col: Color = Color(0.2, 1.0, 0.45, 0.95) if current_progress >= 0.78 else Color(1.0, 0.6, 0.15, 0.75)
-		draw_arc(c, _radius + 6.0, 0.0, TAU, 32, target_col, 2.5, true)
+		draw_arc(c, _radius + 7.0, 0.0, TAU, 32, target_col, 2.5, true)
 
-		# Anneau rétrécissant vers la cible avec current_progress
-		var ring_r: float = lerpf(_radius + 32.0, _radius + 6.0, clampf(current_progress, 0.0, 1.0))
+		var ring_r: float = lerpf(_radius + 34.0, _radius + 7.0, clampf(current_progress, 0.0, 1.0))
 		var shrinking_col: Color = Color(1.0, 1.0, 0.5, 1.0) if current_progress >= 0.78 else Color(1.0, 0.8, 0.2, 0.85)
 		draw_arc(c, ring_r, 0.0, TAU, 32, shrinking_col, 3.0, true)
 
-		# Étoile / disque d'or quand la parade parfaite est active
+		# Étoile dorée quand la parade parfaite est active
 		if current_progress >= 0.78:
-			draw_circle(c, 7.0, Color(1.0, 0.95, 0.4, 0.95))
-			draw_circle(c, 3.5, Color.WHITE)
+			draw_circle(c, 8.0, Color(1.0, 0.95, 0.4, 0.95))
+			draw_circle(c, 4.0, Color.WHITE)
 
-		# 3. Corps principal (globe végétal dense)
-		draw_circle(c, _radius, Color(0.16, 0.52, 0.12, 1.0))
-		draw_circle(c, _radius * 0.65, Color(0.38, 0.85, 0.25, 1.0))
-		draw_circle(c + Vector2(-3, -3), _radius * 0.25, Color(0.95, 1.0, 0.7, 0.95))
+		# 3. Corps "Brocolineux" (Tête de fleurette texturée, bourgeons multiples)
+		# Tige / trognon arrière vert clair
+		draw_circle(c + Vector2(0, -6), _radius * 0.45, Color(0.38, 0.72, 0.24, 0.95))
+
+		# Masse principale vert forêt sombre
+		draw_circle(c, _radius, Color(0.12, 0.38, 0.10, 1.0))
+
+		# Fleurettes périphériques (bouquets de brocoli lobés) tournoyant lentement
+		var num_florets: int = 6
+		var floret_rad: float = _radius * 0.52
+		for i in range(num_florets):
+			var angle: float = _spin_angle + float(i) * (TAU / float(num_florets))
+			var offset: Vector2 = Vector2(cos(angle), sin(angle)) * (_radius * 0.68)
+			# Ombre du bouquet
+			draw_circle(c + offset, floret_rad, Color(0.14, 0.44, 0.12, 1.0))
+			# Centre du bouquet vert tendre
+			draw_circle(c + offset, floret_rad * 0.75, Color(0.28, 0.68, 0.18, 1.0))
+			# Pointes bourgeonnantes vert vif texturé
+			draw_circle(c + offset + Vector2(-1.5, -1.5), floret_rad * 0.35, Color(0.62, 0.92, 0.30, 0.95))
+
+		# Cœur central en bouquet dense
+		draw_circle(c, _radius * 0.65, Color(0.18, 0.52, 0.14, 1.0))
+		draw_circle(c + Vector2(-2, -2), _radius * 0.42, Color(0.35, 0.78, 0.22, 1.0))
+		draw_circle(c + Vector2(-4, -4), _radius * 0.20, Color(0.85, 1.0, 0.55, 0.95))
 
 	elif current_state == State.REFLECTED_TO_BOSS:
-		# Rendu fulgurant du tir renvoyé (Parade Parfaite dorée / Cyan éclatant)
+		# Rendu fulgurant du tir renvoyé (Parade Parfaite dorée / Cyan éclatant avec étincelles)
 		var halo_col: Color = Color(1.0, 0.85, 0.25, 0.45) if is_perfect_parry else Color(0.2, 0.85, 1.0, 0.35)
 		var core_col: Color = Color(1.0, 0.98, 0.8, 1.0) if is_perfect_parry else Color(0.85, 1.0, 0.95, 1.0)
 		var ring_col: Color = Color(1.0, 0.9, 0.3, 1.0) if is_perfect_parry else Color(0.2, 0.95, 1.0, 1.0)
 
-		draw_circle(c, _radius * 2.0 * pulse, halo_col)
+		draw_circle(c, _radius * 2.1 * pulse, halo_col)
+		# Fleurettes luminescentes de retour vers l'expéditeur
+		for i in range(5):
+			var a: float = _spin_angle * 2.5 + float(i) * (TAU / 5.0)
+			var off: Vector2 = Vector2(cos(a), sin(a)) * (_radius * 0.6)
+			draw_circle(c + off, _radius * 0.35, ring_col)
+
 		draw_circle(c, _radius * 1.3, ring_col)
 		draw_circle(c, _radius * 0.8, core_col)
 		draw_arc(c, _radius + 5.0, 0.0, TAU, 28, ring_col, 3.0, true)

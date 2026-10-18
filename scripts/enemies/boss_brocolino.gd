@@ -112,27 +112,27 @@ func _execute_phase_attack() -> void:
 	var hp_ratio: float = float(health_component.current_health) / float(health_component.max_health)
 
 	if hp_ratio > 0.67:
-		# PHASE 1 : Tir unique parabolique rapide visant une des deux portes
+		# PHASE 1 : Tir unique parabolique vif visant une des deux portes
 		var use_right: bool = (randf() < 0.5)
 		var target: Vector2 = TARGET_RIGHT_GATE if use_right else TARGET_LEFT_GATE
 		var curve_curve: float = randf_range(80.0, 130.0) * (-1.0 if use_right else 1.0)
-		_spawn_curved_spore(target, curve_curve, 1.2, 0, 1)
+		_spawn_curved_spore(target, curve_curve, 0.85, 0, 1)
 
 	elif hp_ratio > 0.33:
-		# PHASE 2 : Duo de spores (gauche puis droite en pince brossée)
+		# PHASE 2 : Duo de spores rapides (gauche puis droite en pince brossée)
 		var tw: Tween = create_tween()
-		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_LEFT_GATE, -100.0, 1.25, 0, 2))
-		tw.tween_interval(0.35)
-		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_RIGHT_GATE, 100.0, 1.25, 1, 2))
+		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_LEFT_GATE, -100.0, 0.82, 0, 2))
+		tw.tween_interval(0.24)
+		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_RIGHT_GATE, 100.0, 0.82, 1, 2))
 
 	else:
-		# PHASE 3 : Rafale en trio (Série de 3 tirs rapides : Gauche, Droite, Centre)
+		# PHASE 3 : Rafale en trio (Série de 3 tirs très véloces : Gauche, Droite, Centre)
 		var tw: Tween = create_tween()
-		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_LEFT_GATE, -120.0, 1.15, 0, 3))
-		tw.tween_interval(0.28)
-		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_RIGHT_GATE, 120.0, 1.15, 1, 3))
-		tw.tween_interval(0.28)
-		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_CENTER_GAP, (60.0 if randf() < 0.5 else -60.0), 1.10, 2, 3))
+		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_LEFT_GATE, -120.0, 0.76, 0, 3))
+		tw.tween_interval(0.20)
+		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_RIGHT_GATE, 120.0, 0.76, 1, 3))
+		tw.tween_interval(0.20)
+		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_CENTER_GAP, (60.0 if randf() < 0.5 else -60.0), 0.72, 2, 3))
 
 func _execute_cascade_pattern() -> void:
 	# Rugissement léger
@@ -140,10 +140,10 @@ func _execute_cascade_pattern() -> void:
 	tw.tween_property(visual_container, "scale", Vector2(1.15, 1.15), 0.12)
 	tw.tween_property(visual_container, "scale", Vector2.ONE, 0.15)
 
-	# 2 tirs paraboliques croisés
+	# 2 tirs paraboliques croisés rapides
 	tw.tween_callback(func() -> void:
-		_spawn_curved_spore(TARGET_RIGHT_GATE, -140.0, 1.35, 0, 2)
-		_spawn_curved_spore(TARGET_LEFT_GATE, 140.0, 1.35, 1, 2)
+		_spawn_curved_spore(TARGET_RIGHT_GATE, -140.0, 0.88, 0, 2)
+		_spawn_curved_spore(TARGET_LEFT_GATE, 140.0, 0.88, 1, 2)
 	)
 
 func _spawn_curved_spore(target_dest: Vector2, curve_x: float, duration: float, idx: int, tot: int) -> void:
