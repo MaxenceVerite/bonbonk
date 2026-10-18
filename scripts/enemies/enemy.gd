@@ -482,6 +482,13 @@ func _trigger_impact_squash(hit_angle: float) -> void:
 	tween.tween_callback(func() -> void: _is_squashing_from_hit = false)
 
 func _apply_walk_juice() -> void:
+	if status_component != null and status_component.is_stunned():
+		# Tanguement oscillatoire d'étourdissement
+		if visual_container != null:
+			visual_container.rotation = sin(_time_alive * 9.0) * 0.12
+			visual_container.scale = Vector2(1.0 + sin(_time_alive * 7.0) * 0.04, 0.94 + cos(_time_alive * 7.0) * 0.04)
+		return
+
 	if movement_strategy != null and visual_container != null:
 		movement_strategy.apply_visual_juice(self, visual_container, _time_alive, 0.0)
 

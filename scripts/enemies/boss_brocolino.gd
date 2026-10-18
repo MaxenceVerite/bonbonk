@@ -24,6 +24,7 @@ var _projectile_timer: float = 2.4
 var _is_stunned: bool = false
 var _stun_timer: float = 0.0
 var _stun_visual_angle: float = 0.0
+var _recent_proj_hits: Array[float] = []
 
 # Pattern périodique spécial
 var _special_cascade_timer: float = 9.0
@@ -40,6 +41,19 @@ func _ready() -> void:
 	super._ready()
 
 	position.x = 310.0
+
+## Enregistre les impacts de projectiles réfléchis (3+ en moins de 2s = stun 5s)
+func register_reflected_projectile_hit() -> void:
+	var now: float = Time.get_ticks_msec() / 1000.0
+	_recent_proj_hits.append(now)
+
+	# Nettoie les impacts vieux de plus de 2 secondes
+	while _recent_proj_hits.size() > 0 and (now - _recent_proj_hits[0]) > 2.0:
+		_recent_proj_hits.pop_front()
+
+	if _recent_proj_hits.size() >= 3:
+		_recent_proj_hits.clear()
+		apply_boss_stun(5.0)
 
 func apply_boss_stun(duration: float = 2.2) -> void:
 	_is_stunned = true
@@ -59,17 +73,28 @@ func _physics_process(delta: float) -> void:
 	if _is_dying or _is_entering:
 		return
 
+	# Vérifie si le Boss est sous contrôle de foule (Stun ou Gel / Immobilisation)
+	var is_cc: bool = _is_stunned or (status_component != null and status_component.is_immobilized())
+
 	# Gestion de l'état étourdi (Stun)
 	if _is_stunned:
 		_stun_timer -= delta
 		_stun_visual_angle += delta * 6.0
+		# Tanguement oscillatoire pendant le stun
+		if visual_container != null:
+			visual_container.rotation = sin(_time_alive * 9.0) * 0.08
 		queue_redraw()
 		if _stun_timer <= 0.0:
 			_is_stunned = false
+			if visual_container != null:
+				visual_container.rotation = 0.0
 			queue_redraw()
 			var recover_tw: Tween = create_tween()
 			recover_tw.tween_property(visual_container, "position:y", 0.0, 0.2).set_trans(Tween.TRANS_QUAD)
-		return # Ne peut pas attaquer tant qu'il est étourdi !
+
+	# Si le Boss est sous CC (Stun ou Gelée), ses délais d'attaque sont gelés et n'avancent pas !
+	if is_cc:
+		return
 
 	# Attaque périodique classique selon la phase
 	_projectile_timer -= delta

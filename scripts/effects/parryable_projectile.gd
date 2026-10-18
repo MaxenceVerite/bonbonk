@@ -117,61 +117,70 @@ func _on_area_entered(area: Area2D) -> void:
 
 ## Renvoi dynamique par le batteur
 func reflect_projectile(_flipper: WoodenGateFlipper, p_is_perfect: bool) -> void:
+	if not p_is_perfect:
+		# Parade non parfaite : le projectile est détruit net (sans renvoi ni dégât au joueur)
+		_explode_harmless()
+		return
+
 	current_state = State.REFLECTED_TO_BOSS
-	is_perfect_parry = p_is_perfect
-	parried.emit(is_perfect_parry)
+	is_perfect_parry = true
+	parried.emit(true)
 
 	# Vitesse et trajectoire fulgurante vers le Boss
 	var target_dest: Vector2 = target_boss.global_position if (target_boss != null and is_instance_valid(target_boss)) else (global_position + Vector2.UP * 900.0)
 	var dir: Vector2 = (target_dest - global_position).normalized()
-	velocity = dir * (reflected_speed if is_perfect_parry else reflected_speed * 0.8)
+	velocity = dir * reflected_speed
 
 	# Masque ajusté : Layer 4 (Enemies) = 8
 	collision_mask = 8
 
 	# Retours haptiques et score
-	if is_perfect_parry:
-		Input.vibrate_handheld(50)
-		EventBus.score_changed.emit(300, 300)
-		# Éclat étincelant multicolore / doré
-		JuiceSplatScript.spawn(
-			get_parent(),
-			global_position,
-			Color(1.0, 0.95, 0.4, 1.0),
-			Color(0.2, 1.0, 0.5, 1.0),
-			Color(1.0, 1.0, 1.0, 1.0),
-			16
-		)
-	else:
-		Input.vibrate_handheld(25)
-		EventBus.score_changed.emit(100, 100)
-		JuiceSplatScript.spawn(
-			get_parent(),
-			global_position,
-			Color(0.4, 0.85, 0.3, 1.0),
-			Color(0.2, 0.6, 0.2, 1.0),
-			Color(1.0, 1.0, 1.0, 1.0),
-			8
-		)
+	Input.vibrate_handheld(50)
+	EventBus.score_changed.emit(300, 300)
+	# Éclat étincelant multicolore / doré
+	JuiceSplatScript.spawn(
+		get_parent(),
+		global_position,
+		Color(1.0, 0.95, 0.4, 1.0),
+		Color(0.2, 1.0, 0.5, 1.0),
+		Color(1.0, 1.0, 1.0, 1.0),
+		16
+	)
+
+func _explode_harmless() -> void:
+	if current_state == State.EXPLODING:
+		return
+	current_state = State.EXPLODING
+	parried.emit(false)
+
+	Input.vibrate_handheld(25)
+	EventBus.score_changed.emit(100, 100)
+	JuiceSplatScript.spawn(
+		get_parent(),
+		global_position,
+		Color(0.4, 0.85, 0.3, 1.0),
+		Color(0.2, 0.6, 0.2, 1.0),
+		Color(1.0, 1.0, 1.0, 1.0),
+		10
+	)
+	queue_free()
 
 func _impact_boss(target: Node2D) -> void:
 	if current_state == State.EXPLODING:
 		return
 	current_state = State.EXPLODING
 
-	# Calcul des dégâts et de l'effet d'étourdissement (stun)
-	var dmg: int = perfect_damage if is_perfect_parry else base_damage
-	# Bonus si toute la série de renvois a été réussie
-	if is_perfect_parry and series_index >= series_total - 1 and series_total > 1:
-		dmg += 6
-
+	# Ajustement gameplay : 1 point de dégât par projectile réfléchi
+	var dmg: int = 1
 	hit_boss.emit(dmg, is_perfect_parry)
 
-	# Si parade parfaite -> Applique le Stun sur le boss
+	# Secousse légère lors de l'impact
+	Input.vibrate_handheld(35)
+
+	# Notification au Boss pour enregistrement du coup (3+ tirs en < 2s = 5s stun)
 	if target is BrocolinoBoss:
 		var broc: BrocolinoBoss = target as BrocolinoBoss
-		if is_perfect_parry:
-			broc.apply_boss_stun(2.2)
+		broc.register_reflected_projectile_hit()
 
 	if target.has_method(&"take_hit"):
 		target.take_hit(dmg, self, velocity)
@@ -183,7 +192,7 @@ func _impact_boss(target: Node2D) -> void:
 		Color(0.3, 1.0, 0.4, 1.0),
 		Color(1.0, 0.9, 0.2, 1.0),
 		Color(1.0, 1.0, 1.0, 1.0),
-		20 if is_perfect_parry else 12
+		20
 	)
 
 	EventBus.score_changed.emit(250, 250)

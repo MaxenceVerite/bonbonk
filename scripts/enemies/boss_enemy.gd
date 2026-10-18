@@ -52,7 +52,10 @@ func take_hit_with_context(hit_ctx: HitContext) -> void:
 	# Dégât normal
 	super.take_hit_with_context(hit_ctx)
 
-## Répulsion / déviation de la bille avec effet de bouclier
+## Les Boss sont des colosses inébranlables : ils absorbent le knockback et ne basculent jamais
+func apply_knockback(_impulse: Vector2, _hit_angle: float) -> void:
+	if visual_container != null:
+		visual_container.rotation = 0.0
 func _deflect_hit(hit_ctx: HitContext) -> void:
 	_shield_flash_timer = 0.2
 	queue_redraw()
