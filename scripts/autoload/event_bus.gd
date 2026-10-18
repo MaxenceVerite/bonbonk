@@ -23,6 +23,7 @@ signal game_restarted
 # Signaux Boss
 signal boss_spawned(boss_name: String, max_hp: int)
 signal boss_health_changed(current_hp: int, max_hp: int)
+signal boss_invulnerability_changed(is_invulnerable: bool)
 signal boss_defeated(boss_name: String)
 
 # Signaux de navigation & UI

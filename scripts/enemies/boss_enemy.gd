@@ -78,6 +78,7 @@ func _deflect_hit(hit_ctx: HitContext) -> void:
 func set_invulnerable(invuln: bool) -> void:
 	if is_invulnerable != invuln:
 		is_invulnerable = invuln
+		EventBus.boss_invulnerability_changed.emit(is_invulnerable)
 		queue_redraw()
 
 		# Flash / pulsation d'activation du bouclier

@@ -101,6 +101,11 @@ func restore_from_temporary_override() -> void:
 		for child in occupied_bumper_instance.get_children():
 			if child is CollisionShape2D:
 				child.set_deferred(&"disabled", false)
+
+		# Animation de libération éclatante du bumper originel
+		occupied_bumper_instance.scale = Vector2(0.4, 0.4)
+		var pop_tw: Tween = occupied_bumper_instance.create_tween()
+		pop_tw.tween_property(occupied_bumper_instance, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	else:
 		occupied_bumper_instance = null
 

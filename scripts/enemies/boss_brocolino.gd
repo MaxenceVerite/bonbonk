@@ -4,9 +4,12 @@ extends BossEnemy
 ## Boss Brocolino : Colosse végétal défendant la forêt du haut.
 ## - 200 PV
 ## - Reste ancré en haut de l'écran à la frontière de la forêt.
-## - Tous les 33% de PV perdus (à 134 PV et 67 PV), invoque 3 Bumpers Brocolis sur le plateau
-##   et devient totalement INVULNÉRABLE tant qu'au moins 1 bumper subsiste.
-## - Tire périodiquement des spores parables vers les batteurs que le joueur peut renvoyer pour lui infliger des dégâts.
+## - Possède 3 patterns d'attaque selon la phase + 1 attaque périodique de spores :
+##   * Phase 1 (100% -> 67%) : Tir unique parabolique rapide visant alternativement la porte gauche ou droite.
+##   * Phase 2 (<= 67%) : Salve en duo (2 tirs brossés en courbe opposée) + Invulnérabilité (3 Bumpers Brocolis).
+##   * Phase 3 (<= 33%) : Salve en rafale de 3 tirs courbes successifs (Gauche, Droite, Centre) + Invulnérabilité.
+##   * Périodique (Spore Cascade) : Rafale de pluie végétale dispersée.
+## - Supporte l'étourdissement (Stun) avec étoiles tournoyantes lors d'une parade parfaite !
 
 const ParryableProjectileScene: PackedScene = preload("res://scenes/effects/parryable_projectile.tscn")
 
@@ -14,8 +17,21 @@ var _remaining_broccoli_bumpers: int = 0
 var _phase_67_triggered: bool = false
 var _phase_33_triggered: bool = false
 
-var _projectile_timer: float = 2.5 # Premier tir après 2.5s
-@export var projectile_cooldown: float = 3.8
+var _projectile_timer: float = 2.4
+@export var projectile_cooldown: float = 3.6
+
+# Stun d'étourdissement
+var _is_stunned: bool = false
+var _stun_timer: float = 0.0
+var _stun_visual_angle: float = 0.0
+
+# Pattern périodique spécial
+var _special_cascade_timer: float = 9.0
+
+# Positions précises des cibles (centre des portes en bois)
+const TARGET_LEFT_GATE: Vector2 = Vector2(175.0, 1185.0)
+const TARGET_RIGHT_GATE: Vector2 = Vector2(440.0, 1185.0)
+const TARGET_CENTER_GAP: Vector2 = Vector2(308.0, 1185.0)
 
 func _ready() -> void:
 	boss_name = "Brocolino"
@@ -23,8 +39,19 @@ func _ready() -> void:
 	target_anchor_y = 165.0
 	super._ready()
 
-	# Brocolino commence au centre horizontal de l'arène
 	position.x = 310.0
+
+func apply_boss_stun(duration: float = 2.2) -> void:
+	_is_stunned = true
+	_stun_timer = duration
+	_projectile_timer = maxf(_projectile_timer, duration + 1.2) # Décale les prochaines attaques
+	queue_redraw()
+
+	# Animation d'étourdissement : petit affaissement et lueur jaune
+	var stun_tw: Tween = create_tween()
+	stun_tw.tween_property(visual_container, "position:y", 14.0, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	stun_tw.tween_property(visual_container, "modulate", Color(2.5, 2.5, 1.2, 1.0), 0.12)
+	stun_tw.tween_property(visual_container, "modulate", Color.WHITE, 0.2)
 
 func _physics_process(delta: float) -> void:
 	super._physics_process(delta)
@@ -32,11 +59,89 @@ func _physics_process(delta: float) -> void:
 	if _is_dying or _is_entering:
 		return
 
-	# Cadence de tir des projectiles parables
+	# Gestion de l'état étourdi (Stun)
+	if _is_stunned:
+		_stun_timer -= delta
+		_stun_visual_angle += delta * 6.0
+		queue_redraw()
+		if _stun_timer <= 0.0:
+			_is_stunned = false
+			queue_redraw()
+			var recover_tw: Tween = create_tween()
+			recover_tw.tween_property(visual_container, "position:y", 0.0, 0.2).set_trans(Tween.TRANS_QUAD)
+		return # Ne peut pas attaquer tant qu'il est étourdi !
+
+	# Attaque périodique classique selon la phase
 	_projectile_timer -= delta
 	if _projectile_timer <= 0.0:
-		_projectile_timer = randf_range(projectile_cooldown - 0.4, projectile_cooldown + 0.6)
-		_fire_parryable_spore()
+		_projectile_timer = randf_range(projectile_cooldown - 0.3, projectile_cooldown + 0.4)
+		_execute_phase_attack()
+
+	# Pattern périodique spécial : Cascade de spores
+	_special_cascade_timer -= delta
+	if _special_cascade_timer <= 0.0:
+		_special_cascade_timer = randf_range(11.0, 15.0)
+		_execute_cascade_pattern()
+
+func _execute_phase_attack() -> void:
+	var hp_ratio: float = float(health_component.current_health) / float(health_component.max_health)
+
+	if hp_ratio > 0.67:
+		# PHASE 1 : Tir unique parabolique rapide visant une des deux portes
+		var use_right: bool = (randf() < 0.5)
+		var target: Vector2 = TARGET_RIGHT_GATE if use_right else TARGET_LEFT_GATE
+		var curve_curve: float = randf_range(80.0, 130.0) * (-1.0 if use_right else 1.0)
+		_spawn_curved_spore(target, curve_curve, 1.2, 0, 1)
+
+	elif hp_ratio > 0.33:
+		# PHASE 2 : Duo de spores (gauche puis droite en pince brossée)
+		var tw: Tween = create_tween()
+		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_LEFT_GATE, -100.0, 1.25, 0, 2))
+		tw.tween_interval(0.35)
+		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_RIGHT_GATE, 100.0, 1.25, 1, 2))
+
+	else:
+		# PHASE 3 : Rafale en trio (Série de 3 tirs rapides : Gauche, Droite, Centre)
+		var tw: Tween = create_tween()
+		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_LEFT_GATE, -120.0, 1.15, 0, 3))
+		tw.tween_interval(0.28)
+		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_RIGHT_GATE, 120.0, 1.15, 1, 3))
+		tw.tween_interval(0.28)
+		tw.tween_callback(func() -> void: _spawn_curved_spore(TARGET_CENTER_GAP, (60.0 if randf() < 0.5 else -60.0), 1.10, 2, 3))
+
+func _execute_cascade_pattern() -> void:
+	# Rugissement léger
+	var tw: Tween = create_tween()
+	tw.tween_property(visual_container, "scale", Vector2(1.15, 1.15), 0.12)
+	tw.tween_property(visual_container, "scale", Vector2.ONE, 0.15)
+
+	# 2 tirs paraboliques croisés
+	tw.tween_callback(func() -> void:
+		_spawn_curved_spore(TARGET_RIGHT_GATE, -140.0, 1.35, 0, 2)
+		_spawn_curved_spore(TARGET_LEFT_GATE, 140.0, 1.35, 1, 2)
+	)
+
+func _spawn_curved_spore(target_dest: Vector2, curve_x: float, duration: float, idx: int, tot: int) -> void:
+	if ParryableProjectileScene == null or _is_dying:
+		return
+
+	var spore: ParryableProjectile = ParryableProjectileScene.instantiate() as ParryableProjectile
+	if spore == null:
+		return
+
+	var spawn_pos: Vector2 = global_position + Vector2(randf_range(-25, 25), 50.0)
+	spore.setup_curved(spawn_pos, target_dest, curve_x, self, duration, idx, tot)
+
+	var parent_node: Node = get_parent()
+	if parent_node != null:
+		parent_node.add_child(spore)
+	else:
+		get_tree().current_scene.add_child(spore)
+
+	# Micro-recul du boss au lancer
+	var recoil_tw: Tween = create_tween()
+	recoil_tw.tween_property(visual_container, "position:y", -8.0, 0.06)
+	recoil_tw.tween_property(visual_container, "position:y", 0.0, 0.10)
 
 func _on_health_changed(cur: int, max_h: int) -> void:
 	super._on_health_changed(cur, max_h)
@@ -59,10 +164,8 @@ func _trigger_broccoli_summon_phase() -> void:
 	if board == null:
 		return
 
-	# Animation d'incantation dramatique du Boss
 	_play_summon_roar()
 
-	# Apparition de 3 bumpers brocolis
 	var spawned: Array[BroccoliBumper] = board.spawn_broccoli_bumpers(3, _on_broccoli_bumper_broken)
 	if not spawned.is_empty():
 		_remaining_broccoli_bumpers += spawned.size()
@@ -71,65 +174,32 @@ func _trigger_broccoli_summon_phase() -> void:
 func _on_broccoli_bumper_broken(_bumper: BroccoliBumper) -> void:
 	_remaining_broccoli_bumpers = maxi(0, _remaining_broccoli_bumpers - 1)
 
-	# Si tous les bumpers brocolis ont été éliminés, le Boss redevient vulnérable
 	if _remaining_broccoli_bumpers == 0:
 		set_invulnerable(false)
-		# Étourdissement / vulnérabilité du boss
 		_play_vulnerability_reaction()
 
 func _play_summon_roar() -> void:
-	# Rugissement visuel : gonflement et onde verte
 	var tw: Tween = create_tween()
 	tw.tween_property(visual_container, "scale", Vector2(1.3, 1.3), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(visual_container, "scale", Vector2.ONE, 0.22)
 
-	# Éclat vert de nature
 	JuiceSplatScript.spawn(
 		get_parent(),
 		global_position + Vector2(0, 40),
 		Color(0.2, 0.95, 0.25, 1.0),
 		Color(0.4, 1.0, 0.5, 1.0),
 		Color(1.0, 1.0, 1.0, 1.0),
-		16
+		18
 	)
 
 func _play_vulnerability_reaction() -> void:
-	# Le bouclier se brise : flash doré et tremblement
 	var tw: Tween = create_tween()
 	tw.tween_property(visual_container, "modulate", Color(3.0, 2.5, 1.0, 1.0), 0.1)
 	tw.tween_property(visual_container, "modulate", Color.WHITE, 0.25)
 
-	Input.vibrate_handheld(35)
-
-func _fire_parryable_spore() -> void:
-	if ParryableProjectileScene == null:
-		return
-
-	var spore: ParryableProjectile = ParryableProjectileScene.instantiate() as ParryableProjectile
-	if spore == null:
-		return
-
-	# Origine : bouche / base de Brocolino
-	var spawn_pos: Vector2 = global_position + Vector2(randf_range(-30, 30), 45.0)
-
-	# Cible : alterne aléatoirement entre le batteur gauche, le batteur droit et le centre
-	var target_choice: int = randi() % 3
-	var target_x: float = 140.0 if target_choice == 0 else (476.0 if target_choice == 1 else 308.0)
-	var target_pos: Vector2 = Vector2(target_x, 1180.0)
-
-	spore.setup(spawn_pos, target_pos, self)
-
-	# Ajout à l'arène (au parent ou au Board)
-	var parent_node: Node = get_parent()
-	if parent_node != null:
-		parent_node.add_child(spore)
-	else:
-		get_tree().current_scene.add_child(spore)
-
-	# Petit recul du boss au tir
-	var recoil_tw: Tween = create_tween()
-	recoil_tw.tween_property(visual_container, "position:y", -10.0, 0.08)
-	recoil_tw.tween_property(visual_container, "position:y", 0.0, 0.12)
+	# Étourdissement automatique quand le bouclier saute
+	apply_boss_stun(2.0)
+	Input.vibrate_handheld(40)
 
 func _find_board() -> Board:
 	var cur: Node = get_parent()
@@ -144,3 +214,19 @@ func _on_died() -> void:
 	if board != null:
 		board.restore_temporary_bumper_overrides()
 	super._on_died()
+
+func _draw() -> void:
+	super._draw()
+
+	# Dessin des étoiles de Stun tourbillonnantes au-dessus de Brocolino
+	if _is_stunned:
+		var center_head: Vector2 = Vector2(0.0, -100.0)
+		var star_radius: float = 38.0
+		for i in range(3):
+			var a: float = _stun_visual_angle + float(i) * (TAU / 3.0)
+			var star_pos: Vector2 = center_head + Vector2(cos(a) * star_radius, sin(a) * (star_radius * 0.4))
+			# Petite étoile dorée
+			draw_circle(star_pos, 5.0, Color(1.0, 0.92, 0.2, 0.95))
+			draw_circle(star_pos, 2.5, Color.WHITE)
+			draw_line(star_pos - Vector2(7, 0), star_pos + Vector2(7, 0), Color(1.0, 0.9, 0.3, 0.8), 2.0)
+			draw_line(star_pos - Vector2(0, 7), star_pos + Vector2(0, 7), Color(1.0, 0.9, 0.3, 0.8), 2.0)

@@ -4,33 +4,55 @@ extends Area2D
 const JuiceSplatScript = preload("res://scripts/effects/juice_splat.gd")
 
 ## Projectile de tir lancé par le Boss (ex: Spore d'énergie végétale de Brocolino).
-## Descend vers les batteurs.
-## - Si le batteur le frappe durant la fenêtre de contre (is_in_parry_window),
-##   le projectile est PARÉ : il change de couleur, accélère fortement et repart vers le Boss pour le blesser !
-## - Si le joueur rate le contre ou le laisse passer dans la DangerZone,
-##   le projectile explose et inflige 1 dégât au joueur.
+## Trajectoire en cloche/courbe avec effet brossé vers le centre d'une des portes.
+## - Possède l'indicateur visuel de parade (DiveTelegraphVisual) qui rétrécit vers le moment de frappe parfait.
+## - Si le batteur le frappe durant la fenêtre idéale (Parade Parfaite) :
+##   Reflète à toute vitesse vers le Boss, stun le Boss et inflige un bonus de combo si la série est parfaite !
+## - Si le joueur frappe hors timing ou laisse passer :
+##   Le tir explose et inflige 1 dégât au joueur.
 
-signal parried
-signal hit_boss(damage: int)
+signal parried(is_perfect: bool)
+signal hit_boss(damage: int, caused_stun: bool)
 
 enum State { FALLING_FROM_BOSS, REFLECTED_TO_BOSS, EXPLODING }
 var current_state: State = State.FALLING_FROM_BOSS
 
-@export var fall_speed: float = 280.0
-@export var reflected_speed: float = 850.0
-@export var reflected_damage: int = 20
+# Trajectoire paramétrique en courbe de Bézier
+var start_pos: Vector2 = Vector2.ZERO
+var control_pos: Vector2 = Vector2.ZERO
+var target_pos: Vector2 = Vector2.ZERO
+var flight_duration: float = 1.35
+var current_progress: float = 0.0
+
+@export var reflected_speed: float = 1100.0
+@export var base_damage: int = 8
+@export var perfect_damage: int = 14
 
 var velocity: Vector2 = Vector2.ZERO
 var target_boss: Node2D = null
 var _time_alive: float = 0.0
-var _radius: float = 18.0
+var _radius: float = 20.0
 
-func setup(origin_pos: Vector2, target_pos: Vector2, boss_node: Node2D) -> void:
-	global_position = origin_pos
-	target_boss = boss_node
-	var dir: Vector2 = (target_pos - origin_pos).normalized()
-	velocity = dir * fall_speed
+# Combo & Perfection du renvoi
+var is_perfect_parry: bool = false
+var series_index: int = 0
+var series_total: int = 1
+
+func setup_curved(p_start: Vector2, p_target: Vector2, p_curve_offset_x: float, p_boss: Node2D, p_duration: float = 1.25, p_series_idx: int = 0, p_series_tot: int = 1) -> void:
+	start_pos = p_start
+	target_pos = p_target
+	target_boss = p_boss
+	flight_duration = maxf(0.8, p_duration)
+	series_index = p_series_idx
+	series_total = p_series_tot
+	current_progress = 0.0
 	current_state = State.FALLING_FROM_BOSS
+
+	# Point de contrôle créant une belle courbe parabolique dynamique
+	var mid: Vector2 = (start_pos + target_pos) * 0.5
+	control_pos = mid + Vector2(p_curve_offset_x, -140.0)
+
+	global_position = start_pos
 
 func _ready() -> void:
 	z_index = 18
@@ -46,22 +68,29 @@ func _physics_process(delta: float) -> void:
 
 	match current_state:
 		State.FALLING_FROM_BOSS:
-			global_position += velocity * delta
-			# Sécurité : si dépassement bas de l'arène
-			if global_position.y > 1250.0:
+			current_progress += delta / flight_duration
+			var t: float = clampf(current_progress, 0.0, 1.0)
+
+			# Évaluation de la courbe quadratique de Bézier : B(t) = (1-t)^2 * P0 + 2(1-t)t * P1 + t^2 * P2
+			var prev_pos: Vector2 = global_position
+			var one_minus: float = 1.0 - t
+			global_position = (one_minus * one_minus * start_pos) + (2.0 * one_minus * t * control_pos) + (t * t * target_pos)
+			if delta > 0.0:
+				velocity = (global_position - prev_pos) / delta
+
+			# Si arrivée en bout de course sans parade -> explosion
+			if t >= 1.0 or global_position.y > 1250.0:
 				_explode_at_player()
 
 		State.REFLECTED_TO_BOSS:
-			# Si le boss est valide, recalcule la trajectoire vers son centre
 			if target_boss != null and is_instance_valid(target_boss):
 				var to_boss: Vector2 = (target_boss.global_position - global_position).normalized()
-				velocity = velocity.lerp(to_boss * reflected_speed, delta * 12.0)
-				# Détection d'impact de proximité sur le boss
-				if global_position.distance_to(target_boss.global_position) < 70.0:
+				velocity = velocity.lerp(to_boss * reflected_speed, delta * 14.0)
+				if global_position.distance_to(target_boss.global_position) < 75.0:
 					_impact_boss(target_boss)
 					return
 			global_position += velocity * delta
-			if global_position.y < -100.0:
+			if global_position.y < -120.0:
 				queue_free()
 
 func _on_body_entered(body: Node2D) -> void:
@@ -69,7 +98,9 @@ func _on_body_entered(body: Node2D) -> void:
 		if body is WoodenGateFlipper:
 			var gate: WoodenGateFlipper = body as WoodenGateFlipper
 			if gate.is_in_parry_window():
-				reflect_projectile(gate)
+				# Détermine si la parade est PARFAITE (au moment où le progress télégraphe approche de 1.0)
+				var perfect: bool = (current_progress >= 0.78)
+				reflect_projectile(gate, perfect)
 			else:
 				_explode_at_player()
 		elif body is Enemy and current_state == State.REFLECTED_TO_BOSS:
@@ -81,56 +112,78 @@ func _on_body_entered(body: Node2D) -> void:
 
 func _on_area_entered(area: Area2D) -> void:
 	if current_state == State.FALLING_FROM_BOSS:
-		# Collision avec la zone de danger
 		if area.name == "DangerZone" or area.collision_layer & 32:
 			_explode_at_player()
 
-## Contre réussi par le batteur
-func reflect_projectile(flipper: WoodenGateFlipper) -> void:
+## Renvoi dynamique par le batteur
+func reflect_projectile(_flipper: WoodenGateFlipper, p_is_perfect: bool) -> void:
 	current_state = State.REFLECTED_TO_BOSS
-	parried.emit()
+	is_perfect_parry = p_is_perfect
+	parried.emit(is_perfect_parry)
 
-	# Inversion vers le Boss avec boost de vitesse
-	var target_dest: Vector2 = target_boss.global_position if (target_boss != null and is_instance_valid(target_boss)) else (global_position + Vector2.UP * 800.0)
+	# Vitesse et trajectoire fulgurante vers le Boss
+	var target_dest: Vector2 = target_boss.global_position if (target_boss != null and is_instance_valid(target_boss)) else (global_position + Vector2.UP * 900.0)
 	var dir: Vector2 = (target_dest - global_position).normalized()
-	velocity = dir * reflected_speed
+	velocity = dir * (reflected_speed if is_perfect_parry else reflected_speed * 0.8)
 
 	# Masque ajusté : Layer 4 (Enemies) = 8
 	collision_mask = 8
 
-	# Effets visuels & sonores de contre parfait
-	Input.vibrate_handheld(45)
-	EventBus.score_changed.emit(150, 150)
-
-	# Éclat d'impact étincelant au point de contact
-	var splat_color: Color = Color(1.0, 0.9, 0.25, 1.0)
-	JuiceSplatScript.spawn(
-		get_parent(),
-		global_position,
-		Color(1.0, 0.85, 0.2, 1.0),
-		Color(0.2, 0.95, 0.9, 1.0),
-		Color(1.0, 1.0, 1.0, 1.0),
-		10
-	)
+	# Retours haptiques et score
+	if is_perfect_parry:
+		Input.vibrate_handheld(50)
+		EventBus.score_changed.emit(300, 300)
+		# Éclat étincelant multicolore / doré
+		JuiceSplatScript.spawn(
+			get_parent(),
+			global_position,
+			Color(1.0, 0.95, 0.4, 1.0),
+			Color(0.2, 1.0, 0.5, 1.0),
+			Color(1.0, 1.0, 1.0, 1.0),
+			16
+		)
+	else:
+		Input.vibrate_handheld(25)
+		EventBus.score_changed.emit(100, 100)
+		JuiceSplatScript.spawn(
+			get_parent(),
+			global_position,
+			Color(0.4, 0.85, 0.3, 1.0),
+			Color(0.2, 0.6, 0.2, 1.0),
+			Color(1.0, 1.0, 1.0, 1.0),
+			8
+		)
 
 func _impact_boss(target: Node2D) -> void:
 	if current_state == State.EXPLODING:
 		return
 	current_state = State.EXPLODING
 
-	hit_boss.emit(reflected_damage)
+	# Calcul des dégâts et de l'effet d'étourdissement (stun)
+	var dmg: int = perfect_damage if is_perfect_parry else base_damage
+	# Bonus si toute la série de renvois a été réussie
+	if is_perfect_parry and series_index >= series_total - 1 and series_total > 1:
+		dmg += 6
+
+	hit_boss.emit(dmg, is_perfect_parry)
+
+	# Si parade parfaite -> Applique le Stun sur le boss
+	if target is BrocolinoBoss:
+		var broc: BrocolinoBoss = target as BrocolinoBoss
+		if is_perfect_parry:
+			broc.apply_boss_stun(2.2)
 
 	if target.has_method(&"take_hit"):
-		target.take_hit(reflected_damage, self, velocity)
+		target.take_hit(dmg, self, velocity)
 
-	# Éclat d'impact violent sur le boss
+	# Éclat d'impact
 	JuiceSplatScript.spawn(
 		get_parent(),
 		global_position,
-		Color(0.3, 0.95, 0.3, 1.0),
-		Color(1.0, 0.85, 0.2, 1.0),
+		Color(0.3, 1.0, 0.4, 1.0),
+		Color(1.0, 0.9, 0.2, 1.0),
 		Color(1.0, 1.0, 1.0, 1.0),
-		18
+		20 if is_perfect_parry else 12
 	)
 
 	EventBus.score_changed.emit(250, 250)
@@ -144,38 +197,52 @@ func _explode_at_player() -> void:
 	# Dégât au joueur
 	EventBus.enemy_escaped.emit(1)
 
-	# Éclaboussure acide/végétale
 	JuiceSplatScript.spawn(
 		get_parent(),
 		global_position,
 		Color(0.25, 0.65, 0.15, 1.0),
 		Color(0.15, 0.45, 0.1, 1.0),
-		Color(0.9, 0.2, 0.2, 1.0),
-		12
+		Color(0.95, 0.2, 0.2, 1.0),
+		14
 	)
 
 	queue_free()
 
 func _draw() -> void:
 	var c: Vector2 = Vector2.ZERO
-	var pulse: float = 0.85 + 0.15 * sin(_time_alive * 14.0)
+	var pulse: float = 0.85 + 0.15 * sin(_time_alive * 16.0)
 
 	if current_state == State.FALLING_FROM_BOSS:
-		# 1. Aura toxique extérieure avec pulsation
-		draw_circle(c, _radius * 1.5 * pulse, Color(0.3, 0.85, 0.2, 0.25))
-		# 2. Anneau télégraphiant la possibilité de parade (liseré jaune étincelant)
-		var ring_color: Color = Color(1.0, 0.9, 0.3, 0.85 + 0.15 * sin(_time_alive * 20.0))
-		draw_arc(c, _radius + 3.0, 0.0, TAU, 24, ring_color, 2.5, true)
-		# 3. Corps principal (globe végétal brocoli)
-		draw_circle(c, _radius, Color(0.18, 0.58, 0.14, 1.0))
-		# 4. Cœur dense
-		draw_circle(c, _radius * 0.6, Color(0.45, 0.88, 0.28, 1.0))
-		# 5. Point lumineux
-		draw_circle(c + Vector2(-3, -3), _radius * 0.25, Color(0.95, 1.0, 0.7, 0.9))
+		# 1. Aura toxique de la spore
+		draw_circle(c, _radius * 1.5 * pulse, Color(0.25, 0.85, 0.2, 0.25))
+
+		# 2. Indicateur de parade vectoriel (identique à DiveTelegraphVisual)
+		# Anneau cible fixe
+		var target_col: Color = Color(0.2, 1.0, 0.45, 0.95) if current_progress >= 0.78 else Color(1.0, 0.6, 0.15, 0.75)
+		draw_arc(c, _radius + 6.0, 0.0, TAU, 32, target_col, 2.5, true)
+
+		# Anneau rétrécissant vers la cible avec current_progress
+		var ring_r: float = lerpf(_radius + 32.0, _radius + 6.0, clampf(current_progress, 0.0, 1.0))
+		var shrinking_col: Color = Color(1.0, 1.0, 0.5, 1.0) if current_progress >= 0.78 else Color(1.0, 0.8, 0.2, 0.85)
+		draw_arc(c, ring_r, 0.0, TAU, 32, shrinking_col, 3.0, true)
+
+		# Étoile / disque d'or quand la parade parfaite est active
+		if current_progress >= 0.78:
+			draw_circle(c, 7.0, Color(1.0, 0.95, 0.4, 0.95))
+			draw_circle(c, 3.5, Color.WHITE)
+
+		# 3. Corps principal (globe végétal dense)
+		draw_circle(c, _radius, Color(0.16, 0.52, 0.12, 1.0))
+		draw_circle(c, _radius * 0.65, Color(0.38, 0.85, 0.25, 1.0))
+		draw_circle(c + Vector2(-3, -3), _radius * 0.25, Color(0.95, 1.0, 0.7, 0.95))
 
 	elif current_state == State.REFLECTED_TO_BOSS:
-		# Projectile renvoyé : flamboyant doré / azur puissant
-		draw_circle(c, _radius * 1.8 * pulse, Color(0.2, 0.85, 1.0, 0.35))
-		draw_circle(c, _radius * 1.3, Color(1.0, 0.85, 0.2, 0.7))
-		draw_circle(c, _radius, Color(1.0, 1.0, 0.85, 1.0))
-		draw_arc(c, _radius + 4.0, 0.0, TAU, 24, Color(0.2, 0.9, 1.0, 1.0), 3.0, true)
+		# Rendu fulgurant du tir renvoyé (Parade Parfaite dorée / Cyan éclatant)
+		var halo_col: Color = Color(1.0, 0.85, 0.25, 0.45) if is_perfect_parry else Color(0.2, 0.85, 1.0, 0.35)
+		var core_col: Color = Color(1.0, 0.98, 0.8, 1.0) if is_perfect_parry else Color(0.85, 1.0, 0.95, 1.0)
+		var ring_col: Color = Color(1.0, 0.9, 0.3, 1.0) if is_perfect_parry else Color(0.2, 0.95, 1.0, 1.0)
+
+		draw_circle(c, _radius * 2.0 * pulse, halo_col)
+		draw_circle(c, _radius * 1.3, ring_col)
+		draw_circle(c, _radius * 0.8, core_col)
+		draw_arc(c, _radius + 5.0, 0.0, TAU, 28, ring_col, 3.0, true)
