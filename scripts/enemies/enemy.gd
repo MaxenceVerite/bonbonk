@@ -67,6 +67,15 @@ static func trigger_game_over_horde_rush() -> void:
 		if e != null and is_instance_valid(e) and not e.is_dying():
 			e.start_game_over_rush()
 
+static func stop_game_over_horde_rush() -> void:
+	for e in active_enemies:
+		if e != null and is_instance_valid(e):
+			e._is_game_over_charging = false
+			e.modulate.a = 1.0
+			e.scale = Vector2.ONE
+			if e.collision_shape != null:
+				e.collision_shape.set_deferred(&"disabled", false)
+
 func start_game_over_rush() -> void:
 	_is_game_over_charging = true
 	_knockback_velocity = Vector2.ZERO
@@ -646,20 +655,26 @@ func _play_juice_explosion_death() -> void:
 var pool_source: NodePool = null
 
 func despawn() -> void:
+	_is_game_over_charging = false
 	active_enemies.erase(self)
 	if collision_shape != null:
 		collision_shape.set_deferred(&"disabled", true)
 	if dive_component != null:
 		dive_component.reset()
+	modulate.a = 1.0
+	scale = Vector2.ONE
 	if pool_source != null:
 		pool_source.release(self)
 	else:
 		queue_free()
 
 func on_pool_release() -> void:
+	_is_game_over_charging = false
 	active_enemies.erase(self)
 	if dive_component != null:
 		dive_component.reset()
+	modulate.a = 1.0
+	scale = Vector2.ONE
 
 func on_pool_acquire() -> void:
 	if not active_enemies.has(self):
@@ -668,6 +683,7 @@ func on_pool_acquire() -> void:
 		dive_component.reset()
 	_is_dying = false
 	_is_expelled = false
+	_is_game_over_charging = false
 	_is_projected_by_gate = false
 	_projection_time = 0.0
 	_knockback_velocity = Vector2.ZERO
@@ -678,6 +694,8 @@ func on_pool_acquire() -> void:
 	_time_since_last_damage = 0.0
 	_last_hit_context = null
 	_last_hit_source = null
+	modulate.a = 1.0
+	scale = Vector2.ONE
 	_last_impact_velocity = Vector2.ZERO
 	_last_hit_direction = Vector2.UP
 	bypass_bias = -1.0 if randf() < 0.5 else 1.0

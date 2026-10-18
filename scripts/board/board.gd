@@ -97,6 +97,9 @@ func reset_board() -> void:
 	is_game_running = false
 	_spawn_timer = 0.0
 	restore_temporary_bumper_overrides()
+
+	# Interrompt immédiatement toute animation de ruée de fin de partie
+	Enemy.stop_game_over_horde_rush()
 	
 	# Remise à neuf des portes en bois
 	if left_gate != null:
