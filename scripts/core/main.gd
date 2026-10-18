@@ -235,6 +235,8 @@ func _update_hp_display(animate: bool = true) -> void:
 		hp_bar.value = float(current_hp)
 
 func _on_enemy_escaped(damage: int) -> void:
+	if is_god_mode:
+		return
 	current_hp = maxi(0, current_hp - damage)
 	_update_hp_display(true)
 	
@@ -250,6 +252,64 @@ func _on_enemy_escaped(damage: int) -> void:
 func _on_player_healed(amount: int) -> void:
 	current_hp = mini(max_hp, current_hp + amount)
 	_update_hp_display(true)
+
+# ==============================================================================
+# COMMANDES DEV CONSOLE
+# ==============================================================================
+
+var is_god_mode: bool = false
+
+func dev_jump_to_wave(target_wave: int) -> void:
+	if current_screen_state != ScreenState.GAME:
+		# Si on est dans le menu, lance d'abord la partie
+		launch_game()
+
+	if intermission_overlay != null:
+		intermission_overlay.hide_intermission()
+
+	current_wave = maxi(1, target_wave)
+	_update_wave_display()
+
+	# Nettoyage des ennemis actuels et des balles en cours
+	if board != null:
+		board.on_wave_cleared_stability()
+		for child in board.enemy_container.get_children():
+			if child.has_method(&"despawn"):
+				child.despawn()
+			else:
+				child.queue_free()
+		board.resume_for_next_wave()
+
+	if ball_factory_ui != null:
+		ball_factory_ui.is_interaction_enabled = true
+
+	if wave_director != null:
+		wave_director.stop_waves()
+		wave_director.start_wave(current_wave)
+
+	RelicManager.notify_wave_started(current_wave)
+
+func dev_kill_all_enemies() -> void:
+	if board != null and board.enemy_container != null:
+		for child in board.enemy_container.get_children():
+			if child.has_method(&"take_hit"):
+				child.take_hit(9999, null, Vector2.ZERO)
+			elif child.has_method(&"despawn"):
+				child.despawn()
+			else:
+				child.queue_free()
+
+func dev_heal_full() -> void:
+	current_hp = max_hp
+	_update_hp_display(true)
+
+func dev_set_hp(hp_val: int) -> void:
+	current_hp = clamp(hp_val, 0, max_hp)
+	_update_hp_display(true)
+
+func dev_toggle_god_mode() -> bool:
+	is_god_mode = not is_god_mode
+	return is_god_mode
 
 func _on_score_changed(new_score: int, _delta: int) -> void:
 	current_score += new_score

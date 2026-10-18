@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://cx4j1j2mmain0"]
+[gd_scene load_steps=19 format=3 uid="uid://cx4j1j2mmain0"]
 
 [ext_resource type="Script" path="res://scripts/core/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/board/board.tscn" id="2_board"]
@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/bumper_placement_overlay.tscn" id="14_placement"]
 [ext_resource type="PackedScene" path="res://scenes/ui/game_over_modal.tscn" id="15_game_over"]
 [ext_resource type="PackedScene" path="res://scenes/ui/boss_health_bar.tscn" id="16_boss_bar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/dev_console.tscn" id="17_dev_console"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBox_ScoreCard"]
 texture = ExtResource("11_card_bg")
@@ -201,5 +202,8 @@ visible = false
 visible = false
 
 [node name="GameOverModal" parent="UI" instance=ExtResource("15_game_over")]
+visible = false
+
+[node name="DevConsole" parent="UI" instance=ExtResource("17_dev_console")]
 visible = false
 

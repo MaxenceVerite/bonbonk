@@ -248,6 +248,13 @@ func _sync_boosters_from_profile() -> void:
 func is_sandbox_active() -> bool:
 	return active_profile_id == "sandbox"
 
+func is_dev_account() -> bool:
+	if is_sandbox_active():
+		return true
+	if current_profile != null and (current_profile.account_type == "sandbox" or current_profile.account_type == "dev"):
+		return true
+	return OS.is_debug_build()
+
 func sandbox_unlock_all() -> void:
 	if not is_sandbox_active():
 		return
