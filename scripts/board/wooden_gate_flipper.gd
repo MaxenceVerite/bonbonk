@@ -77,7 +77,11 @@ func _enter_tree() -> void:
 func _exit_tree() -> void:
 	active_gates.erase(self)
 
+var _initial_position: Vector2 = Vector2.ZERO
+var _collapse_tween: Tween = null
+
 func _ready() -> void:
+	_initial_position = position
 	add_to_group(&"flipper_gates")
 	if not active_gates.has(self):
 		active_gates.append(self)
@@ -137,28 +141,39 @@ func collapse_and_fall() -> void:
 	_is_broken = true
 	set_physics_process(false)
 
+	if _collapse_tween != null and _collapse_tween.is_valid():
+		_collapse_tween.kill()
+
 	# Désactive la collision pour laisser la horde passer
 	var col: CollisionShape2D = get_node_or_null("CollisionShape2D") as CollisionShape2D
 	if col != null:
 		col.set_deferred(&"disabled", true)
 
 	var target_rot: float = rotation + (1.4 if is_right else -1.4)
-	var target_y: float = position.y + 160.0
+	var target_y: float = _initial_position.y + 160.0
 
-	var tw: Tween = create_tween().set_parallel(true)
-	tw.tween_property(self, "position:y", target_y, 0.75).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tw.tween_property(self, "rotation", target_rot, 0.75).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tw.tween_property(self, "modulate:a", 0.0, 0.75)
+	_collapse_tween = create_tween().set_parallel(true)
+	_collapse_tween.tween_property(self, "position:y", target_y, 0.75).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_collapse_tween.tween_property(self, "rotation", target_rot, 0.75).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	_collapse_tween.tween_property(self, "modulate:a", 0.0, 0.75)
 
 	Input.vibrate_handheld(40)
 
 func reset_gate() -> void:
+	if _collapse_tween != null and _collapse_tween.is_valid():
+		_collapse_tween.kill()
+		_collapse_tween = null
+
 	_is_broken = false
-	set_physics_process(true)
+	position = _initial_position
+	modulate.a = 1.0
+	visible = true
+
 	var col: CollisionShape2D = get_node_or_null("CollisionShape2D") as CollisionShape2D
 	if col != null:
-		col.disabled = false
-	modulate.a = 1.0
+		col.set_deferred(&"disabled", false)
+
+	set_physics_process(true)
 	deactivate()
 
 
