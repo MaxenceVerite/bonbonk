@@ -43,7 +43,7 @@ func _fragment_and_split(ball: Ball) -> void:
 		base_velocity = Vector2.UP * 300.0
 
 	# Effets visuels de confettis
-	_spawn_confetti_burst(ball, impact_pos)
+	ConfettiBurstEffect.spawn(ball.get_tree(), impact_pos)
 
 	# Récupérer les bonbons du deck actif
 	var deck_balls: Array[StringName] = SaveManager.get_active_deck_balls()
@@ -66,38 +66,3 @@ func _fragment_and_split(ball: Ball) -> void:
 
 	ball.split_requested.emit(chosen_sub_types, impact_pos, dirs, split_speed)
 	ball.shatter()
-
-func _spawn_confetti_burst(ball: Ball, pos: Vector2) -> void:
-	var burst: Node2D = Node2D.new()
-	burst.global_position = pos
-	burst.top_level = true
-
-	var colors: Array[Color] = [
-		Color(1.0, 0.25, 0.45, 1.0),
-		Color(0.2, 0.9, 0.4, 1.0),
-		Color(0.2, 0.6, 1.0, 1.0),
-		Color(1.0, 0.85, 0.2, 1.0),
-		Color(0.9, 0.3, 0.9, 1.0)
-	]
-
-	for i in range(12):
-		var spark: Polygon2D = Polygon2D.new()
-		var s: float = randf_range(3.0, 6.0)
-		spark.polygon = PackedVector2Array([
-			Vector2(-s, -s), Vector2(s, -s), Vector2(s, s), Vector2(-s, s)
-		])
-		spark.color = colors[i % colors.size()]
-		var angle: float = randf_range(0.0, TAU)
-		var dist: float = randf_range(25.0, 60.0)
-		burst.add_child(spark)
-
-		var tw_spark: Tween = spark.create_tween().set_parallel(true)
-		tw_spark.tween_property(spark, "position", Vector2(cos(angle), sin(angle)) * dist, 0.28).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		tw_spark.tween_property(spark, "rotation", randf_range(-PI, PI), 0.28)
-		tw_spark.tween_property(spark, "modulate:a", 0.0, 0.28)
-
-	ball.get_tree().root.add_child.call_deferred(burst)
-
-	var tw: Tween = burst.create_tween()
-	tw.tween_interval(0.3)
-	tw.tween_callback(burst.queue_free)

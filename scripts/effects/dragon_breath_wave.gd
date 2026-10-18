@@ -26,6 +26,8 @@ const COLOR_FLAME_INNER: Color = Color(1.0, 0.35, 0.05, 1.0) # Flamme orangée v
 const COLOR_FLAME_OUTER: Color = Color(0.92, 0.08, 0.15, 1.0) # Rouge rubis dragon
 const COLOR_SMOKE_EDGE: Color = Color(0.45, 0.05, 0.12, 0.0) # Braises / fumée pourpre
 
+static var _pool: Array[DragonBreathWave] = []
+
 static func spawn(
 	bumper_node: Node2D,
 	offset: Vector2 = Vector2(0.0, -18.0),
@@ -36,19 +38,50 @@ static func spawn(
 ) -> Node2D:
 	if bumper_node == null or not bumper_node.is_inside_tree():
 		return null
-	var script_res: GDScript = load("res://scripts/effects/dragon_breath_wave.gd") as GDScript
-	var wave: Node2D = script_res.new()
-	wave.set("max_radius", radius)
-	wave.set("impact_damage", dmg)
-	wave.set("burn_duration", b_duration)
-	wave.set("burn_damage_per_tick", b_dmg_tick)
-	bumper_node.add_child(wave)
+
+	var wave: DragonBreathWave = null
+	while not _pool.is_empty():
+		var candidate: DragonBreathWave = _pool.pop_back()
+		if is_instance_valid(candidate):
+			wave = candidate
+			break
+
+	if wave == null:
+		wave = DragonBreathWave.new()
+
+	wave.max_radius = radius
+	wave.impact_damage = dmg
+	wave.burn_duration = b_duration
+	wave.burn_damage_per_tick = b_dmg_tick
+
+	if wave.get_parent() != bumper_node:
+		if wave.get_parent() != null:
+			wave.get_parent().remove_child(wave)
+		bumper_node.add_child(wave)
+
 	wave.position = offset
+	wave._activate()
 	return wave
 
 func _ready() -> void:
 	z_index = 25
+
+func _activate() -> void:
 	_current_radius = start_radius
+	_elapsed_time = 0.0
+	_alpha = 1.0
+	_is_finished = false
+	_hit_enemies.clear()
+	visible = true
+	set_process(true)
+	queue_redraw()
+
+func _recycle() -> void:
+	_is_finished = true
+	visible = false
+	set_process(false)
+	if not _pool.has(self):
+		_pool.append(self)
 
 func _process(delta: float) -> void:
 	if _is_finished:
@@ -71,8 +104,7 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 	if progress >= 1.0:
-		_is_finished = true
-		queue_free()
+		_recycle()
 
 func _detect_and_burn_enemies() -> void:
 	var enemies: Array[Enemy] = Enemy.get_active_enemies()
