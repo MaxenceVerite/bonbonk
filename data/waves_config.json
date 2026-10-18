@@ -19,6 +19,11 @@
       "display_name": "Pastèque",
       "cost": 8,
       "scene_path": "res://scenes/enemies/enemy_watermelon.tscn"
+    },
+    "boss_brocolino": {
+      "display_name": "Brocolino",
+      "cost": 50,
+      "scene_path": "res://scenes/enemies/boss_brocolino.tscn"
     }
   },
   "squad_compositions": [

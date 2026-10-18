@@ -68,13 +68,31 @@ func calculate_budget_for_wave(wave_num: int) -> int:
 	var budget: float = base * pow(growth, wave_num - 1) + (linear_b * (wave_num - 1))
 	return int(round(budget))
 
+func is_boss_wave(wave_num: int) -> bool:
+	return wave_num == 10 or (wave_num > 10 and wave_num % 10 == 0)
+
+func _build_boss_wave_schedule() -> void:
+	# Apparition du Boss Brocolino au centre de l'arène
+	_pending_spawns.append({
+		"time_left": 0.8,
+		"scene_path": "res://scenes/enemies/boss_brocolino.tscn",
+		"spawn_x": 310.0
+	})
+
 func start_wave(wave_num: int) -> void:
 	current_wave = wave_num
-	wave_points_budget = calculate_budget_for_wave(wave_num)
 	is_wave_active = true
 	all_enemies_spawned = false
 	_pending_spawns.clear()
-	
+
+	if is_boss_wave(wave_num):
+		wave_points_budget = 50
+		print("--- WaveDirector: DÉBUT DE LA MANCHE BOSS %d (Brocolino) ---" % current_wave)
+		_build_boss_wave_schedule()
+		wave_started.emit(current_wave, wave_points_budget)
+		return
+
+	wave_points_budget = calculate_budget_for_wave(wave_num)
 	print("--- WaveDirector: DÉBUT DE LA MANCHE %d (Budget: %d points) ---" % [current_wave, wave_points_budget])
 	_build_wave_schedule(wave_points_budget)
 	wave_started.emit(current_wave, wave_points_budget)

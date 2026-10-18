@@ -88,12 +88,15 @@ func on_wave_cleared_stability() -> void:
 	if right_gate != null:
 		right_gate.deactivate()
 
+	restore_temporary_bumper_overrides()
+
 func resume_for_next_wave() -> void:
 	is_game_running = true
 
 func reset_board() -> void:
 	is_game_running = false
 	_spawn_timer = 0.0
+	restore_temporary_bumper_overrides()
 	
 	# Nettoie les balles et ennemis en cours via recyclage
 	for b in active_balls:
@@ -129,6 +132,38 @@ func clear_all_bumpers() -> void:
 	if bumper_container != null:
 		for child in bumper_container.get_children():
 			child.queue_free()
+
+const BroccoliBumperScene: PackedScene = preload("res://scenes/board/broccoli_bumper.tscn")
+
+func restore_temporary_bumper_overrides() -> void:
+	if bumper_slot_container != null:
+		for slot in bumper_slot_container.get_children():
+			if slot is BumperSlot and slot.has_temporary_override():
+				slot.restore_from_temporary_override()
+
+func get_slots_available_for_broccoli() -> Array[BumperSlot]:
+	var available: Array[BumperSlot] = []
+	if bumper_slot_container != null:
+		for slot in bumper_slot_container.get_children():
+			if slot is BumperSlot:
+				if not slot.has_temporary_override():
+					available.append(slot)
+	return available
+
+func spawn_broccoli_bumpers(count: int = 3, on_broken_cb: Callable = Callable()) -> Array[BroccoliBumper]:
+	var available: Array[BumperSlot] = get_slots_available_for_broccoli()
+	available.shuffle()
+	var spawned: Array[BroccoliBumper] = []
+	var to_spawn: int = mini(count, available.size())
+	for i in range(to_spawn):
+		var slot: BumperSlot = available[i]
+		var broc: BroccoliBumper = BroccoliBumperScene.instantiate() as BroccoliBumper
+		broc.assigned_slot = slot
+		if on_broken_cb.is_valid():
+			broc.broccoli_broken.connect(on_broken_cb)
+		slot.override_with_temporary_bumper(broc)
+		spawned.append(broc)
+	return spawned
 
 func place_bumper_at_slot(slot: BumperSlot, bumper_id: StringName) -> bool:
 	if slot == null or slot.is_occupied():
@@ -252,9 +287,14 @@ func spawn_enemy_by_path(scene_path: String, spawn_x: float) -> void:
 		_scene_cache[scene_path] = load(scene_path)
 	var enemy_scn: PackedScene = _scene_cache.get(scene_path) as PackedScene
 	if enemy_scn != null:
-		var enemy: Enemy = enemy_pool.acquire(enemy_scn, scene_path) as Enemy
-		enemy.pool_source = enemy_pool
-		enemy.position = Vector2(spawn_x, 80.0)
+		var enemy: Enemy
+		if scene_path.contains("boss"):
+			enemy = enemy_scn.instantiate() as Enemy
+			enemy.position = Vector2(spawn_x, -140.0)
+		else:
+			enemy = enemy_pool.acquire(enemy_scn, scene_path) as Enemy
+			enemy.pool_source = enemy_pool
+			enemy.position = Vector2(spawn_x, 80.0)
 		if enemy.get_parent() != enemy_container:
 			enemy_container.add_child(enemy)
 

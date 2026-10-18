@@ -22,6 +22,7 @@ var status_component: StatusEffectComponent = null
 var telegraph_visual: DiveTelegraphVisual = null
 var dive_component: SuicideDiveComponent = null
 var visual_overlay: StatusVisualOverlay = null
+var is_boss: bool = false
 
 # Registre statique O(1) de tous les ennemis vivants sur le terrain
 static var active_enemies: Array[Enemy] = []
@@ -166,6 +167,8 @@ func _on_health_changed(cur: int, max_h: int) -> void:
 func _draw() -> void:
 	if _is_dying or _is_expelled or health_component == null:
 		return
+	if is_boss:
+		return
 	# Affichage uniquement si l'ennemi n'est pas full HP (pour ne pas noyer l'écran de barres)
 	if health_component.current_health >= health_component.max_health:
 		return
@@ -265,7 +268,7 @@ func _physics_process(delta: float) -> void:
 			despawn()
 		return
 
-	if _is_dying:
+	if _is_dying or is_boss:
 		return
 
 	_time_alive += delta

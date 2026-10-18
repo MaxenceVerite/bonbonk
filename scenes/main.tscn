@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://cx4j1j2mmain0"]
+[gd_scene load_steps=18 format=3 uid="uid://cx4j1j2mmain0"]
 
 [ext_resource type="Script" path="res://scripts/core/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/board/board.tscn" id="2_board"]
@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/intermission_overlay.tscn" id="13_intermission"]
 [ext_resource type="PackedScene" path="res://scenes/ui/bumper_placement_overlay.tscn" id="14_placement"]
 [ext_resource type="PackedScene" path="res://scenes/ui/game_over_modal.tscn" id="15_game_over"]
+[ext_resource type="PackedScene" path="res://scenes/ui/boss_health_bar.tscn" id="16_boss_bar"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBox_ScoreCard"]
 texture = ExtResource("11_card_bg")
@@ -111,6 +112,12 @@ text = "MANCHE 1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="BossHealthBar" parent="UI/HUD" instance=ExtResource("16_boss_bar")]
+visible = false
+layout_mode = 1
+offset_top = 80.0
+offset_right = -116.0
+offset_bottom = 144.0
 
 [node name="BottomBar" type="MarginContainer" parent="UI/HUD"]
 layout_mode = 1

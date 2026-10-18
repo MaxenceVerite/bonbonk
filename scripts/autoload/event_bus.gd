@@ -20,6 +20,11 @@ signal health_changed(current_health: int, max_health: int)
 signal game_over
 signal game_restarted
 
+# Signaux Boss
+signal boss_spawned(boss_name: String, max_hp: int)
+signal boss_health_changed(current_hp: int, max_hp: int)
+signal boss_defeated(boss_name: String)
+
 # Signaux de navigation & UI
 signal start_game_requested
 signal return_to_menu_requested

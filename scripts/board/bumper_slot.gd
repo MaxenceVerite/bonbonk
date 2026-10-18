@@ -10,6 +10,8 @@ signal slot_clicked(slot: BumperSlot)
 @export var radius: float = 40.0
 
 var occupied_bumper_instance: Node2D = null
+var _saved_original_bumper: Node2D = null
+var _is_temporary_override: bool = false
 var is_highlighted: bool = false
 var is_placement_active: bool = false
 
@@ -44,6 +46,9 @@ func set_highlight(highlight: bool) -> void:
 func is_occupied() -> bool:
 	return occupied_bumper_instance != null and is_instance_valid(occupied_bumper_instance)
 
+func has_temporary_override() -> bool:
+	return _is_temporary_override
+
 func attach_bumper(bumper_node: Node2D) -> void:
 	occupied_bumper_instance = bumper_node
 	if bumper_node.get_parent() != self:
@@ -54,7 +59,57 @@ func attach_bumper(bumper_node: Node2D) -> void:
 	bumper_node.visible = true
 	queue_redraw()
 
+## Remplace temporairement le bumper du slot (ex: Bumper Brocoli du Boss)
+func override_with_temporary_bumper(temp_bumper: Node2D) -> void:
+	if _is_temporary_override:
+		restore_from_temporary_override()
+
+	_saved_original_bumper = occupied_bumper_instance
+	_is_temporary_override = true
+
+	if _saved_original_bumper != null and is_instance_valid(_saved_original_bumper):
+		_saved_original_bumper.visible = false
+		_saved_original_bumper.set_process(false)
+		_saved_original_bumper.set_physics_process(false)
+		for child in _saved_original_bumper.get_children():
+			if child is CollisionShape2D:
+				child.set_deferred(&"disabled", true)
+
+	occupied_bumper_instance = temp_bumper
+	if temp_bumper.get_parent() != self:
+		if temp_bumper.get_parent() != null:
+			temp_bumper.get_parent().remove_child(temp_bumper)
+		add_child(temp_bumper)
+	temp_bumper.position = Vector2.ZERO
+	temp_bumper.visible = true
+	queue_redraw()
+
+## Restaure l'état d'origine du slot après destruction du bumper temporaire
+func restore_from_temporary_override() -> void:
+	if not _is_temporary_override:
+		return
+	_is_temporary_override = false
+
+	if occupied_bumper_instance != null and is_instance_valid(occupied_bumper_instance) and occupied_bumper_instance != _saved_original_bumper:
+		occupied_bumper_instance.queue_free()
+
+	if _saved_original_bumper != null and is_instance_valid(_saved_original_bumper):
+		occupied_bumper_instance = _saved_original_bumper
+		occupied_bumper_instance.visible = true
+		occupied_bumper_instance.set_process(true)
+		occupied_bumper_instance.set_physics_process(true)
+		for child in occupied_bumper_instance.get_children():
+			if child is CollisionShape2D:
+				child.set_deferred(&"disabled", false)
+	else:
+		occupied_bumper_instance = null
+
+	_saved_original_bumper = null
+	queue_redraw()
+
 func clear_bumper() -> void:
+	if _is_temporary_override:
+		restore_from_temporary_override()
 	if occupied_bumper_instance != null and is_instance_valid(occupied_bumper_instance):
 		occupied_bumper_instance.queue_free()
 	occupied_bumper_instance = null
