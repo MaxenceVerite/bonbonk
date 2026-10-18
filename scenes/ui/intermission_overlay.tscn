@@ -38,13 +38,13 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(440, 320)
+custom_minimum_size = Vector2(520, 520)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBox_Card")
 
 [node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel"]
 layout_mode = 2
-theme_override_constants/separation = 22
+theme_override_constants/separation = 16
 alignment = 1
 
 [node name="TitleLabel" type="Label" parent="CenterContainer/Panel/VBox"]
@@ -57,15 +57,29 @@ horizontal_alignment = 1
 [node name="InfoLabel" type="Label" parent="CenterContainer/Panel/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.55, 0.35, 0.2, 1)
-theme_override_font_sizes/font_size = 20
-text = "Prochaine Manche : 2
-Menace à venir : 16 pts"
+theme_override_font_sizes/font_size = 18
+text = "Prochaine Manche : 2"
 horizontal_alignment = 1
 
+[node name="RelicsSection" type="VBoxContainer" parent="CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RelicsHeaderLabel" type="Label" parent="CenterContainer/Panel/VBox/RelicsSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.28, 0.14, 0.06, 1)
+theme_override_font_sizes/font_size = 20
+text = "CHOISIS UNE RELIQUE :"
+horizontal_alignment = 1
+
+[node name="RelicsList" type="VBoxContainer" parent="CenterContainer/Panel/VBox/RelicsSection"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
 [node name="BtnNextWave" type="Button" parent="CenterContainer/Panel/VBox"]
-custom_minimum_size = Vector2(300, 72)
+custom_minimum_size = Vector2(300, 64)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_type_variation = &"ButtonMint"
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 24
 text = "MANCHE SUIVANTE ➔"

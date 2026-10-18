@@ -60,7 +60,7 @@ func on_hit_enemy(ball: Ball, enemy: Enemy) -> void:
 		tw.tween_property(ball.visual_ball, "scale", Vector2(1.2, 1.2), 0.15).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 		
 	# Libère le slot sur le plateau pour alimenter une nouvelle bille
-	ball.ball_shattered.emit()
+	ball.ball_shattered.emit(ball)
 
 func on_attached_enemy_died(ball: Ball, _enemy: Enemy) -> void:
 	if ball != null and is_instance_valid(ball):

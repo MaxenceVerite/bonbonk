@@ -15,6 +15,7 @@ signal score_changed(new_score: int, delta: int)
 signal combo_multiplier_changed(multiplier: float)
 signal enemy_defeated(enemy_type: StringName, position: Vector2)
 signal enemy_escaped(damage: int)
+signal player_healed(amount: int)
 signal health_changed(current_health: int, max_health: int)
 signal game_over
 signal game_restarted

@@ -204,8 +204,8 @@ func _spawn_active_ball(ball_type: StringName, _pod_index: int = 0) -> Ball:
 	var b: Ball = ball_pool.acquire(chosen_scene) as Ball
 	b.pool_source = ball_pool
 	b.position = tube_exit_position
-	if not b.ball_shattered.is_connected(_on_active_ball_shattered.bind(b)):
-		b.ball_shattered.connect(_on_active_ball_shattered.bind(b))
+	if not b.ball_shattered.is_connected(_on_active_ball_shattered):
+		b.ball_shattered.connect(_on_active_ball_shattered)
 	if not b.split_requested.is_connected(_on_ball_split_requested):
 		b.split_requested.connect(_on_ball_split_requested)
 	b.configure_for_type(ball_type)
@@ -229,8 +229,8 @@ func _on_ball_split_requested(sub_types: Array[StringName], spawn_pos: Vector2, 
 			sub_ball.linear_velocity = dirs[i] * speed
 			sub_ball.max_durability = 1
 			sub_ball.current_durability = 1
-			if not sub_ball.ball_shattered.is_connected(_on_active_ball_shattered.bind(sub_ball)):
-				sub_ball.ball_shattered.connect(_on_active_ball_shattered.bind(sub_ball))
+			if not sub_ball.ball_shattered.is_connected(_on_active_ball_shattered):
+				sub_ball.ball_shattered.connect(_on_active_ball_shattered)
 			sub_ball.configure_for_type(sub_types[i])
 			if sub_ball.get_parent() != ball_container:
 				ball_container.add_child(sub_ball)

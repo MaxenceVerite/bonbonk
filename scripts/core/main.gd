@@ -42,6 +42,7 @@ func _ready() -> void:
 	EventBus.enemy_escaped.connect(_on_enemy_escaped)
 	EventBus.score_changed.connect(_on_score_changed)
 	EventBus.game_over.connect(_on_game_over)
+	EventBus.player_healed.connect(_on_player_healed)
 	EventBus.start_game_requested.connect(launch_game)
 	EventBus.return_to_menu_requested.connect(show_main_menu)
 	EventBus.open_booster_modal_requested.connect(_on_open_booster_requested)
@@ -245,6 +246,10 @@ func _on_enemy_escaped(damage: int) -> void:
 	
 	if current_hp <= 0:
 		EventBus.game_over.emit()
+
+func _on_player_healed(amount: int) -> void:
+	current_hp = mini(max_hp, current_hp + amount)
+	_update_hp_display(true)
 
 func _on_score_changed(new_score: int, _delta: int) -> void:
 	current_score += new_score

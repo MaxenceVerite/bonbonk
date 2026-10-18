@@ -8,7 +8,7 @@ extends RigidBody2D
 ## - skin / couleurs personnalisables par ressource ou code
 
 signal durability_changed(current: int, max_val: int)
-signal ball_shattered
+signal ball_shattered(ball: Ball)
 signal split_requested(ball_types: Array[StringName], spawn_pos: Vector2, directions: Array[Vector2], speed: float)
 
 @export var ball_id: StringName = &"fizz"
@@ -45,6 +45,16 @@ var _current_aim_target: Enemy = null
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var shadow: Polygon2D = $Shadow
 @onready var trail: Line2D = $BallTrail
+
+# Registre statique O(1) de toutes les billes actives dans l'arène
+static var active_balls: Array[Ball] = []
+
+func _enter_tree() -> void:
+	if not active_balls.has(self):
+		active_balls.append(self)
+
+func _exit_tree() -> void:
+	active_balls.erase(self)
 
 func _ready() -> void:
 	current_durability = max_durability
@@ -324,7 +334,7 @@ func shatter() -> void:
 	if _is_shattering:
 		return
 	_is_shattering = true
-	ball_shattered.emit()
+	ball_shattered.emit(self)
 	collision_shape.set_deferred(&"disabled", true)
 	freeze = true
 	
@@ -338,6 +348,11 @@ func shatter() -> void:
 	tween.tween_property(visual_ball, "scale", Vector2(2.2, 2.2), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(visual_ball, "modulate:a", 0.0, 0.18)
 	tween.chain().tween_callback(despawn)
+
+## Applique une répulsion franche par un bumper via le solver physique
+func apply_bumper_bounce(push_direction: Vector2, bounce_force: float) -> void:
+	linear_velocity = push_direction * bounce_force
+	apply_central_impulse(push_direction * (bounce_force * 0.2))
 
 var pool_source: NodePool = null
 

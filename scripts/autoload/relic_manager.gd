@@ -44,6 +44,26 @@ func has_relic(relic_id: StringName) -> bool:
 func get_active_relics() -> Array[Relic]:
 	return active_relics
 
+func get_catalog_relic_classes() -> Array[GDScript]:
+	return [
+		RelicChiliCounter,
+		RelicDynamoBumper,
+		RelicSugarShield,
+		RelicCandyMagnet
+	]
+
+func pick_relic_offerings(count: int = 3) -> Array[Relic]:
+	var candidates: Array[Relic] = []
+	for script_cls in get_catalog_relic_classes():
+		var r: Relic = script_cls.new()
+		if not has_relic(r.id):
+			candidates.append(r)
+	candidates.shuffle()
+	var result: Array[Relic] = []
+	for i in range(mini(count, candidates.size())):
+		result.append(candidates[i])
+	return result
+
 func clear_all_relics() -> void:
 	for r in active_relics:
 		r.on_removed()

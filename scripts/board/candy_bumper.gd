@@ -97,7 +97,10 @@ func on_hit_by_ball(ball: RigidBody2D, hit_point: Vector2) -> void:
 	if push_direction == Vector2.ZERO:
 		push_direction = Vector2.UP
 	var force: float = bumper_data.bounce_force if bumper_data else 650.0
-	ball.linear_velocity = push_direction * force
+	if ball.has_method(&"apply_bumper_bounce"):
+		ball.apply_bumper_bounce(push_direction, force)
+	else:
+		ball.linear_velocity = push_direction * force
 	
 	# 2. Score & Événements
 	var score_val: int = bumper_data.score_on_hit if bumper_data else 50
