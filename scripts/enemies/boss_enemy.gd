@@ -98,6 +98,10 @@ func _physics_process(delta: float) -> void:
 	_time_alive += delta
 	_time_since_last_damage += delta
 
+	# Mise à jour des altérations d'état (Stun, Freeze, Burn...) pour les Boss
+	if status_component != null:
+		status_component.update_status(delta)
+
 	if _shield_flash_timer > 0.0:
 		_shield_flash_timer = maxf(0.0, _shield_flash_timer - delta)
 		queue_redraw()
