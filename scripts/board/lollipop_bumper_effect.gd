@@ -40,14 +40,10 @@ func execute(bumper: Node2D) -> void:
 	var shard_count: int = base_shards + (clampi(lvl, 1, 5) - 1) * shards_per_level
 
 	# 2. Recensement des ennemis vivants
-	var tree: SceneTree = bumper.get_tree()
-	if tree == null:
-		return
-	var enemies: Array[Node] = tree.get_nodes_in_group(&"enemies")
-	var alive_enemies: Array[Node2D] = []
-	for e in enemies:
-		if e is Enemy and is_instance_valid(e) and not (e as Enemy).is_dying():
-			alive_enemies.append(e as Node2D)
+	var alive_enemies: Array[Enemy] = []
+	for e in Enemy.get_active_enemies():
+		if e != null and is_instance_valid(e) and not e.is_dying():
+			alive_enemies.append(e)
 
 	# 3. Projection des éclats multicolores
 	var parent_node: Node = bumper.get_parent()

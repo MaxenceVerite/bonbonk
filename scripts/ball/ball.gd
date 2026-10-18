@@ -101,12 +101,56 @@ func _on_body_entered(body: Node) -> void:
 		bumper.on_hit_by_ball(self, global_position)
 		for kw in get_all_keywords():
 			kw.on_hit_bumper(self, bumper)
+	elif body is WoodenGateFlipper:
+		for kw in get_all_keywords():
+			kw.on_hit_flipper(self, body)
 	elif body is Enemy:
 		var enemy: Enemy = body as Enemy
 		if enemy != null and is_instance_valid(enemy) and not enemy.is_dying():
 			var durability_penalty: int = enemy.enemy_data.spiky_ball_durability_loss if (enemy.enemy_data and enemy.enemy_data.is_spiky) else 1
 			hit_enemy_with_target(enemy, durability_penalty)
-			enemy.take_hit(impact_damage, self, linear_velocity)
+			var ctx: HitContext = HitContext.create(self, enemy, impact_damage, global_position, linear_velocity, HitContext.DamageType.PHYSICAL)
+			EventBus.ball_hit_enemy.emit(ctx)
+			enemy.take_hit_with_context(ctx)
+
+## Configure la bille de manière universelle selon son type et son niveau (Data-Driven)
+func configure_for_type(p_ball_type: StringName, lvl: int = 1) -> void:
+	ball_id = p_ball_type
+
+	# 1. Skin & Palette
+	var pal: Dictionary = CardCatalog.get_candy_palette(p_ball_type)
+	apply_skin(pal.color, pal.core, pal.ring)
+
+	# 2. Mots-clés natifs selon le type (remplace le besoin de sous-classes)
+	native_keywords.clear()
+	match p_ball_type:
+		&"fizz":
+			native_keywords.append(KeywordElectric.new())
+		&"caramel":
+			native_keywords.append(KeywordSticky.new())
+		&"mentox":
+			native_keywords.append(KeywordFreeze.new())
+		&"jawbreaker":
+			native_keywords.append(KeywordJawbreaker.new())
+			mass = 1.8
+			max_durability = 1
+			current_durability = 1
+			if visual_ball != null:
+				visual_ball.scale = Vector2(1.25, 1.25)
+		_:
+			mass = 1.2
+
+	_refresh_cached_keywords()
+
+	# 3. Statistiques de carte
+	var card_state: Dictionary = SaveManager.get_card_state(p_ball_type)
+	var def: CandyCardData = card_state.get("def", null) if not card_state.is_empty() else null
+	if def == null:
+		var defs: Dictionary = CardCatalog.get_default_definitions()
+		def = defs.get(p_ball_type, null)
+	var card_lvl: int = card_state.get("level", lvl) if not card_state.is_empty() else lvl
+	if def != null:
+		configure_from_card(def, card_lvl)
 
 ## Configure la bille et ses mots-clés selon la carte et son niveau
 func configure_from_card(card_def: CandyCardData, lvl: int) -> void:
@@ -134,17 +178,12 @@ func _physics_process(delta: float) -> void:
 	if linear_velocity.length() < 35.0:
 		_stuck_timer += delta
 		if _stuck_timer > 0.35:
-			var nudge_x: float = 160.0 if global_position.x < 360.0 else -160.0
-			var nudge_y: float = -140.0 if global_position.y > 1110.0 else 100.0
+			var nudge_x: float = 160.0 if position.x < 310.0 else -160.0
+			var nudge_y: float = -140.0 if position.y > 1110.0 else 100.0
 			apply_central_impulse(Vector2(nudge_x, nudge_y))
 			_stuck_timer = 0.0
 	else:
 		_stuck_timer = 0.0
-
-	# Guidage doux passif en zone basse
-	if global_position.y > 900.0 and global_position.y < 1140.0:
-		var dir_to_center: float = signf(310.0 - global_position.x)
-		apply_central_force(Vector2(dir_to_center * 190.0, 0.0))
 
 	# Assistance à la visée magnétique (courbure douce vers les ennemis en ascension)
 	if aim_assist_enabled:
@@ -210,12 +249,7 @@ func _apply_aim_assist(delta: float) -> void:
 	apply_central_force(lateral_force)
 
 func _find_best_aim_target() -> void:
-	var tree: SceneTree = get_tree()
-	if tree == null:
-		_current_aim_target = null
-		return
-
-	var enemies: Array[Node] = tree.get_nodes_in_group(&"enemies")
+	var enemies: Array[Enemy] = Enemy.get_active_enemies()
 	if enemies.is_empty():
 		_current_aim_target = null
 		return
@@ -230,8 +264,7 @@ func _find_best_aim_target() -> void:
 	var best_score: float = -1.0
 	var chosen: Enemy = null
 
-	for node in enemies:
-		var enemy: Enemy = node as Enemy
+	for enemy in enemies:
 		if enemy == null or not is_instance_valid(enemy) or enemy.is_dying():
 			continue
 
@@ -304,7 +337,36 @@ func shatter() -> void:
 	tween.set_parallel(true)
 	tween.tween_property(visual_ball, "scale", Vector2(2.2, 2.2), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(visual_ball, "modulate:a", 0.0, 0.18)
-	tween.chain().tween_callback(queue_free)
+	tween.chain().tween_callback(despawn)
+
+var pool_source: NodePool = null
+
+func despawn() -> void:
+	if collision_shape != null:
+		collision_shape.set_deferred(&"disabled", true)
+	if pool_source != null:
+		pool_source.release(self)
+	else:
+		queue_free()
+
+func on_pool_acquire() -> void:
+	_is_shattering = false
+	freeze = false
+	if collision_shape != null:
+		collision_shape.set_deferred(&"disabled", false)
+	if visual_ball != null:
+		visual_ball.scale = Vector2.ONE
+		visual_ball.modulate = Color(1.0, 1.0, 1.0, 1.0)
+	if trail != null:
+		trail.visible = true
+		trail.clear_points()
+	if shadow != null:
+		shadow.visible = true
+	_stuck_timer = 0.0
+	_aim_assist_scan_timer = 0.0
+	_current_aim_target = null
+	current_durability = max_durability
+	durability_changed.emit(current_durability, max_durability)
 
 func reset_position(spawn_pos: Vector2) -> void:
 	global_position = spawn_pos

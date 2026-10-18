@@ -24,9 +24,9 @@ var current_screen_state: ScreenState = ScreenState.TITLE
 @onready var btn_back_to_menu: Button = $UI/HUD/TopBar/VBox/TopRow/BtnBackMenu
 @onready var score_label: Label = $UI/HUD/TopBar/VBox/TopRow/ScoreBadge/ScoreLabel
 @onready var wave_label: Label = $UI/HUD/TopBar/VBox/TopRow/WaveBadge/WaveLabel
-@onready var hp_bar: TextureProgressBar = $UI/HUD/TopBar/VBox/HPContainer/HPBar
-@onready var hp_text_label: Label = $UI/HUD/TopBar/VBox/HPContainer/HPTextLabel
-@onready var ball_factory_ui: BallFactoryUI = $UI/HUD/BallFactoryUI
+@onready var hp_bar: TextureProgressBar = $UI/HUD/BottomBar/HPContainer/HPBar
+@onready var hp_text_label: Label = $UI/HUD/BottomBar/HPContainer/HPTextLabel
+@onready var ball_factory_ui: BallFactoryUI = $UI/BallFactoryUI
 
 var wave_director: WaveDirector = null
 var current_wave: int = 1
@@ -81,10 +81,17 @@ func _ready() -> void:
 	show_title_screen()
 
 func _update_board_position() -> void:
-	var vp_width: float = get_viewport_rect().size.x
-	var content_x: float = maxf(0.0, (vp_width - 720.0) * 0.5)
+	var vp_size: Vector2 = get_viewport_rect().size
+	var content_x: float = maxf(0.0, (vp_size.x - 720.0) * 0.5)
+	# Centrage vertical équilibré si la hauteur dépasse la base de 1280
+	var extra_y: float = maxf(0.0, vp_size.y - 1280.0)
+	var content_y: float = extra_y * 0.5
 	if board != null:
-		board.position.x = content_x
+		board.position = Vector2(content_x, content_y)
+	if hud != null:
+		hud.position = Vector2.ZERO
+	if ball_factory_ui != null:
+		ball_factory_ui.position.y = 24.0 + content_y
 
 func _on_open_booster_requested() -> void:
 	if SaveManager.available_boosters.is_empty():
@@ -98,6 +105,8 @@ func show_title_screen() -> void:
 	main_menu.visible = false
 	hud.visible = false
 	touch_controls.visible = false
+	if ball_factory_ui != null:
+		ball_factory_ui.visible = false
 	if intermission_overlay != null:
 		intermission_overlay.visible = false
 	if bumper_placement_overlay != null:
@@ -116,6 +125,8 @@ func show_main_menu() -> void:
 	main_menu.visible = true
 	hud.visible = false
 	touch_controls.visible = false
+	if ball_factory_ui != null:
+		ball_factory_ui.visible = false
 	if intermission_overlay != null:
 		intermission_overlay.visible = false
 	if bumper_placement_overlay != null:
@@ -136,6 +147,9 @@ func launch_game() -> void:
 	main_menu.visible = false
 	hud.visible = true
 	touch_controls.visible = true
+	if ball_factory_ui != null:
+		ball_factory_ui.visible = true
+
 	intermission_overlay.visible = false
 	if game_over_modal != null:
 		game_over_modal.visible = false
@@ -173,6 +187,7 @@ func _start_board_gameplay() -> void:
 		board.start_game()
 	if wave_director != null:
 		wave_director.start_wave(current_wave)
+	RelicManager.notify_wave_started(current_wave)
 
 func _update_wave_display() -> void:
 	if wave_label != null:
@@ -190,6 +205,7 @@ func _on_wave_cleared(cleared_wave_num: int) -> void:
 		board.on_wave_cleared_stability()
 	if ball_factory_ui != null:
 		ball_factory_ui.is_interaction_enabled = false
+	RelicManager.notify_wave_cleared(cleared_wave_num)
 	var next_w: int = cleared_wave_num + 1
 	var next_budget: int = wave_director.calculate_budget_for_wave(next_w) if wave_director != null else 12
 	intermission_overlay.show_intermission(cleared_wave_num, next_w, next_budget)
@@ -207,6 +223,7 @@ func _on_next_wave_pressed() -> void:
 
 	if wave_director != null:
 		wave_director.start_wave(current_wave)
+	RelicManager.notify_wave_started(current_wave)
 
 func _update_hp_display(animate: bool = true) -> void:
 	hp_text_label.text = "%d / %d" % [current_hp, max_hp]

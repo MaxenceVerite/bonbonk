@@ -25,6 +25,10 @@ func on_hit_wall(ball: Ball, normal: Vector2) -> void:
 func on_hit_bumper(ball: Ball, bumper: CandyBumper) -> void:
 	pass
 
+## Déclenché quand la bille touche un batteur / flipper
+func on_hit_flipper(ball: Ball, flipper: Node) -> void:
+	pass
+
 ## Déclenché quand l'ennemi auquel la bille est attachée meurt
 func on_attached_enemy_died(ball: Ball, enemy: Enemy) -> void:
 	pass

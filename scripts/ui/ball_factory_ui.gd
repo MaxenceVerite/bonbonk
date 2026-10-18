@@ -106,6 +106,8 @@ func _on_pod_input(pod_index: int, event: InputEvent) -> void:
 		accept_event()
 
 	if is_press:
+		# Empêcher l'activation involontaire du batteur droit lors du tir d'un bonbon
+		Input.action_release(&"flip_right")
 		var now: float = float(Time.get_ticks_msec()) / 1000.0
 		if (now - _last_launch_time) >= 0.22:
 			_last_launch_time = now
@@ -265,9 +267,9 @@ func _draw_pod_chamber(pos: Vector2, pod_index: int, pod_label: String) -> void:
 
 func _draw_delivery_chute(center_x: float) -> void:
 	# Toboggan en verre translucide guidant les bonbons des Pods vers l'arène
-	var p_start: Vector2 = Vector2(center_x, POD_0_Y + POD_RADIUS + 2.0)
-	var p_ctrl: Vector2 = Vector2(center_x - 12.0, POD_0_Y + POD_RADIUS + 35.0)
-	var p_end: Vector2 = Vector2(-16.0, POD_0_Y + POD_RADIUS + 40.0) # S'oriente vers l'arène
+	var p_start: Vector2 = Vector2(center_x, POD_0_Y + POD_RADIUS - 6.0)
+	var p_ctrl: Vector2 = Vector2(center_x - 18.0, 1032.0)
+	var p_end: Vector2 = Vector2(-16.0, 1032.0) # S'oriente directement vers le haut de la rampe droite
 
 	# Courbe de verre extérieure
 	var curve_pts_l: PackedVector2Array = PackedVector2Array()

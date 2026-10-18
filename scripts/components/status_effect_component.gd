@@ -1,145 +1,121 @@
 class_name StatusEffectComponent
 extends Node
 
-## Composant gérant les altérations d'état (Stun, Freeze, Slow/Glu) sur une entité.
-## Isole les timers, modulations visuelles et calculs de vitesse pour alléger l'entité hôte.
+## Composant gérant les altérations d'état modulaires sur une entité (Strategy Pattern).
+## Gère le cycle de vie, les timers, l'immobilisation et les modulations sans couplage.
 
 signal status_changed(is_immobilized: bool)
 
-var _is_stunned: bool = false
-var _stun_timer: float = 0.0
-
-var _is_frozen: bool = false
-var _freeze_timer: float = 0.0
-
-var _attached_caramel_ball: Node2D = null
-var _slow_factor: float = 1.0
-
-var _is_burning: bool = false
-var _burn_duration: float = 0.0
-var _burn_damage_per_tick: int = 1
-var _burn_tick_interval: float = 0.5
-var _burn_tick_timer: float = 0.0
-var _burn_visual_flicker: float = 0.0
-
 var _target_node: CharacterBody2D = null
 var _visual_container: Node2D = null
+var _active_effects: Dictionary = {} # StringName -> StatusEffect
 
 func setup(target: CharacterBody2D, visual: Node2D) -> void:
 	_target_node = target
 	_visual_container = visual
 
+func apply_effect(effect: StatusEffect) -> void:
+	if effect == null:
+		return
+
+	var was_immobile: bool = is_immobilized()
+
+	if _active_effects.has(effect.id):
+		var existing: StatusEffect = _active_effects[effect.id]
+		existing.refresh_duration(effect.duration)
+	else:
+		_active_effects[effect.id] = effect
+		effect.on_applied(_target_node, _visual_container)
+		EventBus.status_applied.emit(_target_node, effect.id)
+
+	var now_immobile: bool = is_immobilized()
+	if was_immobile != now_immobile:
+		status_changed.emit(now_immobile)
+
+func remove_effect(effect_id: StringName) -> void:
+	if not _active_effects.has(effect_id):
+		return
+	var was_immobile: bool = is_immobilized()
+	var effect: StatusEffect = _active_effects[effect_id]
+	_active_effects.erase(effect_id)
+	effect.on_removed(_target_node, _visual_container)
+
+	var now_immobile: bool = is_immobilized()
+	if was_immobile != now_immobile:
+		status_changed.emit(now_immobile)
+
+func has_effect(effect_id: StringName) -> bool:
+	return _active_effects.has(effect_id)
+
+func get_effect(effect_id: StringName) -> StatusEffect:
+	return _active_effects.get(effect_id, null)
+
 func is_immobilized() -> bool:
-	return _is_stunned or _is_frozen
+	for eff in _active_effects.values():
+		if eff.is_immobilizing():
+			return true
+	return false
 
 func is_stunned() -> bool:
-	return _is_stunned
+	return has_effect(&"stun")
 
 func is_frozen() -> bool:
-	return _is_frozen
+	return has_effect(&"freeze")
 
 func is_burning() -> bool:
-	return _is_burning
+	return has_effect(&"burn")
 
 func get_speed_multiplier() -> float:
-	return _slow_factor
+	var mult: float = 1.0
+	for eff in _active_effects.values():
+		mult = minf(mult, eff.get_speed_multiplier())
+	return mult
 
-func apply_burn(duration: float, damage_per_tick: int = 1, tick_interval: float = 0.5) -> void:
-	_is_burning = true
-	_burn_duration = maxf(_burn_duration, duration)
-	_burn_damage_per_tick = damage_per_tick
-	_burn_tick_interval = tick_interval
-	_burn_tick_timer = tick_interval
-	if _visual_container != null:
-		var tw: Tween = _visual_container.create_tween()
-		_visual_container.modulate = Color(2.6, 1.2, 0.4, 1.0)
-		tw.tween_property(_visual_container, "modulate", Color(1.7, 0.75, 0.4, 1.0), 0.15)
+# --- Méthodes de confort pour rétrocompatibilité totale ---
+
+func apply_burn(duration: float = 3.0, damage_per_tick: int = 1, tick_interval: float = 0.5) -> void:
+	var burn: BurnStatusEffect = BurnStatusEffect.new(duration, damage_per_tick, tick_interval)
+	apply_effect(burn)
 
 func apply_electric_zap(duration: float = 2.0) -> void:
-	_is_stunned = true
-	_stun_timer = duration
-	if _visual_container != null:
-		var tw: Tween = _visual_container.create_tween()
-		_visual_container.modulate = Color(1.8, 2.2, 0.4, 1.0)
-		tw.tween_property(_visual_container, "modulate", Color(0.6, 1.3, 1.5, 1.0), 0.2)
-	status_changed.emit(true)
+	var stun: StunStatusEffect = StunStatusEffect.new(duration)
+	apply_effect(stun)
 
 func apply_freeze(duration: float = 2.0) -> void:
-	_is_frozen = true
-	_freeze_timer = duration
-	if _visual_container != null:
-		var tw: Tween = _visual_container.create_tween()
-		_visual_container.modulate = Color(1.2, 2.0, 2.5, 1.0)
-		tw.tween_property(_visual_container, "modulate", Color(0.65, 0.9, 1.25, 1.0), 0.2)
-	status_changed.emit(true)
+	var freeze_eff: FreezeStatusEffect = FreezeStatusEffect.new(duration)
+	apply_effect(freeze_eff)
 
 func attach_caramel_ball(caramel_ball: Node2D, speed_multiplier: float = 0.35) -> void:
-	_attached_caramel_ball = caramel_ball
-	_slow_factor = speed_multiplier
-	if _visual_container != null:
-		var tw: Tween = _visual_container.create_tween()
-		_visual_container.modulate = Color(1.8, 1.2, 0.4, 1.0)
-		tw.tween_property(_visual_container, "modulate", Color(1.2, 0.9, 0.6, 1.0), 0.2)
+	var sticky: StickyStatusEffect = StickyStatusEffect.new(caramel_ball, speed_multiplier)
+	apply_effect(sticky)
 
 func detach_caramel_ball() -> void:
-	_attached_caramel_ball = null
-	_slow_factor = 1.0
-	if _visual_container != null and not is_immobilized() and not _is_burning:
-		_visual_container.modulate = Color.WHITE
+	remove_effect(&"sticky")
 
 func cleanup_on_death() -> void:
-	if _attached_caramel_ball != null and is_instance_valid(_attached_caramel_ball):
-		if _attached_caramel_ball.has_method(&"shatter"):
-			_attached_caramel_ball.shatter()
-		else:
-			_attached_caramel_ball.queue_free()
-		_attached_caramel_ball = null
+	for eff in _active_effects.values():
+		if eff is StickyStatusEffect:
+			eff.cleanup_on_death()
+	_active_effects.clear()
 
 func update_status(delta: float) -> void:
-	# Brûlure (Burn DoT périodique)
-	if _is_burning:
-		_burn_duration -= delta
-		_burn_tick_timer -= delta
-		_burn_visual_flicker += delta * 12.0
-		if _visual_container != null and not _is_frozen:
-			var heat_pulse: float = 0.5 + 0.5 * sin(_burn_visual_flicker)
-			_visual_container.modulate = Color(1.3 + 0.5 * heat_pulse, 0.6 + 0.3 * heat_pulse, 0.35, 1.0)
+	if _active_effects.is_empty():
+		return
 
-		if _burn_tick_timer <= 0.0:
-			_burn_tick_timer = _burn_tick_interval
-			if _target_node != null and is_instance_valid(_target_node) and not _target_node.is_dying():
-				_target_node.take_hit(_burn_damage_per_tick, null, Vector2.ZERO)
-				if _visual_container != null:
-					var tw: Tween = _visual_container.create_tween()
-					tw.tween_property(_visual_container, "scale", Vector2(1.12, 0.88), 0.05)
-					tw.tween_property(_visual_container, "scale", Vector2.ONE, 0.08)
+	var was_immobile: bool = is_immobilized()
+	var expired_keys: Array[StringName] = []
 
-		if _burn_duration <= 0.0:
-			_is_burning = false
-			if _visual_container != null and not _is_frozen and not _is_stunned:
-				_visual_container.modulate = Color.WHITE if _slow_factor >= 1.0 else Color(1.2, 0.9, 0.6, 1.0)
+	for effect_id in _active_effects.keys():
+		var effect: StatusEffect = _active_effects[effect_id]
+		effect.on_tick(_target_node, _visual_container, delta)
+		if effect.is_expired:
+			expired_keys.append(effect_id)
 
-	# Gel givré
-	if _is_frozen:
-		_freeze_timer -= delta
-		if _freeze_timer <= 0.0:
-			_is_frozen = false
-			if not _is_stunned and _visual_container != null and not _is_burning:
-				_visual_container.modulate = Color.WHITE if _slow_factor >= 1.0 else Color(1.2, 0.9, 0.6, 1.0)
-			status_changed.emit(is_immobilized())
+	for key in expired_keys:
+		var effect: StatusEffect = _active_effects[key]
+		_active_effects.erase(key)
+		effect.on_removed(_target_node, _visual_container)
 
-	# Stun électrique (secousse visuelle)
-	if _is_stunned:
-		_stun_timer -= delta
-		if _visual_container != null:
-			_visual_container.position = Vector2(randf_range(-3.0, 3.0), randf_range(-3.0, 3.0))
-		if _stun_timer <= 0.0:
-			_is_stunned = false
-			if _visual_container != null:
-				_visual_container.position = Vector2.ZERO
-				if not _is_frozen and not _is_burning:
-					_visual_container.modulate = Color.WHITE if _slow_factor >= 1.0 else Color(1.2, 0.9, 0.6, 1.0)
-			status_changed.emit(is_immobilized())
-	else:
-		if _visual_container != null and not _is_frozen:
-			_visual_container.position = Vector2.ZERO
+	var now_immobile: bool = is_immobilized()
+	if was_immobile != now_immobile:
+		status_changed.emit(now_immobile)

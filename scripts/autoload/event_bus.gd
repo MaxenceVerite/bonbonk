@@ -2,6 +2,14 @@ extends Node
 
 ## Autoload global pour découpler les signaux transverses du jeu.
 
+# Signaux de combat & Roguelike (triggers modulaires)
+signal ball_hit_enemy(context: HitContext)
+signal ball_hit_bumper(ball: RigidBody2D, bumper: Node2D)
+signal flipper_parried(flipper: Node2D, enemy: Node2D, context: HitContext)
+signal enemy_damaged(enemy: Node2D, context: HitContext)
+signal enemy_killed(enemy: Node2D, context: HitContext)
+signal status_applied(target: Node2D, status_id: StringName)
+
 # Signaux du jeu
 signal score_changed(new_score: int, delta: int)
 signal combo_multiplier_changed(multiplier: float)

@@ -1,7 +1,6 @@
 class_name CandyBumper
 extends StaticBody2D
 
-const DragonBreathWaveScript = preload("res://scripts/effects/dragon_breath_wave.gd")
 const CandyTextureHelper = preload("res://scripts/core/candy_texture_helper.gd")
 
 ## Bumper interactif en bonbon.
@@ -20,9 +19,20 @@ var _original_scale: Vector2 = Vector2.ONE
 var _spin_speed: float = 2.4
 var _spin_boost: float = 1.0
 
+static var active_bumpers: Array[CandyBumper] = []
+
+func _enter_tree() -> void:
+	if not active_bumpers.has(self):
+		active_bumpers.append(self)
+
+func _exit_tree() -> void:
+	active_bumpers.erase(self)
+
 func _ready() -> void:
 	z_index = 10
 	add_to_group(&"bumpers")
+	if not active_bumpers.has(self):
+		active_bumpers.append(self)
 	if sprite != null:
 		_original_scale = sprite.scale
 	update_visuals()
@@ -89,36 +99,20 @@ func on_hit_by_ball(ball: RigidBody2D, hit_point: Vector2) -> void:
 	var force: float = bumper_data.bounce_force if bumper_data else 650.0
 	ball.linear_velocity = push_direction * force
 	
-	# 2. Score
+	# 2. Score & Événements
 	var score_val: int = bumper_data.score_on_hit if bumper_data else 50
 	EventBus.score_changed.emit(score_val, score_val)
+	EventBus.ball_hit_bumper.emit(ball, self)
 	
 	# 3. Tremblotement visuel (Juice / Jiggle)
 	_play_jiggle_animation()
 	
-	# 4. Effet de jeu (ex: attraction)
+	# 4. Effet de jeu (Strategy Pattern)
 	trigger_bumper_effect()
 
 func trigger_bumper_effect() -> void:
-	if bumper_data == null:
-		return
-		
-	# Utilisation de la stratégie d'effet si configurée
-	if bumper_data.effect_strategy != null:
+	if bumper_data != null and bumper_data.effect_strategy != null:
 		bumper_data.effect_strategy.execute(self)
-	elif bumper_data.id == &"dragiburst":
-		_trigger_dragon_breath()
-
-func _trigger_dragon_breath() -> void:
-	var radius: float = bumper_data.attraction_radius if bumper_data else 260.0
-	DragonBreathWaveScript.spawn(
-		self,
-		Vector2(0.0, -18.0),
-		radius,
-		2,
-		3.5,
-		1
-	)
 
 func play_jiggle() -> void:
 	_play_jiggle_animation()

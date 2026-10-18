@@ -6,17 +6,18 @@ config_version=5
 
 [application]
 
-config/name="Flip"
+config/name="BonBonk"
 config/description="Un jeu de flipper mobile-first / defense arcade où il faut empêcher les ennemis d'atteindre le bas de l'écran."
 config/version="0.1.0"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.3", "Mobile")
-config/icon="res://icon.svg"
+config/icon="res://bonbonk_icon.png"
 
 [autoload]
 
 EventBus="*res://scripts/autoload/event_bus.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
+RelicManager="*res://scripts/autoload/relic_manager.gd"
 
 [layer_names]
 

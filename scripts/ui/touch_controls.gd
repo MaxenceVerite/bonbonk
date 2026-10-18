@@ -18,15 +18,18 @@ func _gui_input(event: InputEvent) -> void:
 
 func _handle_screen_touch(event: InputEventScreenTouch) -> void:
 	var mid_x: float = size.x * 0.5
-	var is_on_right_side: bool = event.position.x >= mid_x
+	var factory_margin_right: float = 120.0
+	var is_on_factory_strip: bool = event.position.x >= (size.x - factory_margin_right)
+	var is_on_right_side: bool = event.position.x >= mid_x and not is_on_factory_strip
 
 	if event.pressed:
 		if is_on_right_side:
 			_touch_right_indices[event.index] = true
 			Input.action_press(action_right)
-		else:
+		elif event.position.x < mid_x:
 			_touch_left_indices[event.index] = true
 			Input.action_press(action_left)
+
 	else:
 		_touch_left_indices.erase(event.index)
 		_touch_right_indices.erase(event.index)
@@ -38,11 +41,15 @@ func _handle_screen_touch(event: InputEventScreenTouch) -> void:
 
 func _handle_screen_drag(event: InputEventScreenDrag) -> void:
 	var mid_x: float = size.x * 0.5
+	var factory_margin_right: float = 120.0
+	var is_on_factory_strip: bool = event.position.x >= (size.x - factory_margin_right)
 	var was_left: bool = _touch_left_indices.has(event.index)
 	var was_right: bool = _touch_right_indices.has(event.index)
-	var is_on_right_side: bool = event.position.x >= mid_x
+	var is_on_right_side: bool = event.position.x >= mid_x and not is_on_factory_strip
 	
-	if was_left and is_on_right_side:
+	if is_on_factory_strip:
+		_touch_right_indices.erase(event.index)
+	elif was_left and is_on_right_side:
 		_touch_left_indices.erase(event.index)
 		_touch_right_indices[event.index] = true
 	elif was_right and not is_on_right_side:

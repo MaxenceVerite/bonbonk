@@ -132,13 +132,10 @@ func _physics_process(delta: float) -> void:
 	queue_redraw()
 
 func _find_alternate_target() -> Node2D:
-	if not is_inside_tree():
-		return null
-	var enemies: Array[Node] = get_tree().get_nodes_in_group(&"enemies")
-	var alive: Array[Node2D] = []
-	for e in enemies:
-		if e is Enemy and is_instance_valid(e) and not (e as Enemy).is_dying():
-			alive.append(e as Node2D)
+	var alive: Array[Enemy] = []
+	for e in Enemy.get_active_enemies():
+		if e != null and is_instance_valid(e) and not e.is_dying():
+			alive.append(e)
 	if alive.is_empty():
 		return null
 	return alive.pick_random()

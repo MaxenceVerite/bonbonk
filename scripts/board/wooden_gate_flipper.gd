@@ -44,8 +44,43 @@ func get_velocity_at_point(point_global: Vector2) -> Vector2:
 	# V = omega x r (en 2D : Vector2(-omega * r.y, omega * r.x))
 	return Vector2(-current_angular_velocity * r.y, current_angular_velocity * r.x)
 
+## Tente d'effectuer un Super-Contre (Parry) sur un ennemi entrant en contact.
+## Retourne true si le contre est réussi et catapulté, false si le flipper est inactif/raté.
+func try_parry_enemy(enemy: Enemy, impact_point: Vector2, collision_normal: Vector2) -> bool:
+	if enemy == null or not is_instance_valid(enemy):
+		return false
+	if not is_in_parry_window():
+		return false
+	if enemy.enemy_data != null and not enemy.enemy_data.can_be_parried:
+		return false
+
+	var gate_vel: Vector2 = get_velocity_at_point(impact_point)
+	var mass: float = maxf(0.3, enemy.enemy_data.mass_weight) if enemy.enemy_data != null else 1.0
+	var rebound: float = enemy.enemy_data.kick_rebound_factor if enemy.enemy_data != null else 1.0
+	var kick_speed: float = (1400.0 / mass) * rebound
+	var push_direction: Vector2 = (gate_vel.normalized() * 0.4 + collision_normal * 1.0 + Vector2.UP * 1.2).normalized()
+	var push_velocity: Vector2 = push_direction * kick_speed
+
+	var hit_ctx: HitContext = HitContext.create(self, enemy, 0, impact_point, push_velocity, HitContext.DamageType.PARRY, true)
+	EventBus.flipper_parried.emit(self, enemy, hit_ctx)
+
+	enemy.on_parried_by_gate(push_velocity, collision_normal.angle())
+	Input.vibrate_handheld(35)
+	return true
+
+static var active_gates: Array[WoodenGateFlipper] = []
+
+func _enter_tree() -> void:
+	if not active_gates.has(self):
+		active_gates.append(self)
+
+func _exit_tree() -> void:
+	active_gates.erase(self)
+
 func _ready() -> void:
 	add_to_group(&"flipper_gates")
+	if not active_gates.has(self):
+		active_gates.append(self)
 	# Au repos : légère pente de 7° vers le centre pour que la bille roule naturellement
 	# Porte gauche : orientée vers le centre avec +7° (vers le bas)
 	# Porte droite : orientée vers le centre avec 180° - 7° = 173° (vers le bas)
@@ -62,15 +97,11 @@ func _physics_process(delta: float) -> void:
 	var just_pressed: bool = is_pressed and not _was_pressed
 	_was_pressed = is_pressed
 	
-	# Repos, Frappe (kick vers le haut), Recul (anticipation vers le bas)
+	# Repos, Frappe (kick vers le haut)
 	var rest_deg: float = (180.0 - 7.0) if is_right else 7.0
 	var kick_deg: float = (180.0 + 65.0) if is_right else -65.0
-	var antic_deg: float = (180.0 - 15.0) if is_right else 15.0
 	
-	if just_pressed:
-		rotation_degrees = antic_deg
-		_current_state = State.KICK
-	elif is_pressed:
+	if is_pressed:
 		_current_state = State.KICK
 	else:
 		_current_state = State.RETURN

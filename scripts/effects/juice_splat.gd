@@ -139,8 +139,10 @@ static func spawn(parent: Node, at_pos: Vector2, p_col: Color, s_col: Color, a_c
 	if fx == null:
 		fx = JuiceSplatEffect.new()
 
-	fx.global_position = at_pos
 	if parent != null and fx.get_parent() != parent:
+		if fx.get_parent() != null:
+			fx.get_parent().remove_child(fx)
 		parent.add_child(fx)
+	fx.global_position = at_pos
 	fx.setup(p_col, s_col, a_col, count)
 	return fx

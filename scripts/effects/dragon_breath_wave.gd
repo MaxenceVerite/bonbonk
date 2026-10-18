@@ -75,20 +75,20 @@ func _process(delta: float) -> void:
 		queue_free()
 
 func _detect_and_burn_enemies() -> void:
-	var enemies: Array[Node] = get_tree().get_nodes_in_group(&"enemies")
+	var enemies: Array[Enemy] = Enemy.get_active_enemies()
 	var inner_bound: float = maxf(0.0, _current_radius - 55.0)
 	var outer_bound: float = _current_radius + 20.0
 
-	for node in enemies:
-		if node is CharacterBody2D and is_instance_valid(node):
-			var inst_id: int = node.get_instance_id()
+	for enemy in enemies:
+		if enemy != null and is_instance_valid(enemy) and not enemy.is_dying():
+			var inst_id: int = enemy.get_instance_id()
 			if _hit_enemies.has(inst_id):
 				continue
 
-			var dist: float = global_position.distance_to(node.global_position)
+			var dist: float = global_position.distance_to(enemy.global_position)
 			if dist >= inner_bound and dist <= outer_bound:
 				_hit_enemies[inst_id] = true
-				_apply_dragon_hit(node)
+				_apply_dragon_hit(enemy)
 
 func _apply_dragon_hit(enemy_node: Node) -> void:
 	var to_enemy: Vector2 = (enemy_node.global_position - global_position).normalized()

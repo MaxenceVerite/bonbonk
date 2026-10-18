@@ -34,15 +34,13 @@ func on_hit_enemy(ball: Ball, primary_enemy: Enemy) -> void:
 	_draw_lightning_bolt(ball, ball.global_position, primary_enemy.global_position)
 	
 	# Recherche des ennemis proches
-	var enemies_in_tree: Array[Node] = ball.get_tree().get_nodes_in_group(&"enemies")
 	var candidates: Array[Enemy] = []
-	
-	for node in enemies_in_tree:
-		if node is Enemy and node != primary_enemy and is_instance_valid(node):
-			var dist: float = primary_enemy.global_position.distance_to((node as Enemy).global_position)
+	for e in Enemy.get_active_enemies():
+		if e != primary_enemy and e != null and is_instance_valid(e) and not e.is_dying():
+			var dist: float = primary_enemy.global_position.distance_to(e.global_position)
 			if dist <= chain_radius:
-				candidates.append(node as Enemy)
-				
+				candidates.append(e)
+
 	# Trier par proximité
 	candidates.sort_custom(func(a: Enemy, b: Enemy) -> bool:
 		return primary_enemy.global_position.distance_squared_to(a.global_position) < primary_enemy.global_position.distance_squared_to(b.global_position)

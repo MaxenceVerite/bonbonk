@@ -14,8 +14,8 @@ extends Node2D
 
 @export var bumper_scene: PackedScene
 
-# Point d'injection où la balle arrive dans l'arène (sur le plan incliné droit)
-@export var tube_exit_position: Vector2 = Vector2(530, 1100)
+# Point d'injection où la balle arrive dans l'arène (en haut de la rampe droite)
+@export var tube_exit_position: Vector2 = Vector2(570, 1055)
 
 @onready var left_gate: WoodenGateFlipper = $Gates/LeftGate
 @onready var right_gate: WoodenGateFlipper = $Gates/RightGate
@@ -50,8 +50,12 @@ var tube_ball_queue: Array[StringName]:
 signal factory_state_changed(types_queue: Array[StringName], is_synthesizing: bool, next_type: StringName, progress: float, pod_slots: Array[StringName])
 
 var is_game_running: bool = false
+var ball_pool: NodePool = NodePool.new()
+var enemy_pool: NodePool = NodePool.new()
 
 func _ready() -> void:
+	add_child(ball_pool)
+	add_child(enemy_pool)
 	danger_zone.body_entered.connect(_on_danger_zone_body_entered)
 	ball_tube.initialize(max_tube_capacity, synthesis_time_seconds)
 	ball_tube.factory_state_changed.connect(func(q, s, n, p, pods): factory_state_changed.emit(q, s, n, p, pods))
@@ -91,14 +95,17 @@ func reset_board() -> void:
 	is_game_running = false
 	_spawn_timer = 0.0
 	
-	# Nettoie les balles et ennemis en cours
+	# Nettoie les balles et ennemis en cours via recyclage
 	for b in active_balls:
 		if is_instance_valid(b):
-			b.queue_free()
+			b.despawn()
 	active_balls.clear()
 		
 	for child in enemy_container.get_children():
-		child.queue_free()
+		if child.has_method(&"despawn"):
+			child.despawn()
+		else:
+			child.queue_free()
 		
 	# Remplissage du tube avec les bonbons-balles du Deck actif
 	ball_tube.reset(SaveManager.get_active_deck_balls())
@@ -165,22 +172,14 @@ func _physics_process(delta: float) -> void:
 		var b: Ball = active_balls[i]
 		if not is_instance_valid(b) or b.is_queued_for_deletion():
 			active_balls.remove_at(i)
-		elif b.global_position.y > 1250.0 or b.global_position.x > 620.0 or b.global_position.x < 10.0:
-			b.queue_free()
+		elif b.position.y > 1350.0 or b.position.x > 660.0 or b.position.x < -40.0:
+			b.despawn()
 			active_balls.remove_at(i)
 
-func get_ball_scene_for_type(ball_type: StringName) -> PackedScene:
-	match ball_type:
-		&"fizz":
-			return fizzball_scene if fizzball_scene != null else ball_scene
-		&"caramel":
-			return caramel_ball_scene if caramel_ball_scene != null else ball_scene
-		&"mentox":
-			return mentox_ball_scene if mentox_ball_scene != null else ball_scene
-		&"jawbreaker":
-			return jawbreaker_ball_scene if jawbreaker_ball_scene != null else ball_scene
-		_:
-			return ball_scene
+func get_ball_scene_for_type(_ball_type: StringName) -> PackedScene:
+	if ball_scene != null:
+		return ball_scene
+	return load("res://scenes/ball/ball.tscn") as PackedScene
 
 func launch_ball_from_pod(pod_index: int) -> bool:
 	if not is_game_running:
@@ -188,7 +187,7 @@ func launch_ball_from_pod(pod_index: int) -> bool:
 	var b_type: StringName = ball_tube.launch_pod(pod_index)
 	if b_type.is_empty():
 		return false
-	_spawn_active_ball(b_type)
+	_spawn_active_ball(b_type, pod_index)
 	return true
 
 func feed_next_ball_from_tube() -> void:
@@ -196,58 +195,50 @@ func feed_next_ball_from_tube() -> void:
 		return
 	var b_type: StringName = ball_tube.pop_next_ball()
 	if not b_type.is_empty():
-		_spawn_active_ball(b_type)
+		_spawn_active_ball(b_type, 0)
 
-func _spawn_active_ball(ball_type: StringName) -> Ball:
+func _spawn_active_ball(ball_type: StringName, _pod_index: int = 0) -> Ball:
 	var chosen_scene: PackedScene = get_ball_scene_for_type(ball_type)
 	if chosen_scene == null:
 		return null
-	var b: Ball = chosen_scene.instantiate() as Ball
+	var b: Ball = ball_pool.acquire(chosen_scene) as Ball
+	b.pool_source = ball_pool
 	b.position = tube_exit_position
-	b.ball_shattered.connect(func() -> void:
-		active_balls.erase(b)
-	)
-	b.split_requested.connect(_on_ball_split_requested)
-	_apply_card_stats_to_ball(b, ball_type)
-	# Impulsion diagonale douce vers la gauche et le flipper
-	b.linear_velocity = Vector2(-220.0, 180.0)
-	ball_container.add_child(b)
+	if not b.ball_shattered.is_connected(_on_active_ball_shattered.bind(b)):
+		b.ball_shattered.connect(_on_active_ball_shattered.bind(b))
+	if not b.split_requested.is_connected(_on_ball_split_requested):
+		b.split_requested.connect(_on_ball_split_requested)
+	b.configure_for_type(ball_type)
+	# Glisse naturelle douce le long de la rampe droite vers le batteur
+	b.linear_velocity = Vector2(-25.0, 40.0)
+	if b.get_parent() != ball_container:
+		ball_container.add_child(b)
 	active_balls.append(b)
 	return b
 
+func _on_active_ball_shattered(b: Ball) -> void:
+	active_balls.erase(b)
+
 func _on_ball_split_requested(sub_types: Array[StringName], spawn_pos: Vector2, dirs: Array[Vector2], speed: float) -> void:
+	var chosen_scene: PackedScene = get_ball_scene_for_type(&"ball")
 	for i in range(mini(sub_types.size(), dirs.size())):
-		var scn: PackedScene = get_ball_scene_for_type(sub_types[i])
-		if scn != null:
-			var sub_ball: Ball = scn.instantiate() as Ball
+		if chosen_scene != null:
+			var sub_ball: Ball = ball_pool.acquire(chosen_scene) as Ball
+			sub_ball.pool_source = ball_pool
 			sub_ball.position = spawn_pos + dirs[i] * 22.0
 			sub_ball.linear_velocity = dirs[i] * speed
 			sub_ball.max_durability = 1
 			sub_ball.current_durability = 1
-			sub_ball.ball_shattered.connect(func() -> void:
-				active_balls.erase(sub_ball)
-			)
-			_apply_card_stats_to_ball(sub_ball, sub_types[i])
-			ball_container.add_child(sub_ball)
+			if not sub_ball.ball_shattered.is_connected(_on_active_ball_shattered.bind(sub_ball)):
+				sub_ball.ball_shattered.connect(_on_active_ball_shattered.bind(sub_ball))
+			sub_ball.configure_for_type(sub_types[i])
+			if sub_ball.get_parent() != ball_container:
+				ball_container.add_child(sub_ball)
 			active_balls.append(sub_ball)
 
 func _apply_card_stats_to_ball(ball: Ball, ball_type: StringName) -> void:
-	if ball == null:
-		return
-	ball.ball_id = ball_type
-
-	# Application des couleurs du bonbon pour cohérence parfaite avec les Pods
-	var pal: Dictionary = CardCatalog.get_candy_palette(ball_type)
-	ball.apply_skin(pal.color, pal.core, pal.ring)
-
-	var card_state: Dictionary = SaveManager.get_card_state(ball_type)
-	if card_state.is_empty():
-		return
-	var def: CandyCardData = card_state.get("def", null)
-	var lvl: int = card_state.get("level", 1)
-	if def != null:
-		ball.configure_from_card(def, lvl)
-
+	if ball != null:
+		ball.configure_for_type(ball_type)
 
 func spawn_sub_ball(sub_ball: Ball) -> void:
 	if sub_ball == null or ball_container == null:
@@ -261,9 +252,11 @@ func spawn_enemy_by_path(scene_path: String, spawn_x: float) -> void:
 		_scene_cache[scene_path] = load(scene_path)
 	var enemy_scn: PackedScene = _scene_cache.get(scene_path) as PackedScene
 	if enemy_scn != null:
-		var enemy: Enemy = enemy_scn.instantiate() as Enemy
+		var enemy: Enemy = enemy_pool.acquire(enemy_scn, scene_path) as Enemy
+		enemy.pool_source = enemy_pool
 		enemy.position = Vector2(spawn_x, 80.0)
-		enemy_container.add_child(enemy)
+		if enemy.get_parent() != enemy_container:
+			enemy_container.add_child(enemy)
 
 func spawn_enemy() -> void:
 	var pool: Array[PackedScene] = _get_default_enemy_pool()
@@ -271,10 +264,12 @@ func spawn_enemy() -> void:
 		return
 		
 	var chosen_scene: PackedScene = pool.pick_random()
-	var enemy: Enemy = chosen_scene.instantiate() as Enemy
+	var enemy: Enemy = enemy_pool.acquire(chosen_scene) as Enemy
+	enemy.pool_source = enemy_pool
 	var spawn_x: float = randf_range(90.0, 510.0)
 	enemy.position = Vector2(spawn_x, 80.0)
-	enemy_container.add_child(enemy)
+	if enemy.get_parent() != enemy_container:
+		enemy_container.add_child(enemy)
 
 var _cached_enemy_pool: Array[PackedScene] = []
 func _get_default_enemy_pool() -> Array[PackedScene]:
@@ -293,8 +288,14 @@ func _get_default_enemy_pool() -> Array[PackedScene]:
 func _on_danger_zone_body_entered(body: Node2D) -> void:
 	if body is Ball:
 		active_balls.erase(body as Ball)
-		body.queue_free()
+		if body.has_method(&"despawn"):
+			body.despawn()
+		else:
+			body.queue_free()
 	elif body is Enemy:
 		var dmg: int = body.enemy_data.damage_on_escape if (body.enemy_data != null) else 1
 		EventBus.enemy_escaped.emit(dmg)
-		body.queue_free()
+		if body.has_method(&"despawn"):
+			body.despawn()
+		else:
+			body.queue_free()

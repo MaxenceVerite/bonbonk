@@ -13,9 +13,9 @@ signal next_wave_pressed
 func _ready() -> void:
 	btn_next.pressed.connect(func() -> void: next_wave_pressed.emit())
 
-func show_intermission(completed_wave: int, next_wave_num: int, next_budget: int) -> void:
+func show_intermission(completed_wave: int, next_wave_num: int, _next_budget: int) -> void:
 	title_label.text = "🎉 MANCHE %d RÉUSSIE !" % completed_wave
-	info_label.text = "Prochaine Manche : %d\nMenace à venir : %d pts" % [next_wave_num, next_budget]
+	info_label.text = "Prépare-toi pour la Manche %d !" % next_wave_num
 	visible = true
 	
 	# Animation pop-in gourmande

@@ -20,12 +20,40 @@ const DiveTelegraphScript = preload("res://scripts/effects/dive_telegraph_visual
 
 var status_component: StatusEffectComponent = null
 var telegraph_visual: DiveTelegraphVisual = null
+var dive_component: SuicideDiveComponent = null
 
-enum ActionState { NORMAL, DIVE_WINDUP, DIVING }
-var _action_state: ActionState = ActionState.NORMAL
-var _windup_timer: float = 0.0
-var _dive_target_gate: WoodenGateFlipper = null
-var _dive_target_pos: Vector2 = Vector2.ZERO
+# Registre statique O(1) de tous les ennemis vivants sur le terrain
+static var active_enemies: Array[Enemy] = []
+
+static func get_active_enemies() -> Array[Enemy]:
+	return active_enemies
+
+static func get_nearest(from_pos: Vector2, max_distance: float = INF) -> Enemy:
+	var nearest: Enemy = null
+	var min_dist_sq: float = max_distance * max_distance
+	for e in active_enemies:
+		if e != null and is_instance_valid(e) and not e.is_dying():
+			var d_sq: float = from_pos.distance_squared_to(e.global_position)
+			if d_sq < min_dist_sq:
+				min_dist_sq = d_sq
+				nearest = e
+	return nearest
+
+static func get_in_radius(from_pos: Vector2, radius: float) -> Array[Enemy]:
+	var result: Array[Enemy] = []
+	var r_sq: float = radius * radius
+	for e in active_enemies:
+		if e != null and is_instance_valid(e) and not e.is_dying():
+			if from_pos.distance_squared_to(e.global_position) <= r_sq:
+				result.append(e)
+	return result
+
+func _enter_tree() -> void:
+	if not active_enemies.has(self):
+		active_enemies.append(self)
+
+func _exit_tree() -> void:
+	active_enemies.erase(self)
 
 var _time_alive: float = 0.0
 var _is_dying: bool = false
@@ -40,6 +68,7 @@ var _projection_time: float = 0.0
 
 # Contexte du dernier coup reçu
 var _last_hit_source: Node = null
+var _last_hit_context: HitContext = null
 var _last_hit_direction: Vector2 = Vector2.UP
 var _last_impact_velocity: Vector2 = Vector2.ZERO
 var _last_hit_timestamp: float = -999.0
@@ -93,6 +122,9 @@ func apply_burn(duration: float = 3.0, damage_per_tick: int = 1, tick_interval: 
 
 func _ready() -> void:
 	add_to_group(&"enemies")
+	if not active_enemies.has(self):
+		active_enemies.append(self)
+
 	status_component = StatusEffectComponent.new()
 	add_child(status_component)
 	status_component.setup(self, visual_container)
@@ -101,13 +133,92 @@ func _ready() -> void:
 	add_child(telegraph_visual)
 	telegraph_visual.setup(enemy_data.can_be_parried if enemy_data != null else true)
 
+	dive_component = SuicideDiveComponent.new()
+	add_child(dive_component)
+	dive_component.setup(self, visual_container, telegraph_visual)
+
 	if enemy_data != null:
 		health_component.set_max_health(enemy_data.max_health)
 		_current_move_speed = enemy_data.get_speed_from_tier()
 	health_component.died.connect(_on_died)
+	health_component.health_changed.connect(_on_health_changed)
 	_time_alive = randf_range(0.0, 5.0)
 	bypass_bias = -1.0 if randf() < 0.5 else 1.0
 	_init_movement_strategy()
+
+var _hp_ratio: float = 1.0
+var _hp_flash_timer: float = 0.0
+
+func _on_health_changed(cur: int, max_h: int) -> void:
+	if max_h > 0:
+		_hp_ratio = clampf(float(cur) / float(max_h), 0.0, 1.0)
+	else:
+		_hp_ratio = 0.0
+	_hp_flash_timer = 0.2
+	queue_redraw()
+
+func _draw() -> void:
+	if _is_dying or _is_expelled or health_component == null:
+		return
+	# Affichage uniquement si l'ennemi n'est pas full HP (pour ne pas noyer l'écran de barres)
+	if health_component.current_health >= health_component.max_health:
+		return
+
+	# 1. Calcul dynamique du sommet réel du sprite (tient compte de la texture et du scale)
+	var top_y: float = -34.0
+	var half_width: float = 28.0
+
+	if sprite != null and sprite.texture != null:
+		var tex_size: Vector2 = sprite.texture.get_size()
+		var s_y: float = absf(sprite.scale.y)
+		var s_x: float = absf(sprite.scale.x)
+		var visual_half_h: float = (tex_size.y * s_y) * 0.5
+		var visual_half_w: float = (tex_size.x * s_x) * 0.5
+		top_y = -visual_half_h
+		half_width = clampf(visual_half_w * 0.75, 24.0, 42.0)
+	elif collision_shape != null and collision_shape.shape != null:
+		if collision_shape.shape is CapsuleShape2D:
+			var cap: CapsuleShape2D = collision_shape.shape as CapsuleShape2D
+			top_y = -(cap.height * 0.5)
+			half_width = cap.radius + 6.0
+		elif collision_shape.shape is CircleShape2D:
+			var circ: CircleShape2D = collision_shape.shape as CircleShape2D
+			top_y = -circ.radius
+			half_width = circ.radius + 6.0
+
+	# 2. Centre et courbure de l'arc : flotte nettement au-dessus du sommet (feuilles, crête, chapeau)
+	var clearance: float = 12.0 # Espace d'air au-dessus du sprite
+	var arc_radius: float = half_width + 4.0
+	# Le centre est placé de sorte que le sommet de l'arc (à -PI/2) touche exactement (top_y - clearance)
+	var center: Vector2 = Vector2(0.0, (top_y - clearance) + arc_radius)
+
+	# Arc courbé centré vers le haut (symétrique autour de -PI * 0.5)
+	var half_span: float = PI * 0.32
+	var start_angle: float = -PI * 0.5 - half_span
+	var total_span: float = half_span * 2.0
+	var end_angle_bg: float = start_angle + total_span
+	var end_angle_fg: float = start_angle + total_span * _hp_ratio
+
+	# 3. Contour d'ombre extérieure (Drop Shadow / Outline contrasté) pour visibilité absolue
+	draw_arc(center, arc_radius, start_angle - 0.04, end_angle_bg + 0.04, 26, Color(0.04, 0.02, 0.01, 0.85), 7.0, true)
+
+	# 4. Fond sombre de la piste (Track)
+	draw_arc(center, arc_radius, start_angle, end_angle_bg, 24, Color(0.18, 0.12, 0.10, 0.90), 5.0, true)
+
+	# 5. Remplissage coloré dynamique (Vert éclatant > Jaune-Orange > Rouge vif)
+	var bar_color: Color
+	if _hp_flash_timer > 0.0:
+		bar_color = Color(1.0, 1.0, 1.0, 1.0) # Flash blanc très net à l'impact
+	elif _hp_ratio > 0.5:
+		bar_color = Color(0.30, 0.95, 0.35, 1.0).lerp(Color(1.0, 0.85, 0.18, 1.0), (1.0 - _hp_ratio) * 2.0)
+	else:
+		bar_color = Color(1.0, 0.85, 0.18, 1.0).lerp(Color(1.0, 0.22, 0.22, 1.0), (0.5 - _hp_ratio) * 2.0)
+
+	if _hp_ratio > 0.01:
+		draw_arc(center, arc_radius, start_angle, end_angle_fg, 24, bar_color, 4.0, true)
+		# Petit éclat lumineux au bout de la jauge
+		var tip_pos: Vector2 = center + Vector2(cos(end_angle_fg), sin(end_angle_fg)) * arc_radius
+		draw_circle(tip_pos, 2.2, Color(1.0, 1.0, 1.0, 0.95))
 
 func _init_movement_strategy() -> void:
 	var pattern: int = enemy_data.move_pattern if enemy_data != null else 0
@@ -119,58 +230,8 @@ func _init_movement_strategy() -> void:
 		_:
 			movement_strategy = WalkStraightStrategy.new()
 
-func _compute_bumper_avoidance(current_dir: Vector2, speed: float) -> Vector2:
-	var tree: SceneTree = get_tree()
-	if tree == null:
-		return Vector2.ZERO
-	var bumpers: Array[Node] = tree.get_nodes_in_group(&"bumpers")
-	if bumpers.is_empty():
-		return Vector2.ZERO
-
-	var avoid_force: Vector2 = Vector2.ZERO
-	var my_pos: Vector2 = global_position
-	# Lookahead augmenté pour anticiper bien plus tôt et rayon de sécurité élargi
-	var lookahead_dist: float = 175.0
-	var bumper_safe_radius: float = 95.0
-
-	for node in bumpers:
-		var bumper: Node2D = node as Node2D
-		if bumper == null or not is_instance_valid(bumper):
-			continue
-
-		var to_bumper: Vector2 = bumper.global_position - my_pos
-		var dist: float = to_bumper.length()
-
-		# Détection si le bumper est devant (y > -20 pour inclure les contacts directs au sommet)
-		if to_bumper.y < -20.0 or dist > lookahead_dist:
-			continue
-
-		var lateral_offset: float = to_bumper.x
-
-		# Si l'ennemi est dans le cylindre ou heurte le sommet du bumper
-		if absf(lateral_offset) < bumper_safe_radius:
-			# Choix directionnel dynamique :
-			# Si l'ennemi est légèrement à gauche du centre du bumper -> glisser à gauche (-1.0)
-			# S'il est légèrement à droite -> glisser à droite (+1.0)
-			# S'il est exactement au centre (pile à la verticale) -> utiliser son biais organique
-			var chosen_dir_x: float = bypass_bias
-			if absf(lateral_offset) > 2.0:
-				chosen_dir_x = -1.0 if lateral_offset > 0.0 else 1.0
-			
-			# Contraintes de bordures arène (murs latéraux à 28px et 592px)
-			if my_pos.x < 130.0:
-				chosen_dir_x = 1.0
-			elif my_pos.x > 470.0:
-				chosen_dir_x = -1.0
-
-			var proximity: float = 1.0 - clampf(dist / lookahead_dist, 0.0, 1.0)
-			# Force latérale puissante pour contourner
-			var steer_strength: float = (0.5 + proximity * 1.5) * speed * 2.8
-			avoid_force.x += chosen_dir_x * steer_strength
-			# Légère déviation vers le bas pour ne jamais stagner au sommet
-			avoid_force.y += speed * 0.4
-			break # Cible en priorité le bumper le plus proche
-	return avoid_force
+func _compute_bumper_avoidance(_current_dir: Vector2, speed: float) -> Vector2:
+	return ObstacleAvoidance.compute_bumper_avoidance(global_position, bypass_bias, speed, CandyBumper.active_bumpers)
 
 func _physics_process(delta: float) -> void:
 	# Trajectoire balistique en cloche hors de l'arène (Expulsion)
@@ -189,13 +250,13 @@ func _physics_process(delta: float) -> void:
 
 		# Ne disparaît JAMAIS sur le terrain : uniquement lorsqu'il a franchi les limites de l'écran / arène
 		var is_out_of_arena: bool = (
-			global_position.x < -120.0 or 
-			global_position.x > 840.0 or 
-			global_position.y < -150.0 or 
-			global_position.y > 1380.0
+			position.x < -120.0 or 
+			position.x > 840.0 or 
+			position.y < -150.0 or 
+			position.y > 1500.0
 		)
 		if is_out_of_arena or _expulsion_timer > 3.0:
-			queue_free()
+			despawn()
 		return
 
 	if _is_dying:
@@ -203,6 +264,11 @@ func _physics_process(delta: float) -> void:
 
 	_time_alive += delta
 	_time_since_last_damage += delta
+
+	if _hp_flash_timer > 0.0:
+		_hp_flash_timer = maxf(0.0, _hp_flash_timer - delta)
+		if _hp_flash_timer == 0.0:
+			queue_redraw()
 
 	# Mise à jour des altérations d'état via le composant
 	if status_component != null:
@@ -213,45 +279,13 @@ func _physics_process(delta: float) -> void:
 	var walk_velocity: Vector2 = Vector2.ZERO
 	var is_immobile: bool = status_component.is_immobilized() if status_component != null else false
 
-	if _action_state == ActionState.DIVE_WINDUP:
-		# En phase de préparation de charge : immobile, télégraphe animé et pulsation d'alerte
-		_windup_timer += delta
-		var windup_duration: float = enemy_data.dive_windup_time if enemy_data != null else 0.35
-		var progress: float = clampf(_windup_timer / windup_duration, 0.0, 1.0)
-		if telegraph_visual != null:
-			telegraph_visual.set_progress(progress)
-
-		# Squash d'anticipation et modulation de couleur rouge/alerte
-		var squash_f: float = 1.0 + sin(progress * PI) * 0.25
-		visual_container.scale = Vector2(1.0 / squash_f, squash_f)
-		if progress >= 0.85:
-			visual_container.modulate = Color(1.8, 1.6, 0.8, 1.0) # Flash doré/vert imminent
-		else:
-			visual_container.modulate = Color(1.8, 0.7, 0.7, 1.0) # Alerte rougeoyante
-
-		if _windup_timer >= windup_duration:
-			# Déclenchement de la ruée
-			_action_state = ActionState.DIVING
-			if telegraph_visual != null:
-				telegraph_visual.stop_telegraph()
-			visual_container.scale = Vector2.ONE
-			visual_container.modulate = Color.WHITE
-
-	elif _action_state == ActionState.DIVING:
-		# En pleine charge : ruée rapide directement vers la porte cible
-		var d_speed: float = enemy_data.dive_speed if enemy_data != null else 520.0
-		var to_target: Vector2 = _dive_target_pos - global_position
-		if to_target.length() > 5.0:
-			walk_velocity = to_target.normalized() * d_speed
-		else:
-			walk_velocity = Vector2.DOWN * d_speed
-
-		# Légère inclinaison dans la direction du plongeon
-		visual_container.rotation = walk_velocity.angle() - (PI * 0.5)
+	if dive_component != null and dive_component.is_active():
+		walk_velocity = dive_component.update_dive(delta, enemy_data)
 
 	elif not is_immobile:
 		# Déplacement normal : vérifier si on approche de la porte pour déclencher la charge
-		_check_for_suicide_dive()
+		if dive_component != null:
+			dive_component.check_for_dive(enemy_data)
 
 		var base_speed: float = enemy_data.get_speed_from_tier() if enemy_data else 80.0
 
@@ -328,39 +362,12 @@ func _physics_process(delta: float) -> void:
 		elif collider is WoodenGateFlipper:
 			var gate: WoodenGateFlipper = collider as WoodenGateFlipper
 			var impact_point: Vector2 = collision.get_position()
-			var gate_vel: Vector2 = gate.get_velocity_at_point(impact_point)
 			var collision_normal: Vector2 = collision.get_normal()
-			var dmg: int = enemy_data.damage_on_escape if (enemy_data != null) else 1
-
-			# La parade n'est possible que si :
-			# 1. L'ennemi est vulnérable au contre (can_be_parried = true)
-			# 2. Le batteur est dans sa fenêtre active de montée rapide (is_in_parry_window)
-			var is_parry_successful: bool = gate.is_in_parry_window() and enemy_data != null and enemy_data.can_be_parried
-
-			if is_parry_successful:
-				# SUPER CONTRE / PARRY RÉUSSI !
-				# L'ennemi est catapulté en cloche vers le haut sans toucher les PV du joueur
-				var mass: float = maxf(0.3, enemy_data.mass_weight)
-				var kick_speed: float = (1400.0 / mass) * enemy_data.kick_rebound_factor
-				var push_direction: Vector2 = (gate_vel.normalized() * 0.4 + collision_normal * 1.0 + Vector2.UP * 1.2).normalized()
-
-				_is_projected_by_gate = true
-				_projection_time = 0.0
-				_action_state = ActionState.NORMAL
-				if telegraph_visual != null:
-					telegraph_visual.stop_telegraph()
-				visual_container.rotation = 0.0
-				_knockback_velocity = push_direction * kick_speed
-				_trigger_impact_squash(collision_normal.angle())
-
-				# Flash d'impact doré et micro vibration tactile
-				visual_container.modulate = Color(2.5, 2.5, 1.2, 1.0)
-				var tw: Tween = create_tween()
-				tw.tween_property(visual_container, "modulate", Color.WHITE, 0.15)
-				Input.vibrate_handheld(35)
-			else:
+			var parried: bool = gate.try_parry_enemy(self, impact_point, collision_normal)
+			if not parried:
 				# Contre raté (porte statique, maintenue levée, ou ennemie lourde type Pastèque) :
 				# L'ennemi s'écrase sur la porte, éclate en jus et inflige ses dégâts au joueur
+				var dmg: int = enemy_data.damage_on_escape if (enemy_data != null) else 1
 				EventBus.enemy_escaped.emit(dmg)
 				_explode_at_gate(collision_normal)
 
@@ -433,49 +440,22 @@ func _explode_at_gate(normal: Vector2) -> void:
 	tw.tween_property(visual_container, "scale", Vector2(1.6, 1.6), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(visual_container, "modulate:a", 0.0, 0.16)
 	tw.tween_property(self, "position", position + normal * 20.0, 0.12)
-	tw.chain().tween_callback(queue_free)
+	tw.chain().tween_callback(despawn)
 
 
-func _check_for_suicide_dive() -> void:
-	if enemy_data == null or not enemy_data.can_suicide_dive:
-		return
-	if _action_state != ActionState.NORMAL or _is_projected_by_gate:
-		return
+func on_parried_by_gate(push_velocity: Vector2, impact_angle: float) -> void:
+	_is_projected_by_gate = true
+	_projection_time = 0.0
+	if dive_component != null:
+		dive_component.reset()
+	visual_container.rotation = 0.0
+	_knockback_velocity = push_velocity
+	_trigger_impact_squash(impact_angle)
 
-	var trigger_dist: float = enemy_data.dive_trigger_distance
-	var tree: SceneTree = get_tree()
-	if tree == null:
-		return
-	var gates: Array[Node] = tree.get_nodes_in_group(&"flipper_gates")
-	if gates.is_empty():
-		return
-
-	# Recherche de la porte la plus proche
-	var nearest_gate: WoodenGateFlipper = null
-	var min_dist: float = 999999.0
-	var my_pos: Vector2 = global_position
-
-	for g_node in gates:
-		var gate: WoodenGateFlipper = g_node as WoodenGateFlipper
-		if gate == null or not is_instance_valid(gate):
-			continue
-		# On cible le centre utile de la lame de batteur
-		var gate_center: Vector2 = gate.global_position + gate.transform.x * 65.0
-		var d: float = my_pos.distance_to(gate_center)
-		# L'ennemi doit être situé au-dessus de la porte (y < gate.y)
-		if my_pos.y < gate.global_position.y and d < min_dist:
-			min_dist = d
-			nearest_gate = gate
-
-	# Si la porte est à portée de plongeon suicide
-	if nearest_gate != null and min_dist <= trigger_dist:
-		_action_state = ActionState.DIVE_WINDUP
-		_windup_timer = 0.0
-		_dive_target_gate = nearest_gate
-		_dive_target_pos = nearest_gate.global_position + nearest_gate.transform.x * randf_range(40.0, 95.0)
-
-		if telegraph_visual != null:
-			telegraph_visual.start_windup(enemy_data.can_be_parried)
+	# Flash d'impact doré
+	visual_container.modulate = Color(2.5, 2.5, 1.2, 1.0)
+	var tw: Tween = create_tween()
+	tw.tween_property(visual_container, "modulate", Color.WHITE, 0.15)
 
 func apply_knockback(impulse: Vector2, hit_angle: float) -> void:
 	if enemy_data != null and not enemy_data.can_be_kicked_by_gate:
@@ -500,7 +480,11 @@ func is_dying() -> bool:
 	return _is_dying or _is_expelled
 
 func take_hit(amount: int = 1, hit_source: Node = null, impact_velocity: Vector2 = Vector2.ZERO) -> void:
-	if _is_dying or _is_expelled:
+	var ctx: HitContext = HitContext.create(hit_source, self, amount, global_position, impact_velocity)
+	take_hit_with_context(ctx)
+
+func take_hit_with_context(hit_ctx: HitContext) -> void:
+	if _is_dying or _is_expelled or hit_ctx == null:
 		return
 	var current_time: float = Time.get_ticks_msec() / 1000.0
 	if current_time - _last_hit_timestamp < 0.06:
@@ -508,17 +492,19 @@ func take_hit(amount: int = 1, hit_source: Node = null, impact_velocity: Vector2
 	_last_hit_timestamp = current_time
 	_time_since_last_damage = 0.0
 
-	_last_hit_source = hit_source
-	_last_impact_velocity = impact_velocity
+	_last_hit_context = hit_ctx
+	_last_hit_source = hit_ctx.attacker
+	_last_impact_velocity = hit_ctx.impact_velocity
 
-	if impact_velocity.length() > 20.0:
-		_last_hit_direction = impact_velocity.normalized()
-	elif hit_source is Node2D:
-		_last_hit_direction = (global_position - (hit_source as Node2D).global_position).normalized()
+	if hit_ctx.impact_velocity.length() > 20.0:
+		_last_hit_direction = hit_ctx.impact_velocity.normalized()
+	elif hit_ctx.attacker is Node2D:
+		_last_hit_direction = (global_position - (hit_ctx.attacker as Node2D).global_position).normalized()
 	else:
 		_last_hit_direction = Vector2.UP
 
-	health_component.take_damage(amount)
+	health_component.take_damage(hit_ctx.final_damage)
+	EventBus.enemy_damaged.emit(self, hit_ctx)
 
 	# Flash blanc de dégât
 	var tw: Tween = create_tween()
@@ -529,6 +515,7 @@ func _on_died() -> void:
 	if _is_dying or _is_expelled:
 		return
 	_is_dying = true
+	active_enemies.erase(self)
 	collision_shape.set_deferred(&"disabled", true)
 
 	# Nettoyage des altérations d'état (détruit la bille caramel accrochée si besoin)
@@ -538,6 +525,7 @@ func _on_died() -> void:
 	var score_val: int = enemy_data.score_value if enemy_data else 100
 	var e_name: StringName = enemy_data.enemy_name if enemy_data else &"Tomato"
 	EventBus.enemy_defeated.emit(e_name, global_position)
+	EventBus.enemy_killed.emit(self, _last_hit_context)
 	EventBus.score_changed.emit(score_val, score_val)
 
 	# Décision du type de mort :
@@ -607,4 +595,71 @@ func _play_juice_explosion_death() -> void:
 	visual_container.modulate = Color(3.0, 2.0, 2.0, 1.0)
 	tw.tween_property(visual_container, "scale", Vector2(1.5, 0.35), 0.05).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.tween_property(visual_container, "modulate:a", 0.0, 0.06)
-	tw.chain().tween_callback(queue_free)
+	tw.chain().tween_callback(despawn)
+
+var pool_source: NodePool = null
+
+func despawn() -> void:
+	active_enemies.erase(self)
+	if collision_shape != null:
+		collision_shape.set_deferred(&"disabled", true)
+	if dive_component != null:
+		dive_component.reset()
+	if pool_source != null:
+		pool_source.release(self)
+	else:
+		queue_free()
+
+func on_pool_release() -> void:
+	active_enemies.erase(self)
+	if dive_component != null:
+		dive_component.reset()
+
+func on_pool_acquire() -> void:
+	if not active_enemies.has(self):
+		active_enemies.append(self)
+	if dive_component != null:
+		dive_component.reset()
+	_is_dying = false
+	_is_expelled = false
+	_is_projected_by_gate = false
+	_projection_time = 0.0
+	_knockback_velocity = Vector2.ZERO
+	_expulsion_velocity = Vector2.ZERO
+	_expulsion_spin = 0.0
+	_expulsion_timer = 0.0
+	_time_alive = randf_range(0.0, 5.0)
+	_time_since_last_damage = 0.0
+	_last_hit_context = null
+	_last_hit_source = null
+	_last_impact_velocity = Vector2.ZERO
+	_last_hit_direction = Vector2.UP
+	bypass_bias = -1.0 if randf() < 0.5 else 1.0
+
+	z_index = 0
+	z_as_relative = true
+	velocity = Vector2.ZERO
+
+	if collision_shape != null:
+		collision_shape.set_deferred(&"disabled", false)
+	if has_node("Shadow"):
+		$Shadow.visible = true
+
+	if visual_container != null:
+		visual_container.rotation = 0.0
+		visual_container.scale = Vector2.ONE
+		visual_container.modulate = Color.WHITE
+
+	if telegraph_visual != null:
+		telegraph_visual.stop_telegraph()
+
+	if enemy_data != null and health_component != null:
+		health_component.set_max_health(enemy_data.max_health)
+		_current_move_speed = enemy_data.get_speed_from_tier()
+
+	_hp_ratio = 1.0
+	_hp_flash_timer = 0.0
+	queue_redraw()
+
+	if status_component != null:
+		status_component.cleanup_on_death()
