@@ -31,7 +31,7 @@ func on_hit_enemy(ball: Ball, primary_enemy: Enemy) -> void:
 		
 	# Effet sur la cible principale (1s de stun)
 	primary_enemy.apply_electric_zap(zap_damage, primary_stun_duration)
-	_draw_lightning_bolt(ball, ball.global_position, primary_enemy.global_position)
+	LightningBoltEffect.spawn(ball.get_tree(), ball.global_position, primary_enemy.global_position, Color(0.4, 0.95, 1.2, 1.0), 0.22)
 	
 	# Recherche des ennemis proches
 	var candidates: Array[Enemy] = []
@@ -53,51 +53,5 @@ func on_hit_enemy(ball: Ball, primary_enemy: Enemy) -> void:
 		var chained_enemy: Enemy = candidates[i]
 		# Effet sur cibles secondaires (0.5s de stun)
 		chained_enemy.apply_electric_zap(zap_damage, secondary_stun_duration)
-		_draw_lightning_bolt(ball, last_pos, chained_enemy.global_position)
+		LightningBoltEffect.spawn(ball.get_tree(), last_pos, chained_enemy.global_position, Color(0.4, 0.95, 1.2, 1.0), 0.20)
 		last_pos = chained_enemy.global_position
-
-static var _bolt_pool: Array[Line2D] = []
-
-func _draw_lightning_bolt(ball: Ball, from: Vector2, to: Vector2) -> void:
-	var bolt: Line2D = null
-	while not _bolt_pool.is_empty():
-		var candidate: Line2D = _bolt_pool.pop_back()
-		if is_instance_valid(candidate):
-			bolt = candidate
-			break
-
-	if bolt == null:
-		bolt = Line2D.new()
-		bolt.width = 4.5
-		bolt.default_color = Color(0.7, 1.5, 0.4, 1.0)
-		bolt.top_level = true
-
-	bolt.modulate.a = 1.0
-
-	var steps: int = 6
-	var points_array: PackedVector2Array = PackedVector2Array()
-	points_array.append(from)
-	
-	var dir: Vector2 = to - from
-	var normal: Vector2 = Vector2(-dir.y, dir.x).normalized()
-	
-	for s in range(1, steps):
-		var t: float = float(s) / float(steps)
-		var base_pt: Vector2 = from.lerp(to, t)
-		var jitter: float = randf_range(-18.0, 18.0)
-		points_array.append(base_pt + normal * jitter)
-		
-	points_array.append(to)
-	bolt.points = points_array
-	
-	if bolt.get_parent() == null:
-		ball.get_tree().root.add_child(bolt)
-	
-	var tween: Tween = bolt.create_tween()
-	tween.tween_property(bolt, "modulate:a", 0.0, 0.18)
-	tween.tween_callback(func() -> void:
-		if bolt != null and is_instance_valid(bolt):
-			if bolt.get_parent() != null:
-				bolt.get_parent().remove_child(bolt)
-			_bolt_pool.append(bolt)
-	)

@@ -21,6 +21,7 @@ const DiveTelegraphScript = preload("res://scripts/effects/dive_telegraph_visual
 var status_component: StatusEffectComponent = null
 var telegraph_visual: DiveTelegraphVisual = null
 var dive_component: SuicideDiveComponent = null
+var visual_overlay: StatusVisualOverlay = null
 
 # Registre statique O(1) de tous les ennemis vivants sur le terrain
 static var active_enemies: Array[Enemy] = []
@@ -128,6 +129,11 @@ func _ready() -> void:
 	status_component = StatusEffectComponent.new()
 	add_child(status_component)
 	status_component.setup(self, visual_container)
+
+	visual_overlay = StatusVisualOverlay.new()
+	visual_container.add_child(visual_overlay)
+	visual_overlay.setup(self, sprite)
+	status_component.attach_visual_overlay(visual_overlay)
 
 	telegraph_visual = DiveTelegraphScript.new()
 	add_child(telegraph_visual)
@@ -520,6 +526,8 @@ func _on_died() -> void:
 
 	# Nettoyage des altérations d'état (détruit la bille caramel accrochée si besoin)
 	if status_component != null:
+		if status_component.is_frozen() and visual_overlay != null:
+			visual_overlay.trigger_ice_shatter()
 		status_component.cleanup_on_death()
 
 	var score_val: int = enemy_data.score_value if enemy_data else 100
@@ -663,3 +671,6 @@ func on_pool_acquire() -> void:
 
 	if status_component != null:
 		status_component.cleanup_on_death()
+
+	if visual_overlay != null:
+		visual_overlay.reset()

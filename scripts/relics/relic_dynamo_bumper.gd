@@ -19,5 +19,12 @@ func on_ball_hit_bumper(_ball: RigidBody2D, bumper: Node2D) -> void:
 
 	var nearest_enemy: Enemy = Enemy.get_nearest(bumper.global_position)
 	if nearest_enemy != null:
+		LightningBoltEffect.spawn(
+			bumper.get_tree(),
+			bumper.global_position,
+			nearest_enemy.global_position,
+			Color(0.4, 0.95, 1.2, 1.0),
+			0.24
+		)
 		nearest_enemy.apply_electric_zap(zap_damage, stun_duration)
 		print("Relic [Bumper Dynamo] déclenchée ! Éclair propulsé sur %s." % nearest_enemy.name)
