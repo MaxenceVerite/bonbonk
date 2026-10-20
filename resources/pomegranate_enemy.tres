@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3 uid="uid://cx4j1pomegranatedata01"]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1_enemy_data"]
+
+[resource]
+script = ExtResource("1_enemy_data")
+enemy_name = &"Grenade"
+max_health = 4
+speed_tier = 3
+move_speed = 72.0
+damage_on_escape = 3
+score_value = 300
+can_be_kicked_by_gate = true
+mass_weight = 1.3
+kick_rebound_factor = 1.0
+is_spiky = false
+can_accelerate_when_idle = false
+can_suicide_dive = true
+dive_trigger_distance = 220.0
+dive_windup_time = 0.25
+dive_speed = 600.0
+can_be_parried = true
+move_pattern = 0
+wobble_frequency = 4.0
+wobble_amplitude = 0.08
+squash_frequency = 3.2
+squash_amount = 0.07
+is_lightweight = false
+juice_primary_color = Color(0.85, 0.08, 0.22, 1)
+juice_secondary_color = Color(0.55, 0.02, 0.12, 1)
+juice_accent_color = Color(1, 0.45, 0.55, 1)
+juice_droplet_count = 24
+death_effect_type = "auto"
+collision_damage_when_projected = 2

@@ -135,10 +135,12 @@ func reflect_projectile(_flipper: WoodenGateFlipper, p_is_perfect: bool) -> void
 	# Masque ajusté : Layer 4 (Enemies) = 8
 	collision_mask = 8
 
-	# Retours haptiques et score
-	Input.vibrate_handheld(50)
+	# Notification via le canal EventBus (découplage total du juice/hitstop/audio)
+	var hit_ctx: HitContext = HitContext.create(_flipper, self, 0, global_position, velocity, HitContext.DamageType.PARRY, true)
+	EventBus.flipper_parried.emit(_flipper, self, hit_ctx)
 	EventBus.score_changed.emit(300, 300)
-	# Éclat étincelant multicolore / doré
+
+	# Éclat étincelant multicolore / doré propre aux bonbons du boss
 	JuiceSplatScript.spawn(
 		get_parent(),
 		global_position,

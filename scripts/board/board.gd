@@ -59,6 +59,22 @@ func _ready() -> void:
 	danger_zone.body_entered.connect(_on_danger_zone_body_entered)
 	ball_tube.initialize(max_tube_capacity, synthesis_time_seconds)
 	ball_tube.factory_state_changed.connect(func(q, s, n, p, pods): factory_state_changed.emit(q, s, n, p, pods))
+	EventBus.flipper_parried.connect(_on_flipper_parried)
+
+const _HitstopManagerScript = preload("res://scripts/core/hitstop_manager.gd")
+const _ParryImpactEffectScript = preload("res://scripts/effects/parry_impact_effect.gd")
+
+func _on_flipper_parried(_flipper: Node2D, _target: Node2D, context: HitContext) -> void:
+	# Feedback haptique
+	Input.vibrate_handheld(45)
+
+	# Micro-gel temporel (Hitstop 45ms)
+	_HitstopManagerScript.trigger(0.045, 0.04)
+
+	# Effet d'impact vectoriel doré (Starburst + Onde de choc + Étincelles)
+	var spawn_pos: Vector2 = context.impact_point if context != null else global_position
+	var push_dir: Vector2 = context.impact_velocity.normalized() if (context != null and context.impact_velocity != Vector2.ZERO) else Vector2.UP
+	_ParryImpactEffectScript.spawn(self, spawn_pos, push_dir)
 
 func start_game() -> void:
 	is_game_running = true
@@ -325,16 +341,14 @@ func spawn_enemy_by_path(scene_path: String, spawn_x: float) -> void:
 		_scene_cache[scene_path] = load(scene_path)
 	var enemy_scn: PackedScene = _scene_cache.get(scene_path) as PackedScene
 	if enemy_scn != null:
-		var enemy: Enemy
-		if scene_path.contains("boss"):
-			enemy = enemy_scn.instantiate() as Enemy
-			enemy.position = Vector2(spawn_x, -140.0)
-		else:
-			enemy = enemy_pool.acquire(enemy_scn, scene_path) as Enemy
-			enemy.pool_source = enemy_pool
-			enemy.position = Vector2(spawn_x, 80.0)
-		if enemy.get_parent() != enemy_container:
-			enemy_container.add_child(enemy)
+		var enemy: Enemy = enemy_scn.instantiate() as Enemy
+		if enemy != null:
+			if scene_path.contains("boss"):
+				enemy.position = Vector2(spawn_x, -140.0)
+			else:
+				enemy.position = Vector2(spawn_x, 80.0)
+			if enemy_container != null:
+				enemy_container.add_child(enemy)
 
 func spawn_enemy() -> void:
 	var pool: Array[PackedScene] = _get_default_enemy_pool()
@@ -342,12 +356,12 @@ func spawn_enemy() -> void:
 		return
 		
 	var chosen_scene: PackedScene = pool.pick_random()
-	var enemy: Enemy = enemy_pool.acquire(chosen_scene) as Enemy
-	enemy.pool_source = enemy_pool
-	var spawn_x: float = randf_range(90.0, 510.0)
-	enemy.position = Vector2(spawn_x, 80.0)
-	if enemy.get_parent() != enemy_container:
-		enemy_container.add_child(enemy)
+	var enemy: Enemy = chosen_scene.instantiate() as Enemy
+	if enemy != null:
+		var spawn_x: float = randf_range(90.0, 510.0)
+		enemy.position = Vector2(spawn_x, 80.0)
+		if enemy_container != null:
+			enemy_container.add_child(enemy)
 
 var _cached_enemy_pool: Array[PackedScene] = []
 func _get_default_enemy_pool() -> Array[PackedScene]:
@@ -364,6 +378,11 @@ func _get_default_enemy_pool() -> Array[PackedScene]:
 	return _cached_enemy_pool
 
 func _on_danger_zone_body_entered(body: Node2D) -> void:
+	_handle_danger_zone_body.call_deferred(body)
+
+func _handle_danger_zone_body(body: Node2D) -> void:
+	if body == null or not is_instance_valid(body):
+		return
 	if body is Ball:
 		active_balls.erase(body as Ball)
 		if body.has_method(&"despawn"):

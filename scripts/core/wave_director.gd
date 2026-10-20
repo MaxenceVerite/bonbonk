@@ -61,12 +61,18 @@ func load_config() -> void:
 
 func calculate_budget_for_wave(wave_num: int) -> int:
 	var base: float = float(difficulty_curve.get("base_budget", 8))
-	var growth: float = float(difficulty_curve.get("budget_growth_rate", 1.45))
-	var linear_b: float = float(difficulty_curve.get("linear_bonus_per_wave", 4))
-	
-	# Croissance exponentielle douce avec bonus linéaire
-	var budget: float = base * pow(growth, wave_num - 1) + (linear_b * (wave_num - 1))
-	return int(round(budget))
+	var growth: float = float(difficulty_curve.get("budget_growth_rate", 1.18))
+	var linear_b: float = float(difficulty_curve.get("linear_bonus_per_wave", 2.5))
+
+	# Progression douce jusqu'à la manche 10 (apprentissage)
+	if wave_num <= 10:
+		var early_budget: float = base * pow(growth, wave_num - 1.0)
+		return clampi(int(round(early_budget)), 8, 45)
+
+	# Au-delà de la manche 10 : progression linéaire avec plafond dur de sécurité (90 points max)
+	# Cela évite toute surcharge mémoire ou physique même à la manche 100+
+	var budget: float = 45.0 + (linear_b * float(wave_num - 10))
+	return clampi(int(round(budget)), 8, 90)
 
 func is_boss_wave(wave_num: int) -> bool:
 	return wave_num == 10 or (wave_num > 10 and wave_num % 10 == 0)
@@ -100,7 +106,7 @@ func start_wave(wave_num: int) -> void:
 func _build_wave_schedule(budget: int) -> void:
 	var remaining_budget: int = budget
 	var timeline_cursor: float = 0.5 # Premier spawn après 0.5s de répit
-	
+
 	# 1. Sélection en boucle de groupes/compositions tant qu'il y a du budget
 	var attempts: int = 0
 	while remaining_budget > 0 and attempts < 100:
@@ -108,10 +114,10 @@ func _build_wave_schedule(budget: int) -> void:
 		var squad: Dictionary = _pick_squad_for_budget(remaining_budget, budget)
 		if squad.is_empty():
 			break
-			
+
 		var squad_cost: int = _calculate_squad_cost(squad)
 		remaining_budget -= squad_cost
-		
+
 		# Planifie chaque unité du groupe
 		var max_squad_delay: float = 0.0
 		var spawns_list: Array = squad.get("spawns", [])
@@ -120,30 +126,34 @@ func _build_wave_schedule(budget: int) -> void:
 			var u_delay: float = float(s.get("delay", 0.0))
 			var x_ratio: float = float(s.get("x_ratio", -1.0))
 			max_squad_delay = maxf(max_squad_delay, u_delay)
-			
+
 			var spawn_x: float = randf_range(80.0, 520.0) if x_ratio < 0.0 else lerpf(80.0, 520.0, x_ratio)
 			var scene_path: String = _get_unit_scene_path(u_key)
-			
+
 			_pending_spawns.append({
 				"time_left": timeline_cursor + u_delay,
 				"scene_path": scene_path,
 				"spawn_x": spawn_x
 			})
-			
+
 		# Intervalle de respiration entre deux groupes (1.8s à 3.2s)
 		var squad_break: float = randf_range(1.8, 3.2)
 		timeline_cursor += max_squad_delay + squad_break
-	
-	# 2. S'il reste un résidu de points (ex: 1 ou 2 pts), on comble avec des unités de base (Tomates)
-	while remaining_budget >= 1:
-		remaining_budget -= 1
+
+	# 2. S'il reste un résidu de points (ex: 1 ou 2 pts), on comble avec 1 ou 2 Tomates max
+	var residual_tomatoes: int = mini(remaining_budget, 2)
+	for _i in range(residual_tomatoes):
 		timeline_cursor += randf_range(0.8, 1.5)
 		_pending_spawns.append({
 			"time_left": timeline_cursor,
 			"scene_path": _get_unit_scene_path("tomato"),
 			"spawn_x": randf_range(80.0, 520.0)
 		})
-	
+
+	# Cap absolu de sécurité sur le nombre d'ennemis par manche (max 28 ennemis)
+	if _pending_spawns.size() > 28:
+		_pending_spawns.resize(28)
+
 	# Tri chronologique des apparitions
 	_pending_spawns.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return a["time_left"] < b["time_left"]
@@ -213,9 +223,17 @@ func _process(delta: float) -> void:
 			wave_all_enemies_spawned.emit(current_wave)
 			print("WaveDirector: Tous les ennemis de la manche %d sont apparus !" % current_wave)
 			
-	# 2. Vérification de fin de manche (tous apparus ET terrain nettoyé)
+	# 2. Vérification de fin de manche (tous apparus ET terrain nettoyé d'ennemis vivants)
 	elif all_enemies_spawned:
-		if _target_enemy_container != null and _target_enemy_container.get_child_count() == 0:
+		if not _has_living_enemies():
 			is_wave_active = false
 			print("WaveDirector: MANCHE %d COMPLÈTE & NETTOYÉE !" % current_wave)
 			wave_cleared.emit(current_wave)
+
+func _has_living_enemies() -> bool:
+	if _target_enemy_container == null:
+		return false
+	for child in _target_enemy_container.get_children():
+		if child is Enemy and is_instance_valid(child) and not child.is_dying():
+			return true
+	return false

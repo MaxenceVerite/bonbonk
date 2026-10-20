@@ -4,10 +4,14 @@ extends Node
 ## - Chiffrement local AES-256 via SaveCipher
 ## - Architecture multi-profils (Profil Joueur & Profil Sandbox Dev)
 ## - Synchronisation Cloud offline-first avec résolution de conflits
+## - Délégation modulaire aux services (DeckService, InventoryService, EconomyService)
 
 const PlayerProfileScript = preload("res://scripts/data/player_profile.gd")
 const SaveCipher = preload("res://scripts/core/account/save_cipher.gd")
 const CloudSyncService = preload("res://scripts/core/account/cloud_sync_service.gd")
+const DeckServiceScript = preload("res://scripts/core/account/deck_service.gd")
+const InventoryServiceScript = preload("res://scripts/core/account/inventory_service.gd")
+const EconomyServiceScript = preload("res://scripts/core/account/economy_service.gd")
 
 const PROFILES_DIR: String = "user://profiles/"
 const ACTIVE_PROFILE_FILE: String = "user://active_profile.cfg"
@@ -15,6 +19,10 @@ const ACTIVE_PROFILE_FILE: String = "user://active_profile.cfg"
 var current_profile: PlayerProfileScript = null
 var active_profile_id: String = "main"
 
+# Services spécialisés découplés
+var inventory_service: RefCounted = null
+var economy_service: RefCounted = null
+var deck_service: RefCounted = null
 
 # Propriétés avec accesseurs délégués au profil actif
 var gold: int:
@@ -65,6 +73,11 @@ var shop_catalog: Array[ShopItemData] = []
 # Service Cloud Sync
 var cloud_sync: Node = null
 var _save_timer: Timer = null
+
+func _init() -> void:
+	deck_service = DeckServiceScript.new()
+	inventory_service = InventoryServiceScript.new()
+	economy_service = EconomyServiceScript.new()
 
 func _ready() -> void:
 	_init_save_timer()
@@ -308,234 +321,77 @@ func _init_shop_catalog() -> void:
 	shop_catalog = ShopCatalog.get_default_catalog()
 
 # ==============================================================================
-# GESTION DES RESSOURCES & CARTES
+# DÉLÉGATION ÉCONOMIE, INVENTAIRE & DECKS
 # ==============================================================================
 
 func get_unlocked_card_ids() -> Array[StringName]:
-	var res: Array[StringName] = []
-	for cid in cards_inventory:
-		if cards_inventory[cid].get("unlocked", false):
-			res.append(cid)
-	return res
+	return inventory_service.get_unlocked_card_ids(cards_inventory)
 
 func add_gold(amount: int) -> void:
-	gold += amount
-	EventBus.gold_changed.emit(gold, amount)
+	economy_service.add_gold(amount, current_profile)
 	request_save()
 
-func record_game_results(final_score: int, waves_cleared: int, gold_earned: int) -> Dictionary:
-	var is_new_record: bool = false
-	if current_profile != null:
-		var best: int = current_profile.stats.get("best_score", 0)
-		if final_score > best:
-			current_profile.stats["best_score"] = final_score
-			is_new_record = true
-		current_profile.stats["games_played"] = current_profile.stats.get("games_played", 0) + 1
-	
-	if gold_earned > 0:
-		add_gold(gold_earned)
-	else:
-		request_save()
-		
-	return {
-		"final_score": final_score,
-		"waves_cleared": waves_cleared,
-		"gold_earned": gold_earned,
-		"is_new_record": is_new_record,
-		"best_score": current_profile.stats.get("best_score", final_score) if current_profile != null else final_score
-	}
-
 func spend_gold(amount: int) -> bool:
-	if gold >= amount:
-		gold -= amount
-		EventBus.gold_changed.emit(gold, -amount)
+	var success: bool = economy_service.spend_gold(amount, current_profile)
+	if success:
 		request_save()
-		return true
-	return false
+	return success
 
 func add_diamonds(amount: int) -> void:
-	diamonds += amount
-	EventBus.diamonds_changed.emit(diamonds, amount)
+	economy_service.add_diamonds(amount, current_profile)
 	request_save()
 
 func spend_diamonds(amount: int) -> bool:
-	if diamonds >= amount:
-		diamonds -= amount
-		EventBus.diamonds_changed.emit(diamonds, -amount)
+	var success: bool = economy_service.spend_diamonds(amount, current_profile)
+	if success:
 		request_save()
-		return true
-	return false
+	return success
+
+func record_game_results(final_score: int, waves_cleared: int, gold_earned: int) -> Dictionary:
+	var res: Dictionary = economy_service.record_game_results(current_profile, final_score, waves_cleared, gold_earned)
+	request_save()
+	return res
 
 func can_upgrade_card(card_id: StringName) -> bool:
-	if not cards_inventory.has(card_id) or not registered_card_defs.has(card_id):
-		return false
-	var inv: Dictionary = cards_inventory[card_id]
-	if not inv.get("unlocked", false):
-		return false
-
-	var def: CandyCardData = registered_card_defs[card_id]
-	var cur_lvl: int = inv.get("level", 1)
-	var req_cards: int = def.get_required_cards_for_level(cur_lvl)
-	var req_gold: int = def.get_gold_cost_for_level(cur_lvl)
-
-	return inv.get("cards", 0) >= req_cards and gold >= req_gold
+	return inventory_service.can_upgrade_card(card_id, cards_inventory, registered_card_defs, gold)
 
 func upgrade_card(card_id: StringName) -> bool:
-	if not can_upgrade_card(card_id):
-		return false
-
-	var inv: Dictionary = cards_inventory[card_id]
-	var def: CandyCardData = registered_card_defs[card_id]
-	var cur_lvl: int = inv.get("level", 1)
-	var req_cards: int = def.get_required_cards_for_level(cur_lvl)
-	var req_gold: int = def.get_gold_cost_for_level(cur_lvl)
-
-	if spend_gold(req_gold):
-		inv["cards"] -= req_cards
-		inv["level"] = cur_lvl + 1
-		EventBus.card_upgraded.emit(card_id, inv["level"])
+	var success: bool = inventory_service.upgrade_card(card_id, cards_inventory, registered_card_defs, gold, spend_gold)
+	if success:
 		request_save()
-		return true
-	return false
+	return success
 
 func get_card_state(card_id: StringName) -> Dictionary:
-	if not registered_card_defs.has(card_id):
-		return {}
-	var def: CandyCardData = registered_card_defs[card_id]
-	var inv: Dictionary = cards_inventory.get(card_id, { "unlocked": false, "level": 1, "cards": 0 })
-	var is_unlocked: bool = inv.get("unlocked", false)
-	var lvl: int = inv.get("level", 1)
-	var cards: int = inv.get("cards", 0)
-	var req_cards: int = def.get_required_cards_for_level(lvl)
-	var req_gold: int = def.get_gold_cost_for_level(lvl)
-	var has_enough_cards: bool = (cards >= req_cards)
-	var has_enough_gold: bool = (gold >= req_gold)
-	var can_up: bool = is_unlocked and has_enough_cards and has_enough_gold
-
-	return {
-		"id": card_id,
-		"def": def,
-		"unlocked": is_unlocked,
-		"level": lvl,
-		"cards": cards,
-		"req_cards": req_cards,
-		"req_gold": req_gold,
-		"has_enough_cards": has_enough_cards,
-		"has_enough_gold": has_enough_gold,
-		"can_upgrade": can_up,
-		"ratio": float(cards) / float(maxi(1, req_cards))
-	}
+	return inventory_service.get_card_state(card_id, cards_inventory, registered_card_defs, gold)
 
 func purchase_item(item: ShopItemData, use_diamonds: bool) -> bool:
-	if use_diamonds:
-		if item.diamond_price < 0 or diamonds < item.diamond_price:
-			return false
-		if not spend_diamonds(item.diamond_price):
-			return false
-	else:
-		if item.gold_price < 0 or gold < item.gold_price:
-			return false
-		if not spend_gold(item.gold_price):
-			return false
-
-	var payload: Dictionary = item.reward_payload
-	var ptype: String = payload.get("type", "")
-	match ptype:
-		"gold":
-			add_gold(payload.get("amount", 0))
-		"diamonds":
-			add_diamonds(payload.get("amount", 0))
-		"booster":
-			var b: BoosterData = BoosterData.new()
-			b.id = payload.get("id", &"booster")
-			b.display_name = payload.get("display_name", "Sachet")
-			b.booster_type = payload.get("booster_type", BoosterData.BoosterType.CLASSIC_SOLO)
-			b.min_gold = payload.get("min_gold", 40)
-			b.max_gold = payload.get("max_gold", 100)
-			b.icon_texture = item.icon_texture
-			available_boosters.append(b)
-		"cards":
-			var cid: StringName = payload.get("card_id", &"fizz")
-			var count: int = payload.get("count", 1)
-			if not cards_inventory.has(cid):
-				cards_inventory[cid] = { "unlocked": true, "level": 1, "cards": count }
-			else:
-				var inv: Dictionary = cards_inventory[cid]
-				inv["unlocked"] = true
-				inv["cards"] = inv.get("cards", 0) + count
-
-	EventBus.shop_item_purchased.emit(item.id, "diamonds" if use_diamonds else "gold")
-	request_save()
-	return true
+	var success: bool = economy_service.purchase_item(item, use_diamonds, current_profile, available_boosters, inventory_service)
+	if success:
+		request_save()
+	return success
 
 func apply_booster_rewards(result: Dictionary) -> void:
-	if result.has("gold"):
-		add_gold(result["gold"])
-
-	if result.has("drops"):
-		for drop in result["drops"]:
-			var card_def: CandyCardData = drop["card"]
-			var cid: StringName = card_def.id
-			var count: int = drop["count"]
-
-			if not cards_inventory.has(cid):
-				cards_inventory[cid] = { "unlocked": true, "level": 1, "cards": count }
-			else:
-				var inv: Dictionary = cards_inventory[cid]
-				inv["unlocked"] = true
-				inv["cards"] = inv.get("cards", 0) + count
-
+	economy_service.apply_booster_rewards(result, current_profile, inventory_service)
 	request_save()
-	EventBus.booster_opened.emit(result)
 
 func _validate_decks() -> void:
-	for i in range(decks.size()):
-		var d: Array = decks[i]
-		for j in range(d.size()):
-			if d[j] == &"standard" or d[j] == &"cherry" or d[j] == &"mint":
-				d[j] = &"fizz"
-		while d.size() < 6:
-			d.append(&"fizz")
-		if d.size() > 6:
-			d.resize(6)
+	deck_service.validate_decks(decks)
 
 func get_active_deck() -> Array:
-	if active_deck_index < 0 or active_deck_index >= decks.size():
-		active_deck_index = 0
-	return decks[active_deck_index]
+	return deck_service.get_active_deck(decks, active_deck_index)
 
 func set_active_deck(index: int) -> void:
-	if index >= 0 and index < decks.size():
-		active_deck_index = index
-		EventBus.deck_changed.emit(active_deck_index)
-		request_save()
+	active_deck_index = deck_service.set_active_deck(index, decks.size())
+	EventBus.deck_changed.emit(active_deck_index)
+	request_save()
 
 func set_card_in_deck(deck_idx: int, slot_idx: int, card_id: StringName) -> void:
-	if deck_idx >= 0 and deck_idx < decks.size():
-		var d: Array = decks[deck_idx]
-		if slot_idx >= 0 and slot_idx < d.size():
-			d[slot_idx] = card_id
-			EventBus.deck_changed.emit(deck_idx)
-			request_save()
+	if deck_service.set_card_in_deck(deck_idx, slot_idx, card_id, decks):
+		EventBus.deck_changed.emit(deck_idx)
+		request_save()
 
 func get_active_deck_balls() -> Array[StringName]:
-	var balls: Array[StringName] = []
-	var cur_deck: Array = get_active_deck()
-	for card_id in cur_deck:
-		var c_id: StringName = card_id as StringName
-		var c_def: CandyCardData = registered_card_defs.get(c_id, null)
-		if c_def != null and c_def.card_type == CandyCardData.CardType.BALL:
-			balls.append(c_id)
-	if balls.is_empty():
-		balls.append(&"fizz")
-	return balls
+	return deck_service.get_active_deck_balls(get_active_deck(), registered_card_defs)
 
 func get_active_deck_bumpers() -> Array[StringName]:
-	var bumpers: Array[StringName] = []
-	var cur_deck: Array = get_active_deck()
-	for card_id in cur_deck:
-		var c_id: StringName = card_id as StringName
-		var c_def: CandyCardData = registered_card_defs.get(c_id, null)
-		if c_def != null and c_def.card_type == CandyCardData.CardType.BUMPER:
-			bumpers.append(c_id)
-	return bumpers
+	return deck_service.get_active_deck_bumpers(get_active_deck(), registered_card_defs)

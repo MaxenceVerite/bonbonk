@@ -7,6 +7,8 @@ extends Node2D
 ## 2. MainMenu (Navbar : Collection, Jeu / Dernier score, Leaderboard)
 ## 3. Game Play (Arène active, HUD, TouchControls)
 
+const DamageNumberManagerScript = preload("res://scripts/ui/damage_numbers/damage_number_manager.gd")
+
 enum ScreenState { TITLE, MENU, GAME }
 var current_screen_state: ScreenState = ScreenState.TITLE
 
@@ -29,6 +31,7 @@ var current_screen_state: ScreenState = ScreenState.TITLE
 @onready var ball_factory_ui: BallFactoryUI = $UI/BallFactoryUI
 
 var wave_director: WaveDirector = null
+var damage_number_manager: Node = null
 var current_wave: int = 1
 var max_hp: int = 100
 var current_hp: int = 100
@@ -78,6 +81,11 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_update_board_position)
 	_update_board_position()
 	
+	# Initialisation du DamageNumberManager poolé
+	damage_number_manager = DamageNumberManagerScript.new()
+	add_child(damage_number_manager)
+	damage_number_manager.setup(board, hud, hp_bar)
+
 	# Démarrage au TitleScreen
 	show_title_screen()
 
@@ -138,6 +146,8 @@ func show_main_menu() -> void:
 		wave_director.stop_waves()
 	
 	main_menu.set_last_score(last_score)
+	if damage_number_manager != null:
+		damage_number_manager.clear_all()
 	if board != null:
 		board.visible = false
 		board.reset_board()
@@ -158,6 +168,8 @@ func launch_game() -> void:
 		wave_director.stop_waves()
 
 	# Réinitialisation de la partie
+	if damage_number_manager != null:
+		damage_number_manager.clear_all()
 	current_score = 0
 	current_hp = max_hp
 	current_wave = 1

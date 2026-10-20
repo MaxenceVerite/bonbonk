@@ -1,8 +1,8 @@
 {
   "difficulty_curve": {
     "base_budget": 8,
-    "budget_growth_rate": 1.45,
-    "linear_bonus_per_wave": 4
+    "budget_growth_rate": 1.18,
+    "linear_bonus_per_wave": 2.5
   },
   "unit_costs": {
     "tomato": {
@@ -14,6 +14,26 @@
       "display_name": "Ananas",
       "cost": 3,
       "scene_path": "res://scenes/enemies/enemy_ananas.tscn"
+    },
+    "coconut": {
+      "display_name": "Noix de Coco",
+      "cost": 4,
+      "scene_path": "res://scenes/enemies/enemy_coconut.tscn"
+    },
+    "pomegranate": {
+      "display_name": "Grenade",
+      "cost": 5,
+      "scene_path": "res://scenes/enemies/enemy_pomegranate.tscn"
+    },
+    "grape_bunch": {
+      "display_name": "Grappe de Raisin",
+      "cost": 6,
+      "scene_path": "res://scenes/enemies/enemy_grape_bunch.tscn"
+    },
+    "grape": {
+      "display_name": "Raisin",
+      "cost": 1,
+      "scene_path": "res://scenes/enemies/enemy_grape.tscn"
     },
     "watermelon": {
       "display_name": "Pastèque",
@@ -46,6 +66,33 @@
       ]
     },
     {
+      "id": "single_coconut",
+      "name": "Noix de Coco Blindée",
+      "min_wave_points": 6,
+      "weight": 5,
+      "spawns": [
+        { "unit": "coconut", "delay": 0.0, "x_ratio": -1.0 }
+      ]
+    },
+    {
+      "id": "single_pomegranate",
+      "name": "Grenade Instable",
+      "min_wave_points": 10,
+      "weight": 4,
+      "spawns": [
+        { "unit": "pomegranate", "delay": 0.0, "x_ratio": -1.0 }
+      ]
+    },
+    {
+      "id": "single_grape_bunch",
+      "name": "Grappe de Raisin",
+      "min_wave_points": 12,
+      "weight": 4,
+      "spawns": [
+        { "unit": "grape_bunch", "delay": 0.0, "x_ratio": -1.0 }
+      ]
+    },
+    {
       "id": "single_watermelon",
       "name": "Pastèque Solitaire",
       "min_wave_points": 18,
@@ -65,25 +112,34 @@
       ]
     },
     {
-      "id": "tomato_trio_spread",
-      "name": "Trio Dispersé",
-      "min_wave_points": 6,
-      "weight": 6,
+      "id": "coconut_wall",
+      "name": "Rempart de Noix de Coco",
+      "min_wave_points": 14,
+      "weight": 5,
       "spawns": [
-        { "unit": "tomato", "delay": 0.0, "x_ratio": 0.25 },
-        { "unit": "tomato", "delay": 0.4, "x_ratio": 0.50 },
-        { "unit": "tomato", "delay": 0.8, "x_ratio": 0.75 }
+        { "unit": "coconut", "delay": 0.0, "x_ratio": 0.3 },
+        { "unit": "coconut", "delay": 0.2, "x_ratio": 0.7 }
       ]
     },
     {
-      "id": "ananas_escort",
-      "name": "Ananas et ses gardes",
-      "min_wave_points": 12,
-      "weight": 5,
+      "id": "pomegranate_ambush",
+      "name": "Embuscade Explosive",
+      "min_wave_points": 18,
+      "weight": 4,
       "spawns": [
-        { "unit": "tomato", "delay": 0.0, "x_ratio": 0.3 },
-        { "unit": "tomato", "delay": 0.0, "x_ratio": 0.7 },
-        { "unit": "ananas", "delay": 0.7, "x_ratio": 0.5 }
+        { "unit": "tomato", "delay": 0.0, "x_ratio": 0.25 },
+        { "unit": "tomato", "delay": 0.0, "x_ratio": 0.75 },
+        { "unit": "pomegranate", "delay": 0.8, "x_ratio": 0.5 }
+      ]
+    },
+    {
+      "id": "grape_harvest",
+      "name": "Vendange Surprise",
+      "min_wave_points": 22,
+      "weight": 4,
+      "spawns": [
+        { "unit": "grape_bunch", "delay": 0.0, "x_ratio": 0.5 },
+        { "unit": "ananas", "delay": 0.6, "x_ratio": 0.25 }
       ]
     },
     {
@@ -103,8 +159,8 @@
       "weight": 4,
       "spawns": [
         { "unit": "watermelon", "delay": 0.0, "x_ratio": 0.5 },
-        { "unit": "tomato", "delay": 0.8, "x_ratio": 0.2 },
-        { "unit": "tomato", "delay": 0.8, "x_ratio": 0.8 }
+        { "unit": "coconut", "delay": 0.8, "x_ratio": 0.3 },
+        { "unit": "pomegranate", "delay": 1.2, "x_ratio": 0.7 }
       ]
     },
     {
@@ -114,10 +170,9 @@
       "weight": 3,
       "spawns": [
         { "unit": "watermelon", "delay": 0.0, "x_ratio": 0.5 },
-        { "unit": "ananas", "delay": 0.7, "x_ratio": 0.25 },
-        { "unit": "ananas", "delay": 0.7, "x_ratio": 0.75 },
-        { "unit": "tomato", "delay": 1.4, "x_ratio": 0.4 },
-        { "unit": "tomato", "delay": 1.4, "x_ratio": 0.6 }
+        { "unit": "grape_bunch", "delay": 0.6, "x_ratio": 0.25 },
+        { "unit": "coconut", "delay": 0.6, "x_ratio": 0.75 },
+        { "unit": "pomegranate", "delay": 1.3, "x_ratio": 0.5 }
       ]
     }
   ]

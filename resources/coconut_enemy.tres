@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3 uid="uid://cx4j1coconutdata01"]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1_enemy_data"]
+
+[resource]
+script = ExtResource("1_enemy_data")
+enemy_name = &"Noix de Coco"
+max_health = 2
+speed_tier = 1
+move_speed = 52.0
+damage_on_escape = 2
+score_value = 250
+can_be_kicked_by_gate = true
+mass_weight = 2.2
+kick_rebound_factor = 0.85
+is_spiky = false
+can_accelerate_when_idle = false
+can_suicide_dive = false
+dive_trigger_distance = 180.0
+dive_windup_time = 0.3
+dive_speed = 450.0
+can_be_parried = true
+move_pattern = 0
+wobble_frequency = 2.5
+wobble_amplitude = 0.04
+squash_frequency = 2.0
+squash_amount = 0.04
+is_lightweight = false
+juice_primary_color = Color(0.96, 0.94, 0.88, 1)
+juice_secondary_color = Color(0.42, 0.26, 0.14, 1)
+juice_accent_color = Color(0.72, 0.52, 0.35, 1)
+juice_droplet_count = 18
+death_effect_type = "auto"
+collision_damage_when_projected = 2

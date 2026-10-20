@@ -65,7 +65,6 @@ func try_parry_enemy(enemy: Enemy, impact_point: Vector2, collision_normal: Vect
 	EventBus.flipper_parried.emit(self, enemy, hit_ctx)
 
 	enemy.on_parried_by_gate(push_velocity, collision_normal.angle())
-	Input.vibrate_handheld(35)
 	return true
 
 static var active_gates: Array[WoodenGateFlipper] = []

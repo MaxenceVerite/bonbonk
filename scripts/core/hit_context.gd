@@ -11,7 +11,8 @@ enum DamageType {
 	FIRE,
 	ICE,
 	PARRY,
-	DOT
+	DOT,
+	EXPLOSION
 }
 
 var attacker: Node = null

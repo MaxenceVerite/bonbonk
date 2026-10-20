@@ -9,6 +9,8 @@ extends CharacterBody2D
 
 const JuiceSplatScript = preload("res://scripts/effects/juice_splat.gd")
 const DiveTelegraphScript = preload("res://scripts/effects/dive_telegraph_visual.gd")
+const EnemyHealthBarScript = preload("res://scripts/components/enemy_health_bar.gd")
+const EnemyExpulsionScript = preload("res://scripts/components/enemy_expulsion_component.gd")
 
 @export var enemy_data: EnemyData
 @export var target_door_y: float = 1140.0
@@ -23,6 +25,8 @@ var telegraph_visual: DiveTelegraphVisual = null
 var dive_component: SuicideDiveComponent = null
 var visual_overlay: StatusVisualOverlay = null
 var is_boss: bool = false
+var health_bar: Node2D = null
+var expulsion_component: Node = null
 
 # Registre statique O(1) de tous les ennemis vivants sur le terrain
 static var active_enemies: Array[Enemy] = []
@@ -97,11 +101,12 @@ var _last_hit_direction: Vector2 = Vector2.UP
 var _last_impact_velocity: Vector2 = Vector2.ZERO
 var _last_hit_timestamp: float = -999.0
 
-# Expulsion en cloche hors de l'arène (pour les ennemis légers achevés par une bille)
-var _is_expelled: bool = false
-var _expulsion_velocity: Vector2 = Vector2.ZERO
-var _expulsion_spin: float = 0.0
-var _expulsion_timer: float = 0.0
+# Expulsion en cloche hors de l'arène (déléguée au composant d'expulsion)
+var _is_expelled: bool:
+	get:
+		return expulsion_component != null and expulsion_component.is_active()
+	set(_val):
+		pass
 
 # Trait Pastèque : Accélération progressive si pas de dégât
 var _time_since_last_damage: float = 0.0
@@ -166,6 +171,15 @@ func _ready() -> void:
 	add_child(dive_component)
 	dive_component.setup(self, visual_container, telegraph_visual)
 
+	if not is_boss:
+		health_bar = EnemyHealthBarScript.new()
+		add_child(health_bar)
+		health_bar.setup(self, health_component, sprite, collision_shape)
+
+	expulsion_component = EnemyExpulsionScript.new()
+	add_child(expulsion_component)
+	expulsion_component.setup(self, visual_container, collision_shape, enemy_data, despawn)
+
 	if enemy_data != null:
 		health_component.set_max_health(enemy_data.max_health)
 		_current_move_speed = enemy_data.get_speed_from_tier()
@@ -175,81 +189,8 @@ func _ready() -> void:
 	bypass_bias = -1.0 if randf() < 0.5 else 1.0
 	_init_movement_strategy()
 
-var _hp_ratio: float = 1.0
-var _hp_flash_timer: float = 0.0
-
-func _on_health_changed(cur: int, max_h: int) -> void:
-	if max_h > 0:
-		_hp_ratio = clampf(float(cur) / float(max_h), 0.0, 1.0)
-	else:
-		_hp_ratio = 0.0
-	_hp_flash_timer = 0.2
-	queue_redraw()
-
-func _draw() -> void:
-	if _is_dying or _is_expelled or health_component == null:
-		return
-	if is_boss:
-		return
-	# Affichage uniquement si l'ennemi n'est pas full HP (pour ne pas noyer l'écran de barres)
-	if health_component.current_health >= health_component.max_health:
-		return
-
-	# 1. Calcul dynamique du sommet réel du sprite (tient compte de la texture et du scale)
-	var top_y: float = -34.0
-	var half_width: float = 28.0
-
-	if sprite != null and sprite.texture != null:
-		var tex_size: Vector2 = sprite.texture.get_size()
-		var s_y: float = absf(sprite.scale.y)
-		var s_x: float = absf(sprite.scale.x)
-		var visual_half_h: float = (tex_size.y * s_y) * 0.5
-		var visual_half_w: float = (tex_size.x * s_x) * 0.5
-		top_y = -visual_half_h
-		half_width = clampf(visual_half_w * 0.75, 24.0, 42.0)
-	elif collision_shape != null and collision_shape.shape != null:
-		if collision_shape.shape is CapsuleShape2D:
-			var cap: CapsuleShape2D = collision_shape.shape as CapsuleShape2D
-			top_y = -(cap.height * 0.5)
-			half_width = cap.radius + 6.0
-		elif collision_shape.shape is CircleShape2D:
-			var circ: CircleShape2D = collision_shape.shape as CircleShape2D
-			top_y = -circ.radius
-			half_width = circ.radius + 6.0
-
-	# 2. Centre et courbure de l'arc : flotte nettement au-dessus du sommet (feuilles, crête, chapeau)
-	var clearance: float = 12.0 # Espace d'air au-dessus du sprite
-	var arc_radius: float = half_width + 4.0
-	# Le centre est placé de sorte que le sommet de l'arc (à -PI/2) touche exactement (top_y - clearance)
-	var center: Vector2 = Vector2(0.0, (top_y - clearance) + arc_radius)
-
-	# Arc courbé centré vers le haut (symétrique autour de -PI * 0.5)
-	var half_span: float = PI * 0.32
-	var start_angle: float = -PI * 0.5 - half_span
-	var total_span: float = half_span * 2.0
-	var end_angle_bg: float = start_angle + total_span
-	var end_angle_fg: float = start_angle + total_span * _hp_ratio
-
-	# 3. Contour d'ombre extérieure (Drop Shadow / Outline contrasté) pour visibilité absolue
-	draw_arc(center, arc_radius, start_angle - 0.04, end_angle_bg + 0.04, 26, Color(0.04, 0.02, 0.01, 0.85), 7.0, true)
-
-	# 4. Fond sombre de la piste (Track)
-	draw_arc(center, arc_radius, start_angle, end_angle_bg, 24, Color(0.18, 0.12, 0.10, 0.90), 5.0, true)
-
-	# 5. Remplissage coloré dynamique (Vert éclatant > Jaune-Orange > Rouge vif)
-	var bar_color: Color
-	if _hp_flash_timer > 0.0:
-		bar_color = Color(1.0, 1.0, 1.0, 1.0) # Flash blanc très net à l'impact
-	elif _hp_ratio > 0.5:
-		bar_color = Color(0.30, 0.95, 0.35, 1.0).lerp(Color(1.0, 0.85, 0.18, 1.0), (1.0 - _hp_ratio) * 2.0)
-	else:
-		bar_color = Color(1.0, 0.85, 0.18, 1.0).lerp(Color(1.0, 0.22, 0.22, 1.0), (0.5 - _hp_ratio) * 2.0)
-
-	if _hp_ratio > 0.01:
-		draw_arc(center, arc_radius, start_angle, end_angle_fg, 24, bar_color, 4.0, true)
-		# Petit éclat lumineux au bout de la jauge
-		var tip_pos: Vector2 = center + Vector2(cos(end_angle_fg), sin(end_angle_fg)) * arc_radius
-		draw_circle(tip_pos, 2.2, Color(1.0, 1.0, 1.0, 0.95))
+func _on_health_changed(_cur: int, _max_h: int) -> void:
+	pass
 
 func _init_movement_strategy() -> void:
 	var pattern: int = enemy_data.move_pattern if enemy_data != null else 0
@@ -265,29 +206,8 @@ func _compute_bumper_avoidance(_current_dir: Vector2, speed: float) -> Vector2:
 	return ObstacleAvoidance.compute_bumper_avoidance(global_position, bypass_bias, speed, CandyBumper.active_bumpers)
 
 func _physics_process(delta: float) -> void:
-	# Trajectoire balistique en cloche hors de l'arène (Expulsion)
-	if _is_expelled:
-		_expulsion_timer += delta
-		global_position += _expulsion_velocity * delta
-		_expulsion_velocity.y += 2100.0 * delta # Gravité réaliste formant une grande cloche
-		visual_container.rotation += _expulsion_spin * delta
-
-		# Effet 3D : pop vers l'avant (au-dessus du plateau)
-		if _expulsion_timer < 0.25:
-			var pop_ratio: float = _expulsion_timer / 0.25
-			visual_container.scale = Vector2.ONE * lerpf(1.0, 1.6, pop_ratio)
-		else:
-			visual_container.scale = Vector2.ONE * 1.6
-
-		# Ne disparaît JAMAIS sur le terrain : uniquement lorsqu'il a franchi les limites de l'écran / arène
-		var is_out_of_arena: bool = (
-			position.x < -120.0 or 
-			position.x > 840.0 or 
-			position.y < -150.0 or 
-			position.y > 1500.0
-		)
-		if is_out_of_arena or _expulsion_timer > 3.0:
-			despawn()
+	# Trajectoire balistique en cloche hors de l'arène (gérée par le composant)
+	if expulsion_component != null and expulsion_component.update(delta):
 		return
 
 	if _is_dying or is_boss:
@@ -310,11 +230,6 @@ func _physics_process(delta: float) -> void:
 
 	_time_alive += delta
 	_time_since_last_damage += delta
-
-	if _hp_flash_timer > 0.0:
-		_hp_flash_timer = maxf(0.0, _hp_flash_timer - delta)
-		if _hp_flash_timer == 0.0:
-			queue_redraw()
 
 	# Mise à jour des altérations d'état via le composant
 	if status_component != null:
@@ -596,38 +511,8 @@ func _on_died() -> void:
 		_play_juice_explosion_death()
 
 func _play_ejection_death(hit_dir: Vector2) -> void:
-	_is_expelled = true
-	_expulsion_timer = 0.0
-	collision_shape.set_deferred(&"disabled", true)
-	if has_node("Shadow"):
-		$Shadow.visible = false
-
-	# Passer au premier plan absolu au-dessus du plateau, des murs et des bumpers
-	z_index = 100
-	z_as_relative = false
-
-	# Propulsion propulsée en cloche puissante vers le haut et hors de l'arène
-	var x_sign: float = signf(hit_dir.x) if absf(hit_dir.x) > 0.15 else (signf(global_position.x - 360.0) if absf(global_position.x - 360.0) > 20.0 else (1.0 if randf() > 0.5 else -1.0))
-	var launch_vx: float = x_sign * randf_range(520.0, 780.0)
-	var launch_vy: float = -randf_range(1700.0, 2100.0) # Vraie propulsion en cloche
-	_expulsion_velocity = Vector2(launch_vx, launch_vy)
-	_expulsion_spin = x_sign * randf_range(22.0, 32.0)
-
-	# Flash d'impact au décollage
-	visual_container.modulate = Color(2.5, 2.5, 2.5, 1.0)
-	var tw: Tween = create_tween()
-	tw.tween_property(visual_container, "modulate", Color.WHITE, 0.12)
-
-	# Éclat d'impact de jus au point de départ
-	if enemy_data != null:
-		JuiceSplatScript.spawn(
-			get_parent(),
-			global_position,
-			enemy_data.juice_primary_color,
-			enemy_data.juice_secondary_color,
-			enemy_data.juice_accent_color,
-			8
-		)
+	if expulsion_component != null:
+		expulsion_component.launch(hit_dir)
 
 func _play_juice_explosion_death() -> void:
 	_is_dying = true
@@ -652,8 +537,6 @@ func _play_juice_explosion_death() -> void:
 	tw.tween_property(visual_container, "modulate:a", 0.0, 0.06)
 	tw.chain().tween_callback(despawn)
 
-var pool_source: NodePool = null
-
 func despawn() -> void:
 	_is_game_over_charging = false
 	active_enemies.erase(self)
@@ -661,72 +544,4 @@ func despawn() -> void:
 		collision_shape.set_deferred(&"disabled", true)
 	if dive_component != null:
 		dive_component.reset()
-	modulate.a = 1.0
-	scale = Vector2.ONE
-	if pool_source != null:
-		pool_source.release(self)
-	else:
-		queue_free()
-
-func on_pool_release() -> void:
-	_is_game_over_charging = false
-	active_enemies.erase(self)
-	if dive_component != null:
-		dive_component.reset()
-	modulate.a = 1.0
-	scale = Vector2.ONE
-
-func on_pool_acquire() -> void:
-	if not active_enemies.has(self):
-		active_enemies.append(self)
-	if dive_component != null:
-		dive_component.reset()
-	_is_dying = false
-	_is_expelled = false
-	_is_game_over_charging = false
-	_is_projected_by_gate = false
-	_projection_time = 0.0
-	_knockback_velocity = Vector2.ZERO
-	_expulsion_velocity = Vector2.ZERO
-	_expulsion_spin = 0.0
-	_expulsion_timer = 0.0
-	_time_alive = randf_range(0.0, 5.0)
-	_time_since_last_damage = 0.0
-	_last_hit_context = null
-	_last_hit_source = null
-	modulate.a = 1.0
-	scale = Vector2.ONE
-	_last_impact_velocity = Vector2.ZERO
-	_last_hit_direction = Vector2.UP
-	bypass_bias = -1.0 if randf() < 0.5 else 1.0
-
-	z_index = 0
-	z_as_relative = true
-	velocity = Vector2.ZERO
-
-	if collision_shape != null:
-		collision_shape.set_deferred(&"disabled", false)
-	if has_node("Shadow"):
-		$Shadow.visible = true
-
-	if visual_container != null:
-		visual_container.rotation = 0.0
-		visual_container.scale = Vector2.ONE
-		visual_container.modulate = Color.WHITE
-
-	if telegraph_visual != null:
-		telegraph_visual.stop_telegraph()
-
-	if enemy_data != null and health_component != null:
-		health_component.set_max_health(enemy_data.max_health)
-		_current_move_speed = enemy_data.get_speed_from_tier()
-
-	_hp_ratio = 1.0
-	_hp_flash_timer = 0.0
-	queue_redraw()
-
-	if status_component != null:
-		status_component.cleanup_on_death()
-
-	if visual_overlay != null:
-		visual_overlay.reset()
+	queue_free()

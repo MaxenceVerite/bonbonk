@@ -80,6 +80,8 @@ func _recycle() -> void:
 	_is_finished = true
 	visible = false
 	set_process(false)
+	if get_parent() != null:
+		get_parent().remove_child(self)
 	if not _pool.has(self):
 		_pool.append(self)
 

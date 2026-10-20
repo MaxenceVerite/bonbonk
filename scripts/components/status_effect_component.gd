@@ -116,20 +116,29 @@ func cleanup_on_death() -> void:
 func update_status(delta: float) -> void:
 	if _active_effects.is_empty():
 		return
+	if _target_node != null and _target_node.has_method(&"is_dying") and _target_node.is_dying():
+		return
 
 	var was_immobile: bool = is_immobilized()
 	var expired_keys: Array[StringName] = []
 
 	for effect_id in _active_effects.keys():
-		var effect: StatusEffect = _active_effects[effect_id]
+		if not _active_effects.has(effect_id):
+			continue
+		var effect: StatusEffect = _active_effects.get(effect_id) as StatusEffect
+		if effect == null:
+			continue
 		effect.on_tick(_target_node, _visual_container, delta)
+		if _target_node != null and _target_node.has_method(&"is_dying") and _target_node.is_dying():
+			return
 		if effect.is_expired:
 			expired_keys.append(effect_id)
 
 	for key in expired_keys:
-		var effect: StatusEffect = _active_effects[key]
-		_active_effects.erase(key)
-		effect.on_removed(_target_node, _visual_container)
+		if _active_effects.has(key):
+			var effect: StatusEffect = _active_effects[key]
+			_active_effects.erase(key)
+			effect.on_removed(_target_node, _visual_container)
 
 	if not expired_keys.is_empty():
 		_sync_overlay()
