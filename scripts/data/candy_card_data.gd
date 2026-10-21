@@ -3,7 +3,7 @@ extends Resource
 
 ## Définition d'un bonbon / bille à collectionner et améliorer.
 
-enum Rarity { COMMON, RARE, EPIC, LEGENDARY }
+enum Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY, MYTHIC }
 enum CardType { BALL, BUMPER }
 
 @export var id: StringName = &"fizz"

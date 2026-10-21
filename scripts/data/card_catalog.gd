@@ -13,7 +13,7 @@ static func get_default_definitions() -> Dictionary:
 	fizz_card.display_name = "Fizzball"
 	fizz_card.subtitle = "Acidulée & Électrique"
 	fizz_card.description = "Diffuse des décharges acidulées qui frappent plusieurs ennemis proches."
-	fizz_card.rarity = CandyCardData.Rarity.RARE
+	fizz_card.rarity = CandyCardData.Rarity.UNCOMMON
 	fizz_card.base_damage = 1
 	fizz_card.damage_per_level = 0.25
 	fizz_card.base_magnetism = 340.0
@@ -111,7 +111,7 @@ static func get_default_definitions() -> Dictionary:
 	twisty_card.display_name = "Twistypop"
 	twisty_card.subtitle = "Sucette Tournoyante"
 	twisty_card.description = "Sucette arc-en-ciel légendaire ! Au contact de la bille, projette une salve d'éclats magiques traquant les ennemis."
-	twisty_card.rarity = CandyCardData.Rarity.LEGENDARY
+	twisty_card.rarity = CandyCardData.Rarity.MYTHIC
 	twisty_card.card_type = CandyCardData.CardType.BUMPER
 	twisty_card.base_damage = 1
 	twisty_card.damage_per_level = 0.0

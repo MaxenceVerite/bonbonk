@@ -8,22 +8,23 @@ signal slot_pressed(slot_index: int)
 
 @export var slot_index: int = 0
 
-@onready var icon_rect: TextureRect = $VBox/IconContainer/IconRect
-@onready var halo_rect: TextureRect = $VBox/IconContainer/HaloRect
-@onready var name_label: Label = $VBox/NameLabel
-@onready var level_label: Label = $LevelBadge/LevelLabel
-@onready var level_badge: PanelContainer = $LevelBadge
-@onready var gauge_bar: TextureProgressBar = $VBox/GaugeContainer/GaugeBar
-@onready var gauge_label: Label = $VBox/GaugeContainer/GaugeLabel
-@onready var upgrade_arrow: Label = $VBox/GaugeContainer/UpgradeArrow
+@onready var card_frame: TextureRect = $CardFrame
+@onready var icon_rect: TextureRect = $ContentControl/IconContainer/IconRect
+@onready var halo_rect: TextureRect = $ContentControl/IconContainer/HaloRect
+@onready var name_label: Label = $ContentControl/NameLabel
+@onready var level_label: Label = $ContentControl/LevelBadge/LevelLabel
+@onready var level_badge: Control = $ContentControl/LevelBadge
+@onready var gauge_bar: TextureProgressBar = $ContentControl/GaugeContainer/GaugeBar
+@onready var gauge_label: Label = $ContentControl/GaugeContainer/GaugeLabel
+@onready var upgrade_arrow: Label = $ContentControl/GaugeContainer/UpgradeArrow
 @onready var btn_click: Button = $BtnClick
 
 var current_card_id: StringName = &""
 var _pulse_tween: Tween = null
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(170, 190)
-	pivot_offset = Vector2(85, 95)
+	custom_minimum_size = Vector2(192, 254)
+	pivot_offset = Vector2(96, 127)
 	if btn_click != null:
 		btn_click.pressed.connect(func() -> void:
 			slot_pressed.emit(slot_index)
@@ -74,10 +75,12 @@ func set_card(card_id: StringName) -> void:
 		gauge_bar.value = float(cards)
 		gauge_label.text = "%d / %d" % [cards, req_cards]
 		
+		# Texture de jauge gourmande sirop étincelant ou caramel ambré
+		gauge_bar.texture_progress = preload("res://assets/ui/card_gauge_fill.png")
 		if has_enough_cards:
-			gauge_bar.texture_progress = preload("res://assets/ui/hp_bar_fill_green.png")
+			gauge_bar.tint_progress = Color(0.35, 1.0, 0.45, 1.0) # Sirop menthe/pomme étincelant
 		else:
-			gauge_bar.texture_progress = preload("res://assets/ui/hp_bar_fill.png")
+			gauge_bar.tint_progress = Color(0.96, 0.68, 0.22, 1.0) # Sirop caramel ambré gourmand
 
 	if upgrade_arrow != null:
 		upgrade_arrow.visible = can_upgrade
@@ -90,47 +93,23 @@ func set_card(card_id: StringName) -> void:
 	else:
 		_stop_upgrade_glow()
 
+const RARITY_FRAMES: Dictionary = {
+	CandyCardData.Rarity.COMMON: preload("res://assets/ui/card_frame_common.png"),
+	CandyCardData.Rarity.UNCOMMON: preload("res://assets/ui/card_frame_uncommon.png"),
+	CandyCardData.Rarity.RARE: preload("res://assets/ui/card_frame_rare.png"),
+	CandyCardData.Rarity.EPIC: preload("res://assets/ui/card_frame_epic.png"),
+	CandyCardData.Rarity.LEGENDARY: preload("res://assets/ui/card_frame_legendary.png"),
+	CandyCardData.Rarity.MYTHIC: preload("res://assets/ui/card_frame_mythic.png"),
+}
+
 func _apply_rarity_style(r: CandyCardData.Rarity, can_up: bool) -> void:
-	var sb: StyleBoxFlat = StyleBoxFlat.new()
-	sb.set_corner_radius_all(16)
-	sb.corner_detail = 10
-	sb.shadow_size = 5
-	sb.shadow_offset = Vector2(0, 3)
-	
-	var border_c: Color = Color(0.55, 0.60, 0.65)
-	var bg_c: Color = Color(0.98, 0.96, 0.94)
-	
-	match r:
-		CandyCardData.Rarity.COMMON:
-			border_c = Color(0.55, 0.60, 0.65)
-			bg_c = Color(0.98, 0.96, 0.94)
-		CandyCardData.Rarity.RARE:
-			border_c = Color(0.20, 0.55, 0.90)
-			bg_c = Color(0.92, 0.96, 1.0)
-		CandyCardData.Rarity.EPIC:
-			border_c = Color(0.68, 0.22, 0.85)
-			bg_c = Color(0.97, 0.92, 1.0)
-		CandyCardData.Rarity.LEGENDARY:
-			border_c = Color(0.95, 0.72, 0.12)
-			bg_c = Color(1.0, 0.97, 0.88)
-			
-	if can_up:
-		sb.border_width_left = 3
-		sb.border_width_top = 3
-		sb.border_width_right = 3
-		sb.border_width_bottom = 3
-		sb.border_color = Color(0.3, 0.85, 0.35)
-		sb.shadow_color = Color(0.2, 0.7, 0.2, 0.4)
-	else:
-		sb.border_width_left = 3
-		sb.border_width_top = 3
-		sb.border_width_right = 3
-		sb.border_width_bottom = 3
-		sb.border_color = border_c
-		sb.shadow_color = Color(0.15, 0.08, 0.05, 0.22)
-		
-	sb.bg_color = bg_c
-	add_theme_stylebox_override("panel", sb)
+	if card_frame != null:
+		var tex: Texture2D = RARITY_FRAMES.get(r, RARITY_FRAMES[CandyCardData.Rarity.COMMON])
+		card_frame.texture = tex
+		if can_up:
+			card_frame.modulate = Color(1.05, 1.02, 0.95, 1.0)
+		else:
+			card_frame.modulate = Color(1.0, 1.0, 1.0, 1.0)
 
 func _start_upgrade_glow() -> void:
 	if _pulse_tween != null and _pulse_tween.is_valid():

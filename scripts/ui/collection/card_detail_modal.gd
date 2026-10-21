@@ -119,6 +119,14 @@ func _refresh_data() -> void:
 			rarity_style.border_width_top = 1
 			rarity_style.border_width_right = 1
 			rarity_style.border_width_bottom = 1
+		CandyCardData.Rarity.UNCOMMON:
+			rarity_badge.text = "★ PEU COMMUNE ★"
+			rarity_style.bg_color = Color(0.20, 0.68, 0.32, 1.0)
+			rarity_style.border_color = Color(0.65, 0.95, 0.72, 1.0)
+			rarity_style.border_width_left = 1
+			rarity_style.border_width_top = 1
+			rarity_style.border_width_right = 1
+			rarity_style.border_width_bottom = 1
 		CandyCardData.Rarity.RARE:
 			rarity_badge.text = "★ RARE ★"
 			rarity_style.bg_color = Color(0.18, 0.55, 0.95, 1.0)
@@ -139,6 +147,14 @@ func _refresh_data() -> void:
 			rarity_badge.text = "★★★ LÉGENDAIRE ★★★"
 			rarity_style.bg_color = Color(0.95, 0.68, 0.10, 1.0)
 			rarity_style.border_color = Color(1.0, 0.92, 0.65, 1.0)
+			rarity_style.border_width_left = 1
+			rarity_style.border_width_top = 1
+			rarity_style.border_width_right = 1
+			rarity_style.border_width_bottom = 1
+		CandyCardData.Rarity.MYTHIC:
+			rarity_badge.text = "★★★★ MYTHIQUE ★★★★"
+			rarity_style.bg_color = Color(0.95, 0.45, 0.10, 1.0)
+			rarity_style.border_color = Color(1.0, 0.78, 0.50, 1.0)
 			rarity_style.border_width_left = 1
 			rarity_style.border_width_top = 1
 			rarity_style.border_width_right = 1
