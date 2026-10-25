@@ -30,6 +30,7 @@ signal replace_requested(slot_index: int, current_card_id: StringName)
 var current_card_id: StringName = &""
 var current_deck_slot: int = -1
 var _state: Dictionary = {}
+var _halo_tween: Tween = null
 
 func _ready() -> void:
 	visible = false
@@ -56,8 +57,18 @@ func _show_modal_for_card(card_id: StringName) -> void:
 	_refresh_data()
 	visible = true
 	
+	# Centre le pivot pour l'animation
+	modal_card.pivot_offset = modal_card.size * 0.5
+	
+	# Animation halo magique rotatif
+	if _halo_tween != null and _halo_tween.is_valid():
+		_halo_tween.kill()
+	icon_halo.rotation = 0.0
+	_halo_tween = create_tween().set_loops()
+	_halo_tween.tween_property(icon_halo, "rotation", TAU, 14.0).from(0.0)
+
 	# Animation d'entrée pop punchy
-	modal_card.scale = Vector2(0.7, 0.7)
+	modal_card.scale = Vector2(0.75, 0.75)
 	modal_card.modulate.a = 0.0
 	var tw: Tween = create_tween().set_parallel(true)
 	tw.tween_property(modal_card, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -70,6 +81,9 @@ func _on_replace_pressed() -> void:
 	replace_requested.emit(slot_to_replace, cid)
 
 func close_modal() -> void:
+	if _halo_tween != null and _halo_tween.is_valid():
+		_halo_tween.kill()
+		_halo_tween = null
 	var tw: Tween = create_tween().set_parallel(true)
 	tw.tween_property(modal_card, "scale", Vector2(0.8, 0.8), 0.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tw.tween_property(modal_card, "modulate:a", 0.0, 0.10)
@@ -101,14 +115,14 @@ func _refresh_data() -> void:
 	
 	# Badge rareté sous forme de pastille stylisée
 	var rarity_style: StyleBoxFlat = StyleBoxFlat.new()
-	rarity_style.corner_radius_top_left = 10
-	rarity_style.corner_radius_top_right = 10
-	rarity_style.corner_radius_bottom_left = 10
-	rarity_style.corner_radius_bottom_right = 10
-	rarity_style.content_margin_left = 14.0
-	rarity_style.content_margin_right = 14.0
-	rarity_style.content_margin_top = 3.0
-	rarity_style.content_margin_bottom = 3.0
+	rarity_style.corner_radius_top_left = 12
+	rarity_style.corner_radius_top_right = 12
+	rarity_style.corner_radius_bottom_left = 12
+	rarity_style.corner_radius_bottom_right = 12
+	rarity_style.content_margin_left = 16.0
+	rarity_style.content_margin_right = 16.0
+	rarity_style.content_margin_top = 4.0
+	rarity_style.content_margin_bottom = 4.0
 
 	match def.rarity:
 		CandyCardData.Rarity.COMMON:
@@ -212,7 +226,7 @@ func _refresh_stats_rows(def: CandyCardData, lvl: int) -> void:
 	for stat in stats:
 		var tile: PanelContainer = PanelContainer.new()
 		tile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		tile.custom_minimum_size = Vector2(230, 64)
+		tile.custom_minimum_size = Vector2(254, 76)
 
 		var tile_style: StyleBoxFlat = StyleBoxFlat.new()
 		tile_style.bg_color = Color(0.99, 0.97, 0.94, 0.95)
@@ -221,14 +235,14 @@ func _refresh_stats_rows(def: CandyCardData, lvl: int) -> void:
 		tile_style.border_width_top = 1
 		tile_style.border_width_right = 1
 		tile_style.border_width_bottom = 1
-		tile_style.corner_radius_top_left = 12
-		tile_style.corner_radius_top_right = 12
-		tile_style.corner_radius_bottom_left = 12
-		tile_style.corner_radius_bottom_right = 12
-		tile_style.content_margin_left = 12.0
-		tile_style.content_margin_right = 12.0
-		tile_style.content_margin_top = 8.0
-		tile_style.content_margin_bottom = 8.0
+		tile_style.corner_radius_top_left = 14
+		tile_style.corner_radius_top_right = 14
+		tile_style.corner_radius_bottom_left = 14
+		tile_style.corner_radius_bottom_right = 14
+		tile_style.content_margin_left = 14.0
+		tile_style.content_margin_right = 14.0
+		tile_style.content_margin_top = 9.0
+		tile_style.content_margin_bottom = 9.0
 		tile_style.shadow_size = 4
 		tile_style.shadow_color = Color(0.2, 0.1, 0.05, 0.08)
 		tile.add_theme_stylebox_override("panel", tile_style)
@@ -243,12 +257,12 @@ func _refresh_stats_rows(def: CandyCardData, lvl: int) -> void:
 
 		var icon_lbl: Label = Label.new()
 		icon_lbl.text = stat.get("icon", "✨")
-		icon_lbl.add_theme_font_size_override(&"font_size", 14)
+		icon_lbl.add_theme_font_size_override(&"font_size", 16)
 		top_row.add_child(icon_lbl)
 
 		var label_lbl: Label = Label.new()
 		label_lbl.text = stat.get("label", "Stat").to_upper()
-		label_lbl.add_theme_font_size_override(&"font_size", 12)
+		label_lbl.add_theme_font_size_override(&"font_size", 13)
 		label_lbl.add_theme_color_override(&"font_color", Color(0.50, 0.36, 0.28, 1.0))
 		label_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		top_row.add_child(label_lbl)
@@ -260,7 +274,7 @@ func _refresh_stats_rows(def: CandyCardData, lvl: int) -> void:
 
 		var val_lbl: Label = Label.new()
 		val_lbl.text = stat.get("cur_str", "-")
-		val_lbl.add_theme_font_size_override(&"font_size", 20)
+		val_lbl.add_theme_font_size_override(&"font_size", 24)
 		val_lbl.add_theme_color_override(&"font_color", Color(0.22, 0.12, 0.06, 1.0))
 		bottom_row.add_child(val_lbl)
 
@@ -270,8 +284,8 @@ func _refresh_stats_rows(def: CandyCardData, lvl: int) -> void:
 			if not gain_clean.begins_with("+"):
 				gain_clean = "+" + gain_clean
 			gain_badge.text = gain_clean
-			gain_badge.add_theme_font_size_override(&"font_size", 14)
-			gain_badge.add_theme_color_override(&"font_color", Color(0.12, 0.65, 0.22, 1.0))
+			gain_badge.add_theme_font_size_override(&"font_size", 18)
+			gain_badge.add_theme_color_override(&"font_color", Color(0.10, 0.70, 0.22, 1.0))
 			gain_badge.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 			bottom_row.add_child(gain_badge)
 
@@ -291,7 +305,7 @@ func _refresh_locked_stats(def: CandyCardData) -> void:
 	for stat in stats:
 		var tile: PanelContainer = PanelContainer.new()
 		tile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		tile.custom_minimum_size = Vector2(230, 64)
+		tile.custom_minimum_size = Vector2(254, 76)
 
 		var tile_style: StyleBoxFlat = StyleBoxFlat.new()
 		tile_style.bg_color = Color(0.95, 0.93, 0.90, 0.85)
@@ -300,14 +314,14 @@ func _refresh_locked_stats(def: CandyCardData) -> void:
 		tile_style.border_width_top = 1
 		tile_style.border_width_right = 1
 		tile_style.border_width_bottom = 1
-		tile_style.corner_radius_top_left = 12
-		tile_style.corner_radius_top_right = 12
-		tile_style.corner_radius_bottom_left = 12
-		tile_style.corner_radius_bottom_right = 12
-		tile_style.content_margin_left = 12.0
-		tile_style.content_margin_right = 12.0
-		tile_style.content_margin_top = 8.0
-		tile_style.content_margin_bottom = 8.0
+		tile_style.corner_radius_top_left = 14
+		tile_style.corner_radius_top_right = 14
+		tile_style.corner_radius_bottom_left = 14
+		tile_style.corner_radius_bottom_right = 14
+		tile_style.content_margin_left = 14.0
+		tile_style.content_margin_right = 14.0
+		tile_style.content_margin_top = 9.0
+		tile_style.content_margin_bottom = 9.0
 		tile.add_theme_stylebox_override("panel", tile_style)
 
 		var vbox: VBoxContainer = VBoxContainer.new()
@@ -319,19 +333,19 @@ func _refresh_locked_stats(def: CandyCardData) -> void:
 
 		var icon_lbl: Label = Label.new()
 		icon_lbl.text = stat.get("icon", "✨")
-		icon_lbl.add_theme_font_size_override(&"font_size", 14)
+		icon_lbl.add_theme_font_size_override(&"font_size", 16)
 		top_row.add_child(icon_lbl)
 
 		var label_lbl: Label = Label.new()
 		label_lbl.text = stat.get("label", "Stat").to_upper()
-		label_lbl.add_theme_font_size_override(&"font_size", 12)
+		label_lbl.add_theme_font_size_override(&"font_size", 13)
 		label_lbl.add_theme_color_override(&"font_color", Color(0.60, 0.55, 0.50, 1.0))
 		label_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		top_row.add_child(label_lbl)
 
 		var val_lbl: Label = Label.new()
 		val_lbl.text = "?"
-		val_lbl.add_theme_font_size_override(&"font_size", 20)
+		val_lbl.add_theme_font_size_override(&"font_size", 24)
 		val_lbl.add_theme_color_override(&"font_color", Color(0.60, 0.55, 0.50, 1.0))
 
 		vbox.add_child(top_row)

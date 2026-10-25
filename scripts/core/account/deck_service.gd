@@ -3,16 +3,19 @@ extends RefCounted
 
 ## Service spécialisé dans la gestion, la validation et la manipulation des decks.
 
+func validate_single_deck(deck: Array) -> void:
+	for j in range(deck.size()):
+		if deck[j] == &"standard" or deck[j] == &"cherry" or deck[j] == &"mint":
+			deck[j] = &"fizz"
+	while deck.size() < 6:
+		deck.append(&"fizz")
+	if deck.size() > 6:
+		deck.resize(6)
+
 func validate_decks(decks: Array) -> void:
 	for i in range(decks.size()):
 		var d: Array = decks[i]
-		for j in range(d.size()):
-			if d[j] == &"standard" or d[j] == &"cherry" or d[j] == &"mint":
-				d[j] = &"fizz"
-		while d.size() < 6:
-			d.append(&"fizz")
-		if d.size() > 6:
-			d.resize(6)
+		validate_single_deck(d)
 
 func get_active_deck(decks: Array, active_deck_index: int) -> Array:
 	if decks.is_empty():
@@ -52,3 +55,10 @@ func get_active_deck_bumpers(active_deck: Array, card_defs: Dictionary) -> Array
 		if c_def != null and c_def.card_type == CandyCardData.CardType.BUMPER:
 			bumpers.append(c_id)
 	return bumpers
+
+func set_card_in_survival_deck(slot_idx: int, card_id: StringName, survival_deck: Array) -> bool:
+	if slot_idx >= 0 and slot_idx < survival_deck.size():
+		survival_deck[slot_idx] = card_id
+		return true
+	return false
+

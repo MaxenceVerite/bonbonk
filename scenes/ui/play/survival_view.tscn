@@ -1,0 +1,247 @@
+[gd_scene load_steps=12 format=3 uid="uid://s8uvsurvivalview01"]
+
+[ext_resource type="Script" path="res://scripts/ui/play/survival_view.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_deck_board.png" id="2_deck_board"]
+[ext_resource type="Texture2D" uid="uid://bo6ntiq2wwkhg" path="res://assets/ui/candy_cane_pattern.png" id="3_candy_cane"]
+[ext_resource type="PackedScene" path="res://scenes/ui/deck_slot_button.tscn" id="4_slot"]
+[ext_resource type="Texture2D" path="res://assets/ui/btn_jouer_green.png" id="5_btn_play"]
+[ext_resource type="Texture2D" path="res://assets/ui/btn_jouer_green_pressed.png" id="6_btn_play_p"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_StatsCard"]
+content_margin_left = 18.0
+content_margin_top = 14.0
+content_margin_right = 18.0
+content_margin_bottom = 14.0
+bg_color = Color(0.24, 0.13, 0.07, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 6
+border_color = Color(0.14, 0.07, 0.03, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0.08, 0.03, 0.01, 0.35)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_DeckBoard"]
+content_margin_left = 16.0
+content_margin_top = 14.0
+content_margin_right = 16.0
+content_margin_bottom = 18.0
+texture = ExtResource("2_deck_board")
+texture_margin_left = 35.0
+texture_margin_top = 110.0
+texture_margin_right = 35.0
+texture_margin_bottom = 35.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_NoticeCard"]
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0.88, 0.74, 0.55, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.65, 0.46, 0.28, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_BtnPlayNormal"]
+content_margin_left = 24.0
+content_margin_top = 16.0
+content_margin_right = 24.0
+content_margin_bottom = 24.0
+texture = ExtResource("5_btn_play")
+texture_margin_left = 40.0
+texture_margin_top = 20.0
+texture_margin_right = 40.0
+texture_margin_bottom = 30.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_BtnPlayPressed"]
+content_margin_left = 24.0
+content_margin_top = 22.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+texture = ExtResource("6_btn_play_p")
+texture_margin_left = 40.0
+texture_margin_top = 24.0
+texture_margin_right = 40.0
+texture_margin_bottom = 24.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[node name="SurvivalView" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 12.0
+offset_right = -20.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="StatsCard" type="PanelContainer" parent="VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_StatsCard")
+
+[node name="HBox" type="HBoxContainer" parent="VBox/StatsCard"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="BestWaveBox" type="VBoxContainer" parent="VBox/StatsCard/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="VBox/StatsCard/HBox/BestWaveBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.85, 0.65, 1)
+theme_override_font_sizes/font_size = 14
+text = "🌊 MEILLEURE VAGUE"
+horizontal_alignment = 1
+
+[node name="ValueLabel" type="Label" parent="VBox/StatsCard/HBox/BestWaveBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.25, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.6)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 24
+text = "VAGUE 1"
+horizontal_alignment = 1
+
+[node name="Separator" type="ColorRect" parent="VBox/StatsCard/HBox"]
+custom_minimum_size = Vector2(2, 40)
+layout_mode = 2
+color = Color(0.38, 0.22, 0.12, 1)
+
+[node name="BestScoreBox" type="VBoxContainer" parent="VBox/StatsCard/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="VBox/StatsCard/HBox/BestScoreBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.85, 0.65, 1)
+theme_override_font_sizes/font_size = 14
+text = "🏆 RECORD SCORE"
+horizontal_alignment = 1
+
+[node name="ValueLabel" type="Label" parent="VBox/StatsCard/HBox/BestScoreBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.85, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.6)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 24
+text = "0 PTS"
+horizontal_alignment = 1
+
+[node name="DeckCard" type="PanelContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBox_DeckBoard")
+
+[node name="VBox" type="VBoxContainer" parent="VBox/DeckCard"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="DeckTitle" type="Label" parent="VBox/DeckCard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.27, 0.16, 0.08, 1)
+theme_override_font_sizes/font_size = 26
+text = "DECK SURVIE"
+horizontal_alignment = 1
+
+[node name="DeckSubtitle" type="Label" parent="VBox/DeckCard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.24, 0.14, 1)
+theme_override_font_sizes/font_size = 13
+text = "6 BONBONS DE DÉPART (TOUCHER POUR MODIFIER)"
+horizontal_alignment = 1
+
+[node name="CandyCaneRibbon" type="TextureRect" parent="VBox/DeckCard/VBox"]
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+texture = ExtResource("3_candy_cane")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="DeckSlotsGrid" type="GridContainer" parent="VBox/DeckCard/VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 14
+columns = 3
+
+[node name="Slot0" parent="VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("4_slot")]
+layout_mode = 2
+
+[node name="Slot1" parent="VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("4_slot")]
+layout_mode = 2
+slot_index = 1
+
+[node name="Slot2" parent="VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("4_slot")]
+layout_mode = 2
+slot_index = 2
+
+[node name="Slot3" parent="VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("4_slot")]
+layout_mode = 2
+slot_index = 3
+
+[node name="Slot4" parent="VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("4_slot")]
+layout_mode = 2
+slot_index = 4
+
+[node name="Slot5" parent="VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("4_slot")]
+layout_mode = 2
+slot_index = 5
+
+[node name="NoticeCard" type="PanelContainer" parent="VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_NoticeCard")
+
+[node name="NoticeLabel" type="Label" parent="VBox/NoticeCard"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.28, 0.14, 0.06, 1)
+theme_override_font_sizes/font_size = 14
+text = "🎲 Draft de reliques à chaque palier  •  👾 Boss tous les 10 étages"
+horizontal_alignment = 1
+
+[node name="BtnLaunchSurvival" type="Button" parent="VBox"]
+custom_minimum_size = Vector2(440, 88)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.06, 0.35, 0.12, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 36
+theme_override_styles/normal = SubResource("StyleBox_BtnPlayNormal")
+theme_override_styles/pressed = SubResource("StyleBox_BtnPlayPressed")
+theme_override_styles/hover = SubResource("StyleBox_BtnPlayNormal")
+text = "▶  LANCER LA SURVIE"

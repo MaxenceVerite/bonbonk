@@ -1,0 +1,333 @@
+[gd_scene load_steps=13 format=3 uid="uid://d8xmlevelmodal01"]
+
+[ext_resource type="Script" path="res://scripts/ui/play/level_detail_modal.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/btn_jouer_green.png" id="2_btn_play"]
+[ext_resource type="Texture2D" path="res://assets/ui/btn_jouer_green_pressed.png" id="3_btn_play_p"]
+[ext_resource type="Texture2D" path="res://assets/ui/booster_pack.png" id="4_booster"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Backdrop"]
+bg_color = Color(0.08, 0.04, 0.02, 0.72)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Card"]
+content_margin_left = 22.0
+content_margin_top = 22.0
+content_margin_right = 22.0
+content_margin_bottom = 24.0
+bg_color = Color(0.96, 0.91, 0.83, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 8
+border_color = Color(0.74, 0.60, 0.46, 1)
+corner_radius_top_left = 26
+corner_radius_top_right = 26
+corner_radius_bottom_right = 26
+corner_radius_bottom_left = 26
+shadow_color = Color(0.12, 0.05, 0.02, 0.4)
+shadow_size = 14
+shadow_offset = Vector2(0, 6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_TitleBanner"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
+bg_color = Color(0.85, 0.22, 0.24, 1)
+border_width_left = 3
+border_width_top = 2
+border_width_right = 3
+border_width_bottom = 6
+border_color = Color(0.55, 0.12, 0.14, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0.35, 0.06, 0.08, 0.35)
+shadow_size = 4
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_InnerWell"]
+content_margin_left = 16.0
+content_margin_top = 12.0
+content_margin_right = 16.0
+content_margin_bottom = 14.0
+bg_color = Color(0.18, 0.09, 0.04, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.64, 0.45, 0.26, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0.08, 0.03, 0.01, 0.35)
+shadow_size = 4
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_GoalPill"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.10, 0.04, 0.02, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 3
+border_color = Color(0.55, 0.36, 0.18, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_BtnPlay"]
+content_margin_left = 24.0
+content_margin_top = 16.0
+content_margin_right = 24.0
+content_margin_bottom = 24.0
+texture = ExtResource("2_btn_play")
+texture_margin_left = 40.0
+texture_margin_top = 20.0
+texture_margin_right = 40.0
+texture_margin_bottom = 30.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_BtnPlayP"]
+content_margin_left = 24.0
+content_margin_top = 22.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+texture = ExtResource("3_btn_play_p")
+texture_margin_left = 40.0
+texture_margin_top = 24.0
+texture_margin_right = 40.0
+texture_margin_bottom = 24.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_CloseBtn"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.78, 0.20, 0.22, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.50, 0.10, 0.12, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[node name="LevelDetailModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBox_Backdrop")
+theme_override_styles/pressed = SubResource("StyleBox_Backdrop")
+theme_override_styles/hover = SubResource("StyleBox_Backdrop")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PanelCard" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(580, 0)
+layout_mode = 2
+pivot_offset = Vector2(290, 260)
+theme_override_styles/panel = SubResource("StyleBox_Card")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/PanelCard"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="TitleBanner" type="PanelContainer" parent="CenterContainer/PanelCard/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_TitleBanner")
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/PanelCard/VBox/TitleBanner"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.40, 0.08, 0.10, 0.9)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 22
+text = "NIVEAU 1 : PREMIERS PAS CROQUANTS"
+horizontal_alignment = 1
+
+[node name="DescLabel" type="Label" parent="CenterContainer/PanelCard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.30, 0.18, 0.10, 1)
+theme_override_font_sizes/font_size = 16
+text = "Repousse les premières tomates maraîchères."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="StarsCard" type="PanelContainer" parent="CenterContainer/PanelCard/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_InnerWell")
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/PanelCard/VBox/StarsCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderLabel" type="Label" parent="CenterContainer/PanelCard/VBox/StarsCard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1.0, 0.90, 0.70, 1)
+theme_override_font_sizes/font_size = 15
+text = "⭐ OBJECTIFS D'ÉTOILES"
+horizontal_alignment = 1
+
+[node name="StarsHBox" type="HBoxContainer" parent="CenterContainer/PanelCard/VBox/StarsCard/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Goal1" type="PanelContainer" parent="CenterContainer/PanelCard/VBox/StarsCard/VBox/StarsHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBox_GoalPill")
+
+[node name="Label" type="Label" parent="CenterContainer/PanelCard/VBox/StarsCard/VBox/StarsHBox/Goal1"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "⭐ 400 pts"
+horizontal_alignment = 1
+
+[node name="Goal2" type="PanelContainer" parent="CenterContainer/PanelCard/VBox/StarsCard/VBox/StarsHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBox_GoalPill")
+
+[node name="Label" type="Label" parent="CenterContainer/PanelCard/VBox/StarsCard/VBox/StarsHBox/Goal2"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "⭐⭐ 900 pts"
+horizontal_alignment = 1
+
+[node name="Goal3" type="PanelContainer" parent="CenterContainer/PanelCard/VBox/StarsCard/VBox/StarsHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBox_GoalPill")
+
+[node name="Label" type="Label" parent="CenterContainer/PanelCard/VBox/StarsCard/VBox/StarsHBox/Goal3"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "⭐⭐⭐ 1500 pts"
+horizontal_alignment = 1
+
+[node name="BestScoreLabel" type="Label" parent="CenterContainer/PanelCard/VBox/StarsCard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.25, 1)
+theme_override_font_sizes/font_size = 15
+text = "🏆 MEILLEUR SCORE : 1 200 PTS"
+horizontal_alignment = 1
+
+[node name="RewardsCard" type="PanelContainer" parent="CenterContainer/PanelCard/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_InnerWell")
+
+[node name="HBoxRewards" type="HBoxContainer" parent="CenterContainer/PanelCard/VBox/RewardsCard"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="RewardTitle" type="Label" parent="CenterContainer/PanelCard/VBox/RewardsCard/HBoxRewards"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1.0, 0.90, 0.70, 1)
+theme_override_font_sizes/font_size = 15
+text = "RÉCOMPENSES :"
+
+[node name="GoldReward" type="HBoxContainer" parent="CenterContainer/PanelCard/VBox/RewardsCard/HBoxRewards"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Icon" type="Label" parent="CenterContainer/PanelCard/VBox/RewardsCard/HBoxRewards/GoldReward"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "🪙"
+
+[node name="Label" type="Label" parent="CenterContainer/PanelCard/VBox/RewardsCard/HBoxRewards/GoldReward"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.25, 1)
+theme_override_font_sizes/font_size = 16
+text = "+100"
+
+[node name="DiamondReward" type="HBoxContainer" parent="CenterContainer/PanelCard/VBox/RewardsCard/HBoxRewards"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Icon" type="Label" parent="CenterContainer/PanelCard/VBox/RewardsCard/HBoxRewards/DiamondReward"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "💎"
+
+[node name="Label" type="Label" parent="CenterContainer/PanelCard/VBox/RewardsCard/HBoxRewards/DiamondReward"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.40, 0.90, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "+5"
+
+[node name="BoosterReward" type="HBoxContainer" parent="CenterContainer/PanelCard/VBox/RewardsCard/HBoxRewards"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Icon" type="TextureRect" parent="CenterContainer/PanelCard/VBox/RewardsCard/HBoxRewards/BoosterReward"]
+custom_minimum_size = Vector2(26, 26)
+layout_mode = 2
+texture = ExtResource("4_booster")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="CenterContainer/PanelCard/VBox/RewardsCard/HBoxRewards/BoosterReward"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1.0, 0.70, 0.95, 1)
+theme_override_font_sizes/font_size = 15
+text = "Sachet"
+
+[node name="BtnPlay" type="Button" parent="CenterContainer/PanelCard/VBox"]
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.08, 0.35, 0.12, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 36
+theme_override_styles/normal = SubResource("StyleBox_BtnPlay")
+theme_override_styles/pressed = SubResource("StyleBox_BtnPlayP")
+theme_override_styles/hover = SubResource("StyleBox_BtnPlay")
+text = "▶  JOUER"
+
+[node name="BtnClose" type="Button" parent="CenterContainer/PanelCard"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBox_CloseBtn")
+theme_override_styles/pressed = SubResource("StyleBox_CloseBtn")
+theme_override_styles/hover = SubResource("StyleBox_CloseBtn")
+text = "✕"

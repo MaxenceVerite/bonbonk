@@ -47,7 +47,7 @@ func _populate_unlocked_cards() -> void:
 		card.setup(state)
 		# Dans le sélecteur de remplacement, on clique sur la carte pour l'assigner au slot
 		card.card_clicked.connect(func(chosen_id: StringName) -> void:
-			SaveManager.set_card_in_deck(SaveManager.active_deck_index, _target_slot_index, chosen_id)
+			SaveManager.set_card_in_active_deck(_target_slot_index, chosen_id)
 			card_chosen.emit(chosen_id)
 			close()
 		)

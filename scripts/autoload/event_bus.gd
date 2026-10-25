@@ -36,9 +36,11 @@ signal gold_changed(new_gold: int, delta: int)
 signal diamonds_changed(new_diamonds: int, delta: int)
 signal card_upgraded(card_id: StringName, new_level: int)
 signal booster_opened(booster_result: Dictionary)
-signal open_booster_modal_requested
+signal open_booster_modal_requested(booster: BoosterData)
 signal open_shop_requested(category_hint: StringName)
 signal shop_item_purchased(item_id: StringName, currency_used: StringName)
+## Offre payante en argent réel sélectionnée (flux d'achat in-app à brancher plus tard)
+signal shop_real_money_offer_requested(item_id: StringName)
 signal deck_changed(deck_index: int)
 
 # Compte & Synchronisation Cloud

@@ -1,139 +1,192 @@
 class_name ShopCatalog
 extends RefCounted
 
+const ShopSectionData = preload("res://scripts/data/shop_section_data.gd")
+const ShopItemData = preload("res://scripts/data/shop_item_data.gd")
+
 ## Répertoire centralisé et définitions des articles de la boutique (ShopItemData).
-## Isole la configuration marchande pour alléger SaveManager.
+## Structure et contenu alignés sur la maquette de référence (Image 1).
+
+## Structure de la boutique (ordre des rayons, titres des rubans, présentation).
+## Les sections sans article sont masquées : les offres du jour (FEATURED)
+## apparaîtront dès que le catalogue (local ou distant) en fournira.
+static func get_default_layout() -> Array[ShopSectionData]:
+	var layout: Array[ShopSectionData] = []
+	layout.append(ShopSectionData.create(&"featured", "OFFRE DU JOUR", ShopItemData.Category.FEATURED, ShopSectionData.Layout.FEATURED_GALLERY, 1))
+	layout.append(ShopSectionData.create(&"free", "CADEAUX GRATUITS", ShopItemData.Category.FREE, ShopSectionData.Layout.REWARD_ROWS, 2))
+	layout.append(ShopSectionData.create(&"boosters", "SACHETS DE BONBONS", ShopItemData.Category.BOOSTERS, ShopSectionData.Layout.ITEM_TILES, 2))
+	layout.append(ShopSectionData.create(&"currency", "PIÈCES & DIAMANTS", ShopItemData.Category.CURRENCY, ShopSectionData.Layout.ITEM_TILES, 2))
+	return layout
+
+## Générateur d'offre du jour fidèle à l'Image 1
+static func create_sample_featured_offer(
+	p_id: StringName = &"hero_daily_pack",
+	p_title: String = "OFFRE DU JOUR",
+	p_badge: String = "",
+	p_reward_text: String = "",
+	p_real_price: String = "4,99€"
+) -> ShopItemData:
+	var it: ShopItemData = ShopItemData.new()
+	it.id = p_id
+	it.display_name = p_title
+	it.category = ShopItemData.Category.FEATURED
+	it.badge_text = p_badge
+	it.featured_size = ShopItemData.FeaturedSize.FULL
+	it.real_price_label = p_real_price
+	it.background_texture = load("res://assets/ui/hero_card_frame_bg.png")
+	it.reward_payload = {
+		"type": "bundle",
+		"rewards": [
+			{ "type": "gold", "amount": 1500 },
+			{ "type": "booster", "id": &"silver_pop", "display_name": "🥈 Sachet Silver Pop", "booster_type": BoosterData.BoosterType.SILVER_POP },
+			{ "type": "cards", "card_id": &"fizz", "count": 10 }
+		]
+	}
+	return it
 
 static func get_default_catalog() -> Array[ShopItemData]:
 	var catalog: Array[ShopItemData] = []
 
-	# 1. Boosters
-	var it_pack_classic: ShopItemData = ShopItemData.new()
-	it_pack_classic.id = &"shop_pack_classic"
-	it_pack_classic.display_name = "🍬 Sachet Solo"
-	it_pack_classic.description = "1 bonbon commun en quantité + Or sucré"
-	it_pack_classic.category = ShopItemData.Category.BOOSTERS
-	it_pack_classic.icon_texture = load("res://assets/ui/pack_classic_solo.png")
-	it_pack_classic.gold_price = 200
-	it_pack_classic.diamond_price = 15
-	it_pack_classic.reward_payload = {
+	# ==========================================================================
+	# 0. OFFRE DU JOUR (Hero pack actif par défaut)
+	# ==========================================================================
+	catalog.append(create_sample_featured_offer())
+
+	# ==========================================================================
+	# 1. CADEAUX GRATUITS (2 colonnes comme dans l'Image 1)
+	# ==========================================================================
+	var it_free_booster: ShopItemData = ShopItemData.new()
+	it_free_booster.id = &"free_booster"
+	it_free_booster.display_name = "Sachet\ngratuit"
+	it_free_booster.description = "Sachet Bonbonk offert !"
+	it_free_booster.category = ShopItemData.Category.FREE
+	it_free_booster.icon_texture = load("res://assets/ui/pack_silver_full.png")
+	it_free_booster.badge_text = "GRATUIT"
+	it_free_booster.gold_price = 0
+	it_free_booster.reward_payload = {
 		"type": "booster",
-		"id": &"classic_solo",
-		"display_name": "🍬 Sachet Classique",
-		"booster_type": BoosterData.BoosterType.CLASSIC_SOLO,
-		"min_gold": 40,
-		"max_gold": 80
+		"id": &"silver_pop",
+		"display_name": "🥈 Sachet Silver Pop",
+		"booster_type": BoosterData.BoosterType.SILVER_POP,
+		"min_gold": 50,
+		"max_gold": 120
 	}
-	catalog.append(it_pack_classic)
+	catalog.append(it_free_booster)
 
-	var it_pack_pop: ShopItemData = ShopItemData.new()
-	it_pack_pop.id = &"shop_pack_pop"
-	it_pack_pop.display_name = "⭐ Sachet Pop"
-	it_pack_pop.description = "Garanti un bonbon Rare ou Épique !"
-	it_pack_pop.category = ShopItemData.Category.BOOSTERS
-	it_pack_pop.icon_texture = load("res://assets/ui/pack_pop_solo.png")
-	it_pack_pop.gold_price = 500
-	it_pack_pop.diamond_price = 35
-	it_pack_pop.reward_payload = {
+	var it_free_daily: ShopItemData = ShopItemData.new()
+	it_free_daily.id = &"free_daily_gold"
+	it_free_daily.display_name = "Récompense\nquotidienne"
+	it_free_daily.description = "Or quotidien offert"
+	it_free_daily.category = ShopItemData.Category.FREE
+	it_free_daily.icon_texture = load("res://assets/ui/icon_gold_stack.png")
+	it_free_daily.badge_text = "OBTENIR"
+	it_free_daily.gold_price = 0
+	it_free_daily.reward_payload = {
+		"type": "gold",
+		"amount": 100
+	}
+	catalog.append(it_free_daily)
+
+	# ==========================================================================
+	# 2. SACHETS DE BONBONS (Silver Pop, Golden Crush, Mystery Mix, Diamond Dust)
+	# ==========================================================================
+	var it_pack_silver: ShopItemData = ShopItemData.new()
+	it_pack_silver.id = &"shop_pack_silver"
+	it_pack_silver.display_name = "🥈 Silver Pop"
+	it_pack_silver.category = ShopItemData.Category.BOOSTERS
+	it_pack_silver.icon_texture = load("res://assets/ui/pack_silver_full.png")
+	it_pack_silver.gold_price = 150
+	it_pack_silver.diamond_price = 10
+	it_pack_silver.reward_payload = {
 		"type": "booster",
-		"id": &"pop_solo",
-		"display_name": "⭐ Sachet Pop Acidulé",
-		"booster_type": BoosterData.BoosterType.POP_SOLO,
-		"min_gold": 120,
-		"max_gold": 220
+		"id": &"silver_pop",
+		"display_name": "🥈 Sachet Silver Pop",
+		"booster_type": BoosterData.BoosterType.SILVER_POP,
+		"min_gold": 50,
+		"max_gold": 100
 	}
-	catalog.append(it_pack_pop)
+	catalog.append(it_pack_silver)
 
-	var it_pack_piquant: ShopItemData = ShopItemData.new()
-	it_pack_piquant.id = &"shop_pack_piquant"
-	it_pack_piquant.display_name = "🔥 Mix Acidulé"
-	it_pack_piquant.description = "Mélange généreux de cartes rares & or abondant"
-	it_pack_piquant.category = ShopItemData.Category.BOOSTERS
-	it_pack_piquant.icon_texture = load("res://assets/ui/pack_mix_piquant.png")
-	it_pack_piquant.gold_price = -1
-	it_pack_piquant.diamond_price = 70
-	it_pack_piquant.reward_payload = {
+	var it_pack_gold: ShopItemData = ShopItemData.new()
+	it_pack_gold.id = &"shop_pack_gold"
+	it_pack_gold.display_name = "🥇 Golden Crush"
+	it_pack_gold.category = ShopItemData.Category.BOOSTERS
+	it_pack_gold.icon_texture = load("res://assets/ui/pack_gold_full.png")
+	it_pack_gold.gold_price = 450
+	it_pack_gold.diamond_price = 25
+	it_pack_gold.reward_payload = {
 		"type": "booster",
-		"id": &"piquant_mix",
-		"display_name": "🔥 Sachet Piquant Mix",
-		"booster_type": BoosterData.BoosterType.PIQUANT_MIX,
-		"min_gold": 250,
-		"max_gold": 450
+		"id": &"golden_crush",
+		"display_name": "🥇 Sachet Golden Crush",
+		"booster_type": BoosterData.BoosterType.GOLDEN_CRUSH,
+		"min_gold": 180,
+		"max_gold": 350
 	}
-	catalog.append(it_pack_piquant)
+	catalog.append(it_pack_gold)
 
-	# 2. Cartes quotidiennes
-	var it_card_caramel: ShopItemData = ShopItemData.new()
-	it_card_caramel.id = &"daily_caramel_5"
-	it_card_caramel.display_name = "x5 Bille Caramel"
-	it_card_caramel.description = "Ralentit les bonbons adverses"
-	it_card_caramel.category = ShopItemData.Category.CARDS_DAILY
-	it_card_caramel.icon_texture = CandyTextureHelper.load_texture("res://assets/ui/cards/sticky_caramel_ball_sprite.png")
-	it_card_caramel.gold_price = 150
-	it_card_caramel.diamond_price = 10
-	it_card_caramel.reward_payload = {
-		"type": "cards",
-		"card_id": &"caramel",
-		"count": 5
+	var it_pack_mystery: ShopItemData = ShopItemData.new()
+	it_pack_mystery.id = &"shop_pack_mystery"
+	it_pack_mystery.display_name = "🔮 Mystery Mix"
+	it_pack_mystery.category = ShopItemData.Category.BOOSTERS
+	it_pack_mystery.icon_texture = load("res://assets/ui/pack_mystery_full.png")
+	it_pack_mystery.gold_price = 300
+	it_pack_mystery.diamond_price = 20
+	it_pack_mystery.reward_payload = {
+		"type": "booster",
+		"id": &"mystery_mix",
+		"display_name": "🔮 Sachet Mystery Mix",
+		"booster_type": BoosterData.BoosterType.MYSTERY_MIX,
+		"min_gold": 100,
+		"max_gold": 500
 	}
-	catalog.append(it_card_caramel)
+	catalog.append(it_pack_mystery)
 
-	var it_card_fizz: ShopItemData = ShopItemData.new()
-	it_card_fizz.id = &"daily_fizz_5"
-	it_card_fizz.display_name = "x5 Fizzball"
-	it_card_fizz.description = "Billes survoltées à cadence ultra-rapide !"
-	it_card_fizz.category = ShopItemData.Category.CARDS_DAILY
-	it_card_fizz.icon_texture = CandyTextureHelper.load_texture("res://assets/ui/cards/fizzball_ball_sprite.png")
-	it_card_fizz.gold_price = 200
-	it_card_fizz.diamond_price = 15
-	it_card_fizz.reward_payload = {
-		"type": "cards",
-		"card_id": &"fizz",
-		"count": 5
+	var it_pack_diamond: ShopItemData = ShopItemData.new()
+	it_pack_diamond.id = &"shop_pack_diamond"
+	it_pack_diamond.display_name = "💎 Diamond Dust"
+	it_pack_diamond.category = ShopItemData.Category.BOOSTERS
+	it_pack_diamond.icon_texture = load("res://assets/ui/pack_diamond_full.png")
+	it_pack_diamond.gold_price = -1
+	it_pack_diamond.diamond_price = 75
+	it_pack_diamond.reward_payload = {
+		"type": "booster",
+		"id": &"diamond_dust",
+		"display_name": "💎 Sachet Diamond Dust",
+		"booster_type": BoosterData.BoosterType.DIAMOND_DUST,
+		"min_gold": 600,
+		"max_gold": 1200,
+		"min_diamonds": 5,
+		"max_diamonds": 10
 	}
-	catalog.append(it_card_fizz)
+	catalog.append(it_pack_diamond)
 
-	# 3. Monnaies & Trésorerie
+	# ==========================================================================
+	# 3. PIÈCES & DIAMANTS (Image 1 : Bourse de pièces & Tas de pièces à 10 💎)
+	# ==========================================================================
 	var it_gold_pouch: ShopItemData = ShopItemData.new()
 	it_gold_pouch.id = &"currency_gold_small"
-	it_gold_pouch.display_name = "🪙 Bourse de 500 Pièces"
-	it_gold_pouch.description = "Échangez vos diamants contre de l'or immédiat"
+	it_gold_pouch.display_name = "Bourse d'Or"
 	it_gold_pouch.category = ShopItemData.Category.CURRENCY
-	it_gold_pouch.icon_texture = load("res://assets/ui/patch_badge_gold.png")
+	it_gold_pouch.icon_texture = load("res://assets/ui/icon_gold_sack.png")
 	it_gold_pouch.gold_price = -1
-	it_gold_pouch.diamond_price = 20
+	it_gold_pouch.diamond_price = 10
 	it_gold_pouch.reward_payload = {
 		"type": "gold",
 		"amount": 500
 	}
 	catalog.append(it_gold_pouch)
 
-	var it_gold_chest: ShopItemData = ShopItemData.new()
-	it_gold_chest.id = &"currency_gold_large"
-	it_gold_chest.display_name = "🪙 Coffre de 1 500 Pièces"
-	it_gold_chest.description = "Grosse réserve d'or sucré pour vos améliorations"
-	it_gold_chest.category = ShopItemData.Category.CURRENCY
-	it_gold_chest.icon_texture = load("res://assets/ui/patch_badge_gold.png")
-	it_gold_chest.gold_price = -1
-	it_gold_chest.diamond_price = 50
-	it_gold_chest.reward_payload = {
+	var it_gold_large: ShopItemData = ShopItemData.new()
+	it_gold_large.id = &"currency_gold_large"
+	it_gold_large.display_name = "Tas de Pièces"
+	it_gold_large.category = ShopItemData.Category.CURRENCY
+	it_gold_large.icon_texture = load("res://assets/ui/icon_gold_pile.png")
+	it_gold_large.gold_price = -1
+	it_gold_large.diamond_price = 10
+	it_gold_large.reward_payload = {
 		"type": "gold",
-		"amount": 1500
+		"amount": 1000
 	}
-	catalog.append(it_gold_chest)
-
-	var it_dia_pack: ShopItemData = ShopItemData.new()
-	it_dia_pack.id = &"currency_dia_reward"
-	it_dia_pack.display_name = "💎 Lot Découverte (Offert)"
-	it_dia_pack.description = "Pack de bienvenue : 50 Diamants pour tester la boutique"
-	it_dia_pack.category = ShopItemData.Category.CURRENCY
-	it_dia_pack.icon_texture = load("res://assets/ui/sparkle_star.png")
-	it_dia_pack.gold_price = 50
-	it_dia_pack.diamond_price = -1
-	it_dia_pack.reward_payload = {
-		"type": "diamonds",
-		"amount": 50
-	}
-	catalog.append(it_dia_pack)
+	catalog.append(it_gold_large)
 
 	return catalog

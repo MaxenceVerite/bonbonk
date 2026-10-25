@@ -7,6 +7,8 @@ extends PanelContainer
 signal card_clicked(card_id: StringName)
 
 @onready var card_frame: TextureRect = $CardFrame
+@onready var empty_slot: Panel = get_node_or_null("EmptySlot")
+@onready var content_control: Control = $ContentControl
 @onready var icon_rect: TextureRect = $ContentControl/IconContainer/IconRect
 @onready var halo_rect: TextureRect = $ContentControl/IconContainer/HaloRect
 @onready var name_label: Label = $ContentControl/NameLabel
@@ -50,13 +52,18 @@ func setup(state: Dictionary) -> void:
 	var has_enough_cards: bool = state.get("has_enough_cards", false)
 	rarity = def.rarity
 	
-	name_label.text = def.display_name if is_unlocked else "Mystère"
-	
-	# Style de bordure selon la rareté
-	_apply_rarity_style(def.rarity, is_unlocked, can_upgrade)
-	
 	if is_unlocked:
-		locked_overlay.visible = false
+		if empty_slot != null:
+			empty_slot.visible = false
+		card_frame.visible = true
+		content_control.visible = true
+		if locked_overlay != null:
+			locked_overlay.visible = false
+		mouse_filter = Control.MOUSE_FILTER_STOP
+		
+		name_label.text = def.display_name
+		_apply_rarity_style(def.rarity, is_unlocked, can_upgrade)
+		
 		level_badge.visible = true
 		level_label.text = "NV. %d" % current_level
 		icon_rect.texture = def.icon_texture
@@ -77,13 +84,14 @@ func setup(state: Dictionary) -> void:
 			upgrade_arrow.visible = false
 			_stop_upgrade_glow()
 	else:
-		locked_overlay.visible = true
-		level_badge.visible = false
-		icon_rect.texture = preload("res://assets/ui/icon_ball_locked.png")
-		icon_rect.modulate = Color(0.8, 0.65, 0.5, 0.6)
-		gauge_bar.value = 0
-		gauge_label.text = "Verrouillé"
-		upgrade_arrow.visible = false
+		# Emplacement vide creusé dans le plateau
+		if empty_slot != null:
+			empty_slot.visible = true
+		card_frame.visible = false
+		content_control.visible = false
+		if locked_overlay != null:
+			locked_overlay.visible = false
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_stop_upgrade_glow()
 
 const RARITY_FRAMES: Dictionary = {
@@ -121,15 +129,21 @@ func _stop_upgrade_glow() -> void:
 	halo_rect.visible = false
 
 func _on_mouse_entered() -> void:
+	if not is_unlocked:
+		return
 	_is_hovered = true
 	_animate_scale(Vector2(1.04, 1.04))
 
 func _on_mouse_exited() -> void:
+	if not is_unlocked:
+		return
 	_is_hovered = false
 	if not _is_pressed:
 		_animate_scale(Vector2(1.0, 1.0))
 
 func _on_gui_input(event: InputEvent) -> void:
+	if not is_unlocked:
+		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			_is_pressed = true

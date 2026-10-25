@@ -12,6 +12,10 @@ const CloudSyncService = preload("res://scripts/core/account/cloud_sync_service.
 const DeckServiceScript = preload("res://scripts/core/account/deck_service.gd")
 const InventoryServiceScript = preload("res://scripts/core/account/inventory_service.gd")
 const EconomyServiceScript = preload("res://scripts/core/account/economy_service.gd")
+const ShopItemDataScript = preload("res://scripts/data/shop_item_data.gd")
+const ShopSectionDataScript = preload("res://scripts/data/shop_section_data.gd")
+const ShopCatalogScript = preload("res://scripts/data/shop_catalog.gd")
+const LevelData = preload("res://scripts/data/level_data.gd")
 
 const PROFILES_DIR: String = "user://profiles/"
 const ACTIVE_PROFILE_FILE: String = "user://active_profile.cfg"
@@ -65,10 +69,72 @@ var active_deck_index: int:
 			current_profile.active_deck_index = val
 			request_save()
 
+enum GameMode { CAMPAIGN, SURVIVAL }
+
+# Mode de jeu actif et deck de survie dédié
+var active_game_mode: String:
+	get:
+		return current_profile.active_game_mode if current_profile != null else "campaign"
+	set(val):
+		if current_profile != null and (val == "campaign" or val == "survival"):
+			current_profile.active_game_mode = val
+			request_save()
+
+func is_campaign() -> bool:
+	return active_game_mode == "campaign"
+
+func is_survival() -> bool:
+	return active_game_mode == "survival"
+
+func set_game_mode(mode: GameMode) -> void:
+	match mode:
+		GameMode.CAMPAIGN:
+			active_game_mode = "campaign"
+		GameMode.SURVIVAL:
+			active_game_mode = "survival"
+
+var survival_deck: Array:
+	get:
+		return current_profile.survival_deck if current_profile != null else []
+	set(val):
+		if current_profile != null:
+			current_profile.survival_deck = val
+			request_save()
+
+# Progression maximale débloquée en Campagne (persitée dans le profil)
+var campaign_unlocked_world: int:
+	get:
+		return current_profile.campaign_unlocked_world if current_profile != null else 1
+	set(val):
+		if current_profile != null:
+			current_profile.campaign_unlocked_world = val
+			request_save()
+
+var campaign_unlocked_level: int:
+	get:
+		return current_profile.campaign_unlocked_level if current_profile != null else 1
+	set(val):
+		if current_profile != null:
+			current_profile.campaign_unlocked_level = val
+			request_save()
+
+# Sélection active de niveau en Campagne (session de jeu dans le menu)
+var campaign_selected_world: int = 1
+var campaign_selected_level: int = 1
+
+var campaign_levels_data: Dictionary:
+	get:
+		return current_profile.campaign_levels_data if current_profile != null else {}
+	set(val):
+		if current_profile != null:
+			current_profile.campaign_levels_data = val
+			request_save()
+
 # Boosters instanciés en mémoire
 var available_boosters: Array[BoosterData] = []
 var registered_card_defs: Dictionary = {} # id -> CandyCardData
-var shop_catalog: Array[ShopItemData] = []
+var shop_catalog: Array = []
+var shop_layout: Array = []
 
 # Service Cloud Sync
 var cloud_sync: Node = null
@@ -237,7 +303,9 @@ func _sync_boosters_to_profile() -> void:
 			"display_name": b.display_name,
 			"booster_type": b.booster_type,
 			"min_gold": b.min_gold,
-			"max_gold": b.max_gold
+			"max_gold": b.max_gold,
+			"min_diamonds": b.min_diamonds,
+			"max_diamonds": b.max_diamonds
 		})
 	current_profile.available_boosters = serialized
 
@@ -247,11 +315,13 @@ func _sync_boosters_from_profile() -> void:
 		return
 	for item in current_profile.available_boosters:
 		var b: BoosterData = BoosterData.new()
-		b.id = StringName(item.get("id", "classic_solo"))
-		b.display_name = item.get("display_name", "Sachet")
-		b.booster_type = item.get("booster_type", BoosterData.BoosterType.CLASSIC_SOLO)
-		b.min_gold = item.get("min_gold", 40)
-		b.max_gold = item.get("max_gold", 80)
+		b.id = StringName(item.get("id", "silver_pop"))
+		b.display_name = item.get("display_name", "Sachet Silver Pop")
+		b.booster_type = item.get("booster_type", BoosterData.BoosterType.SILVER_POP)
+		b.min_gold = item.get("min_gold", 50)
+		b.max_gold = item.get("max_gold", 100)
+		b.min_diamonds = item.get("min_diamonds", 0)
+		b.max_diamonds = item.get("max_diamonds", 0)
 		available_boosters.append(b)
 
 # ==============================================================================
@@ -310,6 +380,13 @@ func sandbox_reset() -> void:
 	EventBus.diamonds_changed.emit(diamonds, 0)
 	EventBus.deck_changed.emit(active_deck_index)
 
+func sandbox_add_featured_offer() -> void:
+	for it in shop_catalog:
+		if it.id == &"hero_daily_pack":
+			return
+	shop_catalog.insert(0, ShopCatalogScript.create_sample_featured_offer())
+	EventBus.gold_changed.emit(gold, 0)
+
 # ==============================================================================
 # INITIALISATIONS DES DÉFINITIONS DE CARTES & BOUTIQUE
 # ==============================================================================
@@ -318,7 +395,8 @@ func _init_default_definitions() -> void:
 	registered_card_defs = CardCatalog.get_default_definitions()
 
 func _init_shop_catalog() -> void:
-	shop_catalog = ShopCatalog.get_default_catalog()
+	shop_catalog = ShopCatalogScript.get_default_catalog()
+	shop_layout = ShopCatalogScript.get_default_layout()
 
 # ==============================================================================
 # DÉLÉGATION ÉCONOMIE, INVENTAIRE & DECKS
@@ -376,8 +454,14 @@ func apply_booster_rewards(result: Dictionary) -> void:
 
 func _validate_decks() -> void:
 	deck_service.validate_decks(decks)
+	if current_profile != null:
+		deck_service.validate_single_deck(current_profile.survival_deck)
 
 func get_active_deck() -> Array:
+	if current_profile == null:
+		return []
+	if is_survival():
+		return current_profile.survival_deck
 	return deck_service.get_active_deck(decks, active_deck_index)
 
 func set_active_deck(index: int) -> void:
@@ -390,8 +474,138 @@ func set_card_in_deck(deck_idx: int, slot_idx: int, card_id: StringName) -> void
 		EventBus.deck_changed.emit(deck_idx)
 		request_save()
 
+func set_card_in_active_deck(slot_idx: int, card_id: StringName) -> void:
+	if is_survival():
+		if current_profile != null and deck_service.set_card_in_survival_deck(slot_idx, card_id, current_profile.survival_deck):
+			EventBus.deck_changed.emit(-1)
+			request_save()
+	else:
+		set_card_in_deck(active_deck_index, slot_idx, card_id)
+
 func get_active_deck_balls() -> Array[StringName]:
 	return deck_service.get_active_deck_balls(get_active_deck(), registered_card_defs)
 
 func get_active_deck_bumpers() -> Array[StringName]:
 	return deck_service.get_active_deck_bumpers(get_active_deck(), registered_card_defs)
+
+func record_campaign_level_results(level: LevelData, score: int, stars: int, _hp_left: int) -> Dictionary:
+	if current_profile == null or level == null:
+		return {}
+
+	var lvl_id_str: String = String(level.id)
+	var prev_data: Dictionary = current_profile.campaign_levels_data.get(lvl_id_str, {})
+	var is_first_clear: bool = not prev_data.get("cleared", false)
+	var prev_stars: int = int(prev_data.get("stars", 0))
+	var prev_best: int = int(prev_data.get("best_score", 0))
+
+	var new_stars: int = maxi(prev_stars, stars)
+	var new_best: int = maxi(prev_best, score)
+
+	current_profile.campaign_levels_data[lvl_id_str] = {
+		"stars": new_stars,
+		"best_score": new_best,
+		"cleared": true
+	}
+
+	# Progression du niveau suivant si premier succès (palier maximal conservé)
+	if is_first_clear and level.level_number >= current_profile.campaign_unlocked_level:
+		current_profile.campaign_unlocked_level = level.level_number + 1
+
+	campaign_selected_level = level.level_number + 1
+
+	# Récompenses : Or de complétion (50 or + score/150)
+	var gold_earned: int = 50 + int(score / 150)
+	var diamonds_earned: int = 0
+	if is_first_clear:
+		gold_earned += level.first_clear_gold
+		diamonds_earned += level.first_clear_diamonds
+		if level.first_clear_booster_id != &"":
+			award_booster_by_id(level.first_clear_booster_id)
+
+	if gold_earned > 0:
+		add_gold(gold_earned)
+	if diamonds_earned > 0:
+		add_diamonds(diamonds_earned)
+
+	request_save()
+
+	return {
+		"level_id": level.id,
+		"stars": stars,
+		"score": score,
+		"gold_earned": gold_earned,
+		"diamonds_earned": diamonds_earned,
+		"is_first_clear": is_first_clear,
+		"is_new_record": score > prev_best,
+		"unlocked_next_level": is_first_clear
+	}
+
+func record_campaign_defeat(level: LevelData, score: int, gold_earned: int) -> Dictionary:
+	if current_profile == null or level == null:
+		return {}
+
+	var lvl_id_str: String = String(level.id)
+	var prev_data: Dictionary = current_profile.campaign_levels_data.get(lvl_id_str, {})
+	var prev_best: int = int(prev_data.get("best_score", 0))
+	var is_new_record: bool = score > prev_best
+
+	if is_new_record:
+		if not current_profile.campaign_levels_data.has(lvl_id_str):
+			current_profile.campaign_levels_data[lvl_id_str] = {
+				"stars": 0,
+				"best_score": score,
+				"cleared": false
+			}
+		else:
+			current_profile.campaign_levels_data[lvl_id_str]["best_score"] = score
+
+	if gold_earned > 0:
+		add_gold(gold_earned)
+
+	request_save()
+
+	return {
+		"level_id": level.id,
+		"score": score,
+		"gold_earned": gold_earned,
+		"is_new_record": is_new_record,
+		"best_score": maxi(prev_best, score)
+	}
+
+func award_booster_by_id(b_id: StringName) -> void:
+	var b_type: BoosterData.BoosterType = BoosterData.BoosterType.SILVER_POP
+	var b_name: String = "Sachet Silver Pop"
+	var min_g: int = 50
+	var max_g: int = 100
+	var min_d: int = 0
+	var max_d: int = 0
+
+	match b_id:
+		&"golden_crush":
+			b_type = BoosterData.BoosterType.GOLDEN_CRUSH
+			b_name = "Sachet Golden Crush"
+			min_g = 180
+			max_g = 350
+		&"diamond_dust":
+			b_type = BoosterData.BoosterType.DIAMOND_DUST
+			b_name = "Sachet Diamond Dust"
+			min_g = 600
+			max_g = 1200
+			min_d = 5
+			max_d = 10
+		&"mystery_mix":
+			b_type = BoosterData.BoosterType.MYSTERY_MIX
+			b_name = "Sachet Mystery Mix"
+			min_g = 100
+			max_g = 500
+
+	var b: BoosterData = BoosterData.new()
+	b.id = b_id
+	b.display_name = b_name
+	b.booster_type = b_type
+	b.min_gold = min_g
+	b.max_gold = max_g
+	b.min_diamonds = min_d
+	b.max_diamonds = max_d
+	available_boosters.append(b)
+	request_save()

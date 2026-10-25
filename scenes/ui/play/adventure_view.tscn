@@ -1,0 +1,273 @@
+[gd_scene load_steps=10 format=3 uid="uid://c7mradventureview01"]
+
+[ext_resource type="Script" path="res://scripts/ui/play/adventure_view.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/maps/world_1_saga_map.png" id="2_map_tex"]
+[ext_resource type="PackedScene" path="res://scenes/ui/play/level_detail_modal.tscn" id="3_modal"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_TopHeader"]
+content_margin_left = 18.0
+content_margin_top = 8.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+bg_color = Color(0.24, 0.12, 0.06, 0.90)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.14, 0.07, 0.03, 0.95)
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0.08, 0.03, 0.01, 0.4)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_StarsBadge"]
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+bg_color = Color(0.96, 0.65, 0.15, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.72, 0.40, 0.05, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_DeckDock"]
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 12.0
+bg_color = Color(0.96, 0.91, 0.82, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 6
+border_color = Color(0.76, 0.62, 0.48, 1)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+shadow_color = Color(0.18, 0.08, 0.03, 0.35)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_DeckTabN"]
+content_margin_left = 14.0
+content_margin_top = 4.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.80, 0.70, 0.58, 1)
+border_width_bottom = 4
+border_color = Color(0.62, 0.50, 0.38, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_DeckTabP"]
+content_margin_left = 14.0
+content_margin_top = 4.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.96, 0.65, 0.14, 1)
+border_width_bottom = 4
+border_color = Color(0.72, 0.40, 0.04, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_ToggleHandle"]
+content_margin_left = 12.0
+content_margin_top = 3.0
+content_margin_right = 12.0
+content_margin_bottom = 5.0
+bg_color = Color(0.35, 0.20, 0.12, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 3
+border_color = Color(0.20, 0.10, 0.05, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="AdventureView" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 56.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 1
+
+[node name="MapContainer" type="Control" parent="ScrollContainer"]
+custom_minimum_size = Vector2(720, 1450)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MapTexture" type="TextureRect" parent="ScrollContainer/MapContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_map_tex")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="PinsContainer" type="Control" parent="ScrollContainer/MapContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="TopHeaderBar" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 24.0
+offset_right = -24.0
+offset_bottom = 54.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBox_TopHeader")
+
+[node name="HBox" type="HBoxContainer" parent="TopHeaderBar"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="WorldTitleLabel" type="Label" parent="TopHeaderBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.94, 0.85, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 18
+text = "MONDE 1 : PLAGE SUCRÉE"
+
+[node name="StarsBadge" type="PanelContainer" parent="TopHeaderBar/HBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_StarsBadge")
+
+[node name="Label" type="Label" parent="TopHeaderBar/HBox/StarsBadge"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.35, 0.18, 0.04, 0.9)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 16
+text = "⭐ 0 / 30"
+horizontal_alignment = 1
+
+[node name="FloatingDeckDock" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -148.0
+offset_right = -20.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBox_DeckDock")
+
+[node name="VBox" type="VBoxContainer" parent="FloatingDeckDock"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TopRow" type="HBoxContainer" parent="FloatingDeckDock/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="BtnToggleDock" type="Button" parent="FloatingDeckDock/VBox/TopRow"]
+custom_minimum_size = Vector2(100, 28)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(1, 0.92, 0.82, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBox_ToggleHandle")
+theme_override_styles/pressed = SubResource("StyleBox_ToggleHandle")
+theme_override_styles/hover = SubResource("StyleBox_ToggleHandle")
+text = "▼ FERMER"
+
+[node name="DeckTabsRow" type="HBoxContainer" parent="FloatingDeckDock/VBox/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="DeckLabel" type="Label" parent="FloatingDeckDock/VBox/TopRow/DeckTabsRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.28, 0.14, 0.06, 1)
+theme_override_font_sizes/font_size = 14
+text = "DECK :"
+
+[node name="BtnDeck1" type="Button" parent="FloatingDeckDock/VBox/TopRow/DeckTabsRow"]
+custom_minimum_size = Vector2(46, 28)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.28, 0.14, 0.06, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBox_DeckTabN")
+theme_override_styles/pressed = SubResource("StyleBox_DeckTabP")
+toggle_mode = true
+text = "1"
+
+[node name="BtnDeck2" type="Button" parent="FloatingDeckDock/VBox/TopRow/DeckTabsRow"]
+custom_minimum_size = Vector2(46, 28)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.28, 0.14, 0.06, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBox_DeckTabN")
+theme_override_styles/pressed = SubResource("StyleBox_DeckTabP")
+toggle_mode = true
+text = "2"
+
+[node name="BtnDeck3" type="Button" parent="FloatingDeckDock/VBox/TopRow/DeckTabsRow"]
+custom_minimum_size = Vector2(46, 28)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.28, 0.14, 0.06, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBox_DeckTabN")
+theme_override_styles/pressed = SubResource("StyleBox_DeckTabP")
+toggle_mode = true
+text = "3"
+
+[node name="MiniCardsHBox" type="HBoxContainer" parent="FloatingDeckDock/VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="LevelDetailModal" parent="." instance=ExtResource("3_modal")]
+visible = false
+layout_mode = 1

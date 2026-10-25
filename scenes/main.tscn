@@ -17,6 +17,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/game_over_modal.tscn" id="15_game_over"]
 [ext_resource type="PackedScene" path="res://scenes/ui/boss_health_bar.tscn" id="16_boss_bar"]
 [ext_resource type="PackedScene" path="res://scenes/ui/dev_console.tscn" id="17_dev_console"]
+[ext_resource type="PackedScene" path="res://scenes/ui/level_complete_modal.tscn" id="18_level_complete"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBox_ScoreCard"]
 texture = ExtResource("11_card_bg")
@@ -36,16 +37,27 @@ texture_margin_bottom = 14.0
 script = ExtResource("1_main")
 
 [node name="Board" parent="." instance=ExtResource("2_board")]
+unique_name_in_owner = true
 visible = false
 
 [node name="UI" type="CanvasLayer" parent="."]
 
-[node name="TouchControls" parent="UI" instance=ExtResource("3_touch")]
+[node name="InGame" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TouchControls" parent="UI/InGame" instance=ExtResource("3_touch")]
+unique_name_in_owner = true
 visible = false
 
-[node name="HUD" type="Control" parent="UI"]
+[node name="HUD" type="Control" parent="UI/InGame"]
+unique_name_in_owner = true
 visible = false
-
 layout_mode = 3
 anchors_preset = 13
 anchor_left = 0.5
@@ -57,7 +69,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="TopBar" type="MarginContainer" parent="UI/HUD"]
+[node name="TopBar" type="MarginContainer" parent="UI/InGame/HUD"]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -69,43 +81,46 @@ theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 22
 theme_override_constants/margin_right = 16
 
-[node name="VBox" type="VBoxContainer" parent="UI/HUD/TopBar"]
+[node name="VBox" type="VBoxContainer" parent="UI/InGame/HUD/TopBar"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 8
 
-[node name="TopRow" type="HBoxContainer" parent="UI/HUD/TopBar/VBox"]
+[node name="TopRow" type="HBoxContainer" parent="UI/InGame/HUD/TopBar/VBox"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 12
 alignment = 0
 
-[node name="BtnBackMenu" type="Button" parent="UI/HUD/TopBar/VBox/TopRow"]
+[node name="BtnBackMenu" type="Button" parent="UI/InGame/HUD/TopBar/VBox/TopRow"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
 theme_type_variation = &"ButtonSmall"
 theme_override_font_sizes/font_size = 24
 text = "◀"
 
-[node name="ScoreBadge" type="PanelContainer" parent="UI/HUD/TopBar/VBox/TopRow"]
+[node name="ScoreBadge" type="PanelContainer" parent="UI/InGame/HUD/TopBar/VBox/TopRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBox_ScoreCard")
 
-[node name="ScoreLabel" type="Label" parent="UI/HUD/TopBar/VBox/TopRow/ScoreBadge"]
+[node name="ScoreLabel" type="Label" parent="UI/InGame/HUD/TopBar/VBox/TopRow/ScoreBadge"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.36, 0.18, 0.08, 1)
 theme_override_font_sizes/font_size = 22
 text = "SCORE: 0"
 vertical_alignment = 1
 
-[node name="WaveBadge" type="PanelContainer" parent="UI/HUD/TopBar/VBox/TopRow"]
+[node name="WaveBadge" type="PanelContainer" parent="UI/InGame/HUD/TopBar/VBox/TopRow"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBox_ScoreCard")
 
-[node name="WaveLabel" type="Label" parent="UI/HUD/TopBar/VBox/TopRow/WaveBadge"]
+[node name="WaveLabel" type="Label" parent="UI/InGame/HUD/TopBar/VBox/TopRow/WaveBadge"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.22, 0.35, 1)
 theme_override_font_sizes/font_size = 20
@@ -113,14 +128,14 @@ text = "MANCHE 1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BossHealthBar" parent="UI/HUD" instance=ExtResource("16_boss_bar")]
+[node name="BossHealthBar" parent="UI/InGame/HUD" instance=ExtResource("16_boss_bar")]
 visible = false
 layout_mode = 1
 offset_top = 80.0
 offset_right = -116.0
 offset_bottom = 144.0
 
-[node name="BottomBar" type="MarginContainer" parent="UI/HUD"]
+[node name="BottomBar" type="MarginContainer" parent="UI/InGame/HUD"]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -134,20 +149,21 @@ theme_override_constants/margin_left = 32
 theme_override_constants/margin_right = 32
 theme_override_constants/margin_bottom = 14
 
-[node name="HPContainer" type="HBoxContainer" parent="UI/HUD/BottomBar"]
+[node name="HPContainer" type="HBoxContainer" parent="UI/InGame/HUD/BottomBar"]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="HeartIcon" type="TextureRect" parent="UI/HUD/BottomBar/HPContainer"]
+[node name="HeartIcon" type="TextureRect" parent="UI/InGame/HUD/BottomBar/HPContainer"]
 custom_minimum_size = Vector2(34, 34)
 layout_mode = 2
 texture = ExtResource("8_heart")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="HPBar" type="TextureProgressBar" parent="UI/HUD/BottomBar/HPContainer"]
+[node name="HPBar" type="TextureProgressBar" parent="UI/InGame/HUD/BottomBar/HPContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(280, 26)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -162,7 +178,8 @@ stretch_margin_bottom = 8
 texture_under = ExtResource("9_hp_bg")
 texture_progress = ExtResource("10_hp_fill")
 
-[node name="HPTextLabel" type="Label" parent="UI/HUD/BottomBar/HPContainer"]
+[node name="HPTextLabel" type="Label" parent="UI/InGame/HUD/BottomBar/HPContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(75, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.95, 0.85, 1)
@@ -172,8 +189,8 @@ theme_override_font_sizes/font_size = 18
 text = "100 / 100"
 vertical_alignment = 1
 
-
-[node name="BallFactoryUI" type="Control" parent="UI"]
+[node name="BallFactoryUI" type="Control" parent="UI/InGame"]
+unique_name_in_owner = true
 visible = false
 layout_mode = 3
 anchors_preset = 1
@@ -187,23 +204,52 @@ grow_horizontal = 0
 mouse_filter = 2
 script = ExtResource("4_factory")
 
-[node name="TitleScreen" parent="UI" instance=ExtResource("5_title")]
+[node name="Screens" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
-[node name="MainMenu" parent="UI" instance=ExtResource("6_menu")]
+[node name="TitleScreen" parent="UI/Screens" instance=ExtResource("5_title")]
+unique_name_in_owner = true
+
+[node name="MainMenu" parent="UI/Screens" instance=ExtResource("6_menu")]
+unique_name_in_owner = true
 visible = false
 
-[node name="IntermissionOverlay" parent="UI" instance=ExtResource("13_intermission")]
+[node name="Modals" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="IntermissionOverlay" parent="UI/Modals" instance=ExtResource("13_intermission")]
+unique_name_in_owner = true
 visible = false
 
-[node name="BumperPlacementOverlay" parent="UI" instance=ExtResource("14_placement")]
+[node name="BumperPlacementOverlay" parent="UI/Modals" instance=ExtResource("14_placement")]
+unique_name_in_owner = true
 visible = false
 
-[node name="BoosterOpeningModal" parent="UI" instance=ExtResource("7_booster_modal")]
+[node name="BoosterOpeningModal" parent="UI/Modals" instance=ExtResource("7_booster_modal")]
+unique_name_in_owner = true
+visible = false
+z_index = 100
+
+[node name="GameOverModal" parent="UI/Modals" instance=ExtResource("15_game_over")]
+unique_name_in_owner = true
 visible = false
 
-[node name="GameOverModal" parent="UI" instance=ExtResource("15_game_over")]
+[node name="LevelCompleteModal" parent="UI/Modals" instance=ExtResource("18_level_complete")]
+unique_name_in_owner = true
 visible = false
 
-[node name="DevConsole" parent="UI" instance=ExtResource("17_dev_console")]
+[node name="DevConsole" parent="UI/Modals" instance=ExtResource("17_dev_console")]
+unique_name_in_owner = true
 visible = false
-

@@ -1,8 +1,16 @@
 ; Engine configuration file.
 ; It's best edited using the editor UI and not directly,
-; but it can also be edited in-text.
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
 
 config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
@@ -10,8 +18,8 @@ config/name="BonBonk"
 config/description="Un jeu de flipper mobile-first / defense arcade où il faut empêcher les ennemis d'atteindre le bas de l'écran."
 config/version="0.1.0"
 run/main_scene="res://scenes/main.tscn"
-config/features=PackedStringArray("4.3", "Mobile")
-config/icon="res://bonbonk_icon.png"
+config/features=PackedStringArray("4.6", "Mobile")
+config/icon="res://assets/icons/bonbonk_icon.png"
 
 [autoload]
 
@@ -19,46 +27,23 @@ EventBus="*res://scripts/autoload/event_bus.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
 RelicManager="*res://scripts/autoload/relic_manager.gd"
 
-[layer_names]
-
-2d_physics/layer_1="Ball"
-2d_physics/layer_2="Flippers"
-2d_physics/layer_3="Walls_Borders"
-2d_physics/layer_4="Enemies"
-2d_physics/layer_5="Bumpers_Targets"
-2d_physics/layer_6="Danger_Zone"
-
 [display]
 
 window/size/viewport_width=720
 window/size/viewport_height=1280
-window/size/mode=0
-window/size/resizable=true
 window/size/window_width_override=405
 window/size/window_height_override=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation=1
 
-[input_devices]
+[dotnet]
 
-pointing/emulate_touch_from_mouse=true
-pointing/emulate_mouse_from_touch=true
+project/assembly_name="BonBonk"
 
 [gui]
 
 theme/custom="res://resources/candy_theme.tres"
-
-[rendering]
-
-renderer/rendering_method="mobile"
-textures/vram_compression/import_etc2_astc=true
-environment/defaults/default_clear_color=Color(0.08, 0.09, 0.13, 1.0)
-
-[physics]
-
-common/physics_ticks_per_second=120
-2d/default_gravity=1100.0
 
 [input]
 
@@ -76,3 +61,26 @@ flip_right={
 ]
 }
 
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[layer_names]
+
+2d_physics/layer_1="Ball"
+2d_physics/layer_2="Flippers"
+2d_physics/layer_3="Walls_Borders"
+2d_physics/layer_4="Enemies"
+2d_physics/layer_5="Bumpers_Targets"
+2d_physics/layer_6="Danger_Zone"
+
+[physics]
+
+common/physics_ticks_per_second=120
+2d/default_gravity=1100.0
+
+[rendering]
+
+renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
+environment/defaults/default_clear_color=Color(0.08, 0.09, 0.13, 1)

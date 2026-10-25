@@ -13,12 +13,28 @@ signal wave_started(wave_number: int, total_budget: int)
 signal wave_all_enemies_spawned(wave_number: int)
 signal wave_cleared(wave_number: int)
 
+# Signaux spécifiques au mode Campagne
+signal campaign_subwave_started(subwave_index: int, total_subwaves: int)
+signal campaign_level_completed
+
 const CONFIG_PATH: String = "res://data/waves_config.json"
+const LevelData = preload("res://scripts/data/level_data.gd")
+const LevelWaveData = preload("res://scripts/data/level_wave_data.gd")
+
+enum Mode { SURVIVAL, CAMPAIGN }
+var current_mode: Mode = Mode.SURVIVAL
 
 var current_wave: int = 1
 var wave_points_budget: int = 0
 var is_wave_active: bool = false
 var all_enemies_spawned: bool = false
+
+# Paramètres du Mode Campagne (Une seule manche continue)
+var active_level_data: LevelData = null
+var current_subwave_index: int = 0
+var total_subwaves: int = 0
+var _subwave_delay_timer: float = 0.0
+
 
 # Configuration chargée
 var difficulty_curve: Dictionary = {
@@ -86,10 +102,12 @@ func _build_boss_wave_schedule() -> void:
 	})
 
 func start_wave(wave_num: int) -> void:
+	current_mode = Mode.SURVIVAL
 	current_wave = wave_num
 	is_wave_active = true
 	all_enemies_spawned = false
 	_pending_spawns.clear()
+	_subwave_delay_timer = 0.0
 
 	if is_boss_wave(wave_num):
 		wave_points_budget = 50
@@ -102,6 +120,48 @@ func start_wave(wave_num: int) -> void:
 	print("--- WaveDirector: DÉBUT DE LA MANCHE %d (Budget: %d points) ---" % [current_wave, wave_points_budget])
 	_build_wave_schedule(wave_points_budget)
 	wave_started.emit(current_wave, wave_points_budget)
+
+func start_campaign_level(level_data: LevelData) -> void:
+	current_mode = Mode.CAMPAIGN
+	active_level_data = level_data
+	current_subwave_index = 0
+	total_subwaves = level_data.waves.size() if level_data != null else 0
+	is_wave_active = true
+	all_enemies_spawned = false
+	_pending_spawns.clear()
+	_subwave_delay_timer = 0.0
+	print("--- WaveDirector: DÉBUT DU NIVEAU CAMPAGNE %s (%d sous-vagues) ---" % [level_data.id if level_data else "nil", total_subwaves])
+	_start_next_campaign_subwave()
+
+func _start_next_campaign_subwave() -> void:
+	if active_level_data == null or current_subwave_index >= total_subwaves:
+		return
+
+	var subwave: LevelWaveData = active_level_data.waves[current_subwave_index]
+	current_subwave_index += 1
+	all_enemies_spawned = false
+	_pending_spawns.clear()
+
+	print("WaveDirector: Lancement de la sous-vague %d / %d" % [current_subwave_index, total_subwaves])
+	campaign_subwave_started.emit(current_subwave_index, total_subwaves)
+	wave_started.emit(current_subwave_index, 0)
+
+	var timeline_cursor: float = 0.5
+	for s in subwave.spawns:
+		var u_key: String = s.get("unit", "tomato")
+		var u_delay: float = float(s.get("delay", 0.0))
+		var x_ratio: float = float(s.get("x_ratio", -1.0))
+		var spawn_x: float = randf_range(80.0, 520.0) if x_ratio < 0.0 else lerpf(80.0, 520.0, x_ratio)
+		var scene_path: String = _get_unit_scene_path(u_key)
+		_pending_spawns.append({
+			"time_left": timeline_cursor + u_delay,
+			"scene_path": scene_path,
+			"spawn_x": spawn_x
+		})
+
+	_pending_spawns.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return a["time_left"] < b["time_left"]
+	)
 
 func _build_wave_schedule(budget: int) -> void:
 	var remaining_budget: int = budget
@@ -202,12 +262,20 @@ func stop_waves() -> void:
 	is_wave_active = false
 	all_enemies_spawned = false
 	_pending_spawns.clear()
+	_subwave_delay_timer = 0.0
 
 func _process(delta: float) -> void:
 	if not is_wave_active:
 		return
-		
-	# 1. Gestion des spawns en attente
+
+	# Transition douce entre sous-vagues du mode Campagne (sans bloquer les flippers)
+	if _subwave_delay_timer > 0.0:
+		_subwave_delay_timer -= delta
+		if _subwave_delay_timer <= 0.0:
+			_start_next_campaign_subwave()
+		return
+
+	# 1. Gestion des apparitions séquencées
 	if not _pending_spawns.is_empty():
 		var i: int = 0
 		while i < _pending_spawns.size():
@@ -220,15 +288,26 @@ func _process(delta: float) -> void:
 				i += 1
 		if _pending_spawns.is_empty() and not all_enemies_spawned:
 			all_enemies_spawned = true
-			wave_all_enemies_spawned.emit(current_wave)
-			print("WaveDirector: Tous les ennemis de la manche %d sont apparus !" % current_wave)
-			
-	# 2. Vérification de fin de manche (tous apparus ET terrain nettoyé d'ennemis vivants)
+			wave_all_enemies_spawned.emit(current_wave if current_mode == Mode.SURVIVAL else current_subwave_index)
+			print("WaveDirector: Tous les ennemis de la vague sont apparus !")
+
+	# 2. Vérification de fin de manche / sous-vague (tous apparus ET terrain nettoyé)
 	elif all_enemies_spawned:
 		if not _has_living_enemies():
-			is_wave_active = false
-			print("WaveDirector: MANCHE %d COMPLÈTE & NETTOYÉE !" % current_wave)
-			wave_cleared.emit(current_wave)
+			if current_mode == Mode.SURVIVAL:
+				is_wave_active = false
+				print("WaveDirector: MANCHE SURVIE %d COMPLÈTE & NETTOYÉE !" % current_wave)
+				wave_cleared.emit(current_wave)
+			else:
+				# Mode Campagne
+				if current_subwave_index < total_subwaves:
+					print("WaveDirector: Sous-vague %d nettoyée ! Prochaine vague dans 1.2s..." % current_subwave_index)
+					all_enemies_spawned = false
+					_subwave_delay_timer = 1.2
+				else:
+					is_wave_active = false
+					print("WaveDirector: NIVEAU CAMPAGNE %s RÉUSSI !" % (active_level_data.id if active_level_data else ""))
+					campaign_level_completed.emit()
 
 func _has_living_enemies() -> bool:
 	if _target_enemy_container == null:

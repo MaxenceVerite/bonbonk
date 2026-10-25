@@ -25,6 +25,19 @@ var cards_inventory: Dictionary = {}
 var decks: Array = []
 var active_deck_index: int = 0
 
+# Mode de jeu actif ("campaign" ou "survival") et Deck dédié au mode Survie
+var active_game_mode: String = "campaign"
+var survival_deck: Array = []
+
+# Progression du Mode Campagne (Saga)
+var campaign_unlocked_world: int = 1
+var campaign_unlocked_level: int = 1
+var campaign_levels_data: Dictionary = {} # level_id (String) -> { "stars": int, "best_score": int, "cleared": bool }
+
+# Records du Mode Survie (Roguelike)
+var survival_best_wave: int = 0
+var survival_best_score: int = 0
+
 # Boosters en attente d'ouverture (dictionnaires de données pour sérialisation)
 var available_boosters: Array = []
 
@@ -58,6 +71,13 @@ func to_dict() -> Dictionary:
 		"cards_inventory": cards_inventory.duplicate(true),
 		"decks": decks.duplicate(true),
 		"active_deck_index": active_deck_index,
+		"active_game_mode": active_game_mode,
+		"survival_deck": survival_deck.duplicate(true),
+		"campaign_unlocked_world": campaign_unlocked_world,
+		"campaign_unlocked_level": campaign_unlocked_level,
+		"campaign_levels_data": campaign_levels_data.duplicate(true),
+		"survival_best_wave": survival_best_wave,
+		"survival_best_score": survival_best_score,
 		"available_boosters": available_boosters.duplicate(true),
 		"pending_sync_actions": pending_sync_actions.duplicate(true),
 		"stats": stats.duplicate(true),
@@ -90,6 +110,19 @@ func from_dict(data: Dictionary) -> void:
 		decks.append(slot_deck)
 
 	active_deck_index = data.get("active_deck_index", 0)
+	active_game_mode = data.get("active_game_mode", "campaign")
+
+	var raw_survival_deck: Array = data.get("survival_deck", [])
+	survival_deck.clear()
+	for card_id in raw_survival_deck:
+		survival_deck.append(StringName(card_id))
+
+	campaign_unlocked_world = data.get("campaign_unlocked_world", 1)
+	campaign_unlocked_level = data.get("campaign_unlocked_level", 1)
+	campaign_levels_data = data.get("campaign_levels_data", {}).duplicate(true)
+	survival_best_wave = data.get("survival_best_wave", 0)
+	survival_best_score = data.get("survival_best_score", 0)
+
 	available_boosters = data.get("available_boosters", []).duplicate(true)
 	pending_sync_actions = data.get("pending_sync_actions", []).duplicate(true)
 	stats = data.get("stats", { "best_score": 0, "games_played": 0, "enemies_defeated": 0 }).duplicate(true)
@@ -149,6 +182,22 @@ func _apply_migrations() -> void:
 		if d.size() > 6:
 			d.resize(6)
 
+	# 4. S'assurer d'un deck de Survie valide
+	for i in range(survival_deck.size()):
+		if survival_deck[i] == &"dragibump":
+			survival_deck[i] = &"dragiburst"
+		elif survival_deck[i] == &"mint":
+			survival_deck[i] = &"mentox"
+		elif survival_deck[i] == &"standard" or survival_deck[i] == &"cherry":
+			survival_deck[i] = &"fizz"
+	while survival_deck.size() < 6:
+		if not decks.is_empty() and decks[0].size() > survival_deck.size():
+			survival_deck.append(decks[0][survival_deck.size()])
+		else:
+			survival_deck.append(&"fizz")
+	if survival_deck.size() > 6:
+		survival_deck.resize(6)
+
 static func create_default(p_id: String, is_sandbox: bool = false) -> RefCounted:
 	var profile: RefCounted = (load("res://scripts/data/player_profile.gd") as GDScript).new()
 	profile.profile_id = p_id
@@ -172,6 +221,7 @@ static func create_default(p_id: String, is_sandbox: bool = false) -> RefCounted
 			[&"jawbreaker", &"caramel", &"mentox", &"fizz", &"dragiburst", &"twistypop"],
 			[&"flying_saucer", &"fizz", &"caramel", &"dragiburst", &"mentox", &"twistypop"]
 		]
+		profile.survival_deck = [&"jawbreaker", &"mentox", &"fizz", &"twistypop", &"dragiburst", &"flying_saucer"]
 	else:
 		profile.display_name = "Gourmand"
 		profile.account_type = "guest"
@@ -191,22 +241,39 @@ static func create_default(p_id: String, is_sandbox: bool = false) -> RefCounted
 			[&"fizz", &"caramel", &"twistypop", &"dragiburst", &"mentox", &"caramel"],
 			[&"fizz", &"fizz", &"caramel", &"dragiburst", &"twistypop", &"mentox"]
 		]
+		profile.survival_deck = [&"fizz", &"caramel", &"twistypop", &"mentox", &"fizz", &"dragiburst"]
 
 	# Boosters de bienvenue
 	profile.available_boosters = [
 		{
-			"id": "classic_solo",
-			"display_name": "🍬 Sachet Classique",
-			"booster_type": BoosterData.BoosterType.CLASSIC_SOLO,
-			"min_gold": 40,
-			"max_gold": 80
+			"id": "silver_pop",
+			"display_name": "🥈 Sachet Silver Pop",
+			"booster_type": BoosterData.BoosterType.SILVER_POP,
+			"min_gold": 50,
+			"max_gold": 100
 		},
 		{
-			"id": "pop_solo",
-			"display_name": "⭐ Sachet Pop Acidulé",
-			"booster_type": BoosterData.BoosterType.POP_SOLO,
-			"min_gold": 120,
-			"max_gold": 220
+			"id": "golden_crush",
+			"display_name": "🥇 Sachet Golden Crush",
+			"booster_type": BoosterData.BoosterType.GOLDEN_CRUSH,
+			"min_gold": 180,
+			"max_gold": 350
+		},
+		{
+			"id": "mystery_mix",
+			"display_name": "🔮 Sachet Mystery Mix",
+			"booster_type": BoosterData.BoosterType.MYSTERY_MIX,
+			"min_gold": 100,
+			"max_gold": 500
+		},
+		{
+			"id": "diamond_dust",
+			"display_name": "💎 Sachet Diamond Dust",
+			"booster_type": BoosterData.BoosterType.DIAMOND_DUST,
+			"min_gold": 600,
+			"max_gold": 1200,
+			"min_diamonds": 5,
+			"max_diamonds": 10
 		}
 	]
 

@@ -8,27 +8,32 @@ extends Node2D
 ## 3. Game Play (Arène active, HUD, TouchControls)
 
 const DamageNumberManagerScript = preload("res://scripts/ui/damage_numbers/damage_number_manager.gd")
+const LevelData = preload("res://scripts/data/level_data.gd")
+const WorldData = preload("res://scripts/data/world_data.gd")
+const CampaignCatalog = preload("res://scripts/data/campaign_catalog.gd")
+const LevelCompleteModal = preload("res://scripts/ui/level_complete_modal.gd")
 
 enum ScreenState { TITLE, MENU, GAME }
 var current_screen_state: ScreenState = ScreenState.TITLE
 
-@onready var board: Board = $Board
-@onready var touch_controls: TouchControls = $UI/TouchControls
-@onready var hud: Control = $UI/HUD
-@onready var title_screen: TitleScreen = $UI/TitleScreen
-@onready var main_menu: MainMenu = $UI/MainMenu
-@onready var booster_modal: BoosterOpeningModal = $UI/BoosterOpeningModal
-@onready var intermission_overlay: IntermissionOverlay = $UI/IntermissionOverlay
-@onready var bumper_placement_overlay: BumperPlacementOverlay = $UI/BumperPlacementOverlay
-@onready var game_over_modal: GameOverModal = $UI/GameOverModal
+@onready var board: Board = %Board
+@onready var touch_controls: TouchControls = %TouchControls
+@onready var hud: Control = %HUD
+@onready var title_screen: TitleScreen = %TitleScreen
+@onready var main_menu: MainMenu = %MainMenu
+@onready var booster_modal: BoosterOpeningModal = %BoosterOpeningModal
+@onready var intermission_overlay: IntermissionOverlay = %IntermissionOverlay
+@onready var bumper_placement_overlay: BumperPlacementOverlay = %BumperPlacementOverlay
+@onready var game_over_modal: GameOverModal = %GameOverModal
+@onready var level_complete_modal: LevelCompleteModal = %LevelCompleteModal
 
 # HUD
-@onready var btn_back_to_menu: Button = $UI/HUD/TopBar/VBox/TopRow/BtnBackMenu
-@onready var score_label: Label = $UI/HUD/TopBar/VBox/TopRow/ScoreBadge/ScoreLabel
-@onready var wave_label: Label = $UI/HUD/TopBar/VBox/TopRow/WaveBadge/WaveLabel
-@onready var hp_bar: TextureProgressBar = $UI/HUD/BottomBar/HPContainer/HPBar
-@onready var hp_text_label: Label = $UI/HUD/BottomBar/HPContainer/HPTextLabel
-@onready var ball_factory_ui: BallFactoryUI = $UI/BallFactoryUI
+@onready var btn_back_to_menu: Button = %BtnBackMenu
+@onready var score_label: Label = %ScoreLabel
+@onready var wave_label: Label = %WaveLabel
+@onready var hp_bar: TextureProgressBar = %HPBar
+@onready var hp_text_label: Label = %HPTextLabel
+@onready var ball_factory_ui: BallFactoryUI = %BallFactoryUI
 
 var wave_director: WaveDirector = null
 var damage_number_manager: Node = null
@@ -37,6 +42,10 @@ var max_hp: int = 100
 var current_hp: int = 100
 var current_score: int = 0
 var last_score: int = 0
+
+# Données de Campagne active
+var active_level_data: LevelData = null
+var active_world_data: WorldData = null
 
 func _ready() -> void:
 	print("Flip - Initialisation de l'orchestrateur d'écrans")
@@ -61,6 +70,8 @@ func _ready() -> void:
 	wave_director.initialize(board.enemy_container)
 	wave_director.enemy_spawn_requested.connect(_on_wave_spawn_enemy)
 	wave_director.wave_cleared.connect(_on_wave_cleared)
+	wave_director.campaign_subwave_started.connect(_on_campaign_subwave_started)
+	wave_director.campaign_level_completed.connect(_on_campaign_level_completed)
 	
 	if intermission_overlay != null:
 		intermission_overlay.next_wave_pressed.connect(_on_next_wave_pressed)
@@ -71,6 +82,11 @@ func _ready() -> void:
 	if game_over_modal != null:
 		game_over_modal.replay_pressed.connect(launch_game)
 		game_over_modal.return_to_menu_pressed.connect(show_main_menu)
+
+	if level_complete_modal != null:
+		level_complete_modal.next_level_pressed.connect(_on_next_level_pressed)
+		level_complete_modal.replay_pressed.connect(launch_game)
+		level_complete_modal.return_to_menu_pressed.connect(show_main_menu)
 	
 	# Liaison Fabrique, Tube & Dual-Pods
 	if board != null and ball_factory_ui != null:
@@ -102,10 +118,13 @@ func _update_board_position() -> void:
 	if ball_factory_ui != null:
 		ball_factory_ui.position.y = 24.0 + content_y
 
-func _on_open_booster_requested() -> void:
-	if SaveManager.available_boosters.is_empty():
-		return
-	var booster: BoosterData = SaveManager.available_boosters.pop_front()
+func _on_open_booster_requested(booster: BoosterData = null) -> void:
+	if booster == null:
+		if SaveManager.available_boosters.is_empty():
+			return
+		booster = SaveManager.available_boosters.pop_front()
+	else:
+		SaveManager.available_boosters.erase(booster)
 	booster_modal.start_opening(booster)
 
 func show_title_screen() -> void:
@@ -122,6 +141,8 @@ func show_title_screen() -> void:
 		bumper_placement_overlay.visible = false
 	if game_over_modal != null:
 		game_over_modal.visible = false
+	if level_complete_modal != null:
+		level_complete_modal.visible = false
 	if wave_director != null:
 		wave_director.stop_waves()
 	if board != null:
@@ -142,6 +163,8 @@ func show_main_menu() -> void:
 		bumper_placement_overlay.visible = false
 	if game_over_modal != null:
 		game_over_modal.visible = false
+	if level_complete_modal != null:
+		level_complete_modal.visible = false
 	if wave_director != null:
 		wave_director.stop_waves()
 	
@@ -164,8 +187,25 @@ func launch_game() -> void:
 	intermission_overlay.visible = false
 	if game_over_modal != null:
 		game_over_modal.visible = false
+	if level_complete_modal != null:
+		level_complete_modal.visible = false
 	if wave_director != null:
 		wave_director.stop_waves()
+
+	# Configuration selon le mode de jeu
+	var is_campaign: bool = SaveManager.is_campaign()
+	if is_campaign:
+		active_world_data = CampaignCatalog.get_world_by_number(SaveManager.campaign_selected_world)
+		active_level_data = active_world_data.get_level(SaveManager.campaign_selected_level) if active_world_data != null else null
+		if active_level_data == null and active_world_data != null and not active_world_data.levels.is_empty():
+			active_level_data = active_world_data.levels[0]
+		if board != null and active_world_data != null:
+			board.set_arena_theme(active_world_data.arena_texture, active_world_data.arena_modulate)
+	else:
+		active_world_data = CampaignCatalog.get_world_by_number(1)
+		active_level_data = null
+		if board != null and active_world_data != null:
+			board.set_arena_theme(active_world_data.arena_texture, active_world_data.arena_modulate)
 
 	# Réinitialisation de la partie
 	if damage_number_manager != null:
@@ -199,21 +239,74 @@ func _start_board_gameplay() -> void:
 	if board != null:
 		board.start_game()
 	if wave_director != null:
-		wave_director.start_wave(current_wave)
-	RelicManager.notify_wave_started(current_wave)
+		if SaveManager.is_campaign() and active_level_data != null:
+			wave_director.start_campaign_level(active_level_data)
+		else:
+			wave_director.start_wave(current_wave)
+			RelicManager.notify_wave_started(current_wave)
 
 func _update_wave_display() -> void:
 	if wave_label != null:
-		wave_label.text = "MANCHE %d" % current_wave
+		if SaveManager.is_campaign() and active_level_data != null:
+			wave_label.text = "NIV. %d (1/%d)" % [active_level_data.level_number, active_level_data.waves.size()]
+		else:
+			wave_label.text = "MANCHE %d" % current_wave
+
+func _on_campaign_subwave_started(sub_idx: int, total_subwaves: int) -> void:
+	if wave_label != null:
+		if active_level_data != null:
+			wave_label.text = "NIV. %d (%d/%d)" % [active_level_data.level_number, sub_idx, total_subwaves]
+		else:
+			wave_label.text = "VAGUE %d / %d" % [sub_idx, total_subwaves]
+
+func _on_campaign_level_completed() -> void:
+	if current_screen_state != ScreenState.GAME or current_hp <= 0 or active_level_data == null:
+		return
+	if board != null:
+		board.on_wave_cleared_stability()
+	if ball_factory_ui != null:
+		ball_factory_ui.is_interaction_enabled = false
+	touch_controls.visible = false
+
+	var stars: int = active_level_data.calculate_stars(current_score, current_hp, max_hp)
+	var summary: Dictionary = SaveManager.record_campaign_level_results(active_level_data, current_score, stars, current_hp)
+	summary["level_title"] = "%s - %s" % [active_world_data.display_name if active_world_data else "Monde", active_level_data.display_title]
+	summary["booster_awarded"] = (active_level_data.first_clear_booster_id != &"")
+
+	if level_complete_modal != null:
+		level_complete_modal.show_level_complete(summary)
+
+func _on_next_level_pressed() -> void:
+	if active_world_data == null or active_level_data == null:
+		show_main_menu()
+		return
+
+	var next_num: int = active_level_data.level_number + 1
+	var next_lvl: LevelData = active_world_data.get_level(next_num)
+	if next_lvl != null:
+		SaveManager.campaign_selected_level = next_num
+		launch_game()
+	else:
+		# Passage au monde suivant
+		var next_w_num: int = active_world_data.world_number + 1
+		var next_w: WorldData = CampaignCatalog.get_world_by_number(next_w_num)
+		if next_w != null:
+			SaveManager.campaign_unlocked_world = maxi(SaveManager.campaign_unlocked_world, next_w_num)
+			SaveManager.campaign_selected_world = next_w_num
+			SaveManager.campaign_selected_level = 1
+			launch_game()
+		else:
+			show_main_menu()
 
 func _on_wave_spawn_enemy(scene_path: String, spawn_x: float) -> void:
 	if board != null and board.is_game_running:
 		board.spawn_enemy_by_path(scene_path, spawn_x)
 
 func _on_wave_cleared(cleared_wave_num: int) -> void:
-	# Sécurité stricte : ignorer si on n'est plus en partie active ou si mort
-	if current_screen_state != ScreenState.GAME or current_hp <= 0:
+	# Sécurité stricte : ignorer si on n'est plus en partie active ou si mort ou en mode campagne
+	if current_screen_state != ScreenState.GAME or current_hp <= 0 or SaveManager.is_campaign():
 		return
+
 	if board != null:
 		board.on_wave_cleared_stability()
 	if ball_factory_ui != null:
@@ -371,13 +464,29 @@ func _on_game_over() -> void:
 		ball_factory_ui.is_interaction_enabled = false
 	touch_controls.visible = false
 	
-	# Calcul du gain d'or : 15 pièces par manche réussie + bonus de 1 pièce par tranche de 200 pts
-	var waves_survived: int = maxi(0, current_wave - 1)
-	var gold_earned: int = (waves_survived * 15) + int(current_score / 200)
-	gold_earned = maxi(5, gold_earned) # Récompense minimale de participation
-	
-	# Enregistrement dans SaveManager & Profil
-	_game_over_summary_data = SaveManager.record_game_results(current_score, waves_survived, gold_earned)
+	if SaveManager.is_campaign():
+		# Défaite en mode Campagne : participation minimale, sans polluer les statistiques de Survie
+		var gold_earned: int = maxi(5, int(current_score / 250))
+		var defeat_summary: Dictionary = SaveManager.record_campaign_defeat(active_level_data, current_score, gold_earned)
+		var sub_txt: String = "1 / %d" % (active_level_data.waves.size() if active_level_data else 1)
+		if wave_director != null and wave_director.total_subwaves > 0:
+			sub_txt = "%d / %d" % [wave_director.current_subwave_index, wave_director.total_subwaves]
+
+		_game_over_summary_data = {
+			"mode": "campaign",
+			"final_score": current_score,
+			"subwave_text": sub_txt,
+			"gold_earned": gold_earned,
+			"best_score": defeat_summary.get("best_score", current_score),
+			"is_new_record": defeat_summary.get("is_new_record", false)
+		}
+	else:
+		# Fin de partie en mode Survie
+		var waves_survived: int = maxi(0, current_wave - 1)
+		var gold_earned: int = (waves_survived * 15) + int(current_score / 200)
+		gold_earned = maxi(5, gold_earned)
+		_game_over_summary_data = SaveManager.record_game_results(current_score, waves_survived, gold_earned)
+		_game_over_summary_data["mode"] = "survival"
 	
 	# Déclenchement de la cinématique de fin de partie
 	_is_game_over_cinematic = true

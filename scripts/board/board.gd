@@ -24,6 +24,14 @@ extends Node2D
 @onready var danger_zone: Area2D = $DangerZone
 @onready var bumper_container: Node2D = $BumperContainer
 @onready var bumper_slot_container: Node2D = $BumperSlotContainer
+@onready var playfield_texture: TextureRect = $PlayfieldTexture
+
+func set_arena_theme(texture: Texture2D, modulate_col: Color = Color.WHITE) -> void:
+	if playfield_texture != null:
+		if texture != null:
+			playfield_texture.texture = texture
+		playfield_texture.self_modulate = modulate_col
+
 
 var active_balls: Array[Ball] = []
 var active_ball: Ball:

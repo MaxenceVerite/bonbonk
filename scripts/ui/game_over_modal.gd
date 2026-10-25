@@ -12,6 +12,8 @@ signal return_to_menu_pressed
 @onready var record_badge: PanelContainer = $CenterContainer/Panel/VBox/RecordBadge
 @onready var record_label: Label = $CenterContainer/Panel/VBox/RecordBadge/RecordLabel
 
+@onready var waves_title_label: Label = $CenterContainer/Panel/VBox/StatsGrid/WavesBox/VBox/Lbl
+@onready var best_title_label: Label = $CenterContainer/Panel/VBox/StatsGrid/BestBox/VBox/Lbl
 @onready var score_val_label: Label = $CenterContainer/Panel/VBox/StatsGrid/ScoreVal
 @onready var waves_val_label: Label = $CenterContainer/Panel/VBox/StatsGrid/WavesVal
 @onready var gold_val_label: Label = $CenterContainer/Panel/VBox/StatsGrid/GoldVal
@@ -27,14 +29,34 @@ func _ready() -> void:
 		btn_menu.pressed.connect(func() -> void: return_to_menu_pressed.emit())
 
 func show_game_over(data: Dictionary) -> void:
+	var mode: String = data.get("mode", "survival")
+	var is_campaign: bool = (mode == "campaign")
 	var final_score: int = data.get("final_score", 0)
 	var waves_cleared: int = data.get("waves_cleared", 0)
 	var gold_earned: int = data.get("gold_earned", 0)
 	var is_new_record: bool = data.get("is_new_record", false)
 	var best_score: int = data.get("best_score", final_score)
 
+	if is_campaign:
+		title_label.text = "💔 DÉFAITE 💔"
+		if waves_title_label != null:
+			waves_title_label.text = "VAGUE ATTEINTE"
+		waves_val_label.text = str(data.get("subwave_text", "1 / 1"))
+		if best_title_label != null:
+			best_title_label.text = "RECORD NIVEAU"
+		if btn_replay != null:
+			btn_replay.text = "🔄 RÉESSAYER LE NIVEAU"
+	else:
+		title_label.text = "💥 FIN DE PARTIE 💥"
+		if waves_title_label != null:
+			waves_title_label.text = "MANCHES"
+		waves_val_label.text = "%d" % waves_cleared
+		if best_title_label != null:
+			best_title_label.text = "MEILLEUR"
+		if btn_replay != null:
+			btn_replay.text = "🔄 REJOUER LA SURVIE"
+
 	score_val_label.text = "%d" % final_score
-	waves_val_label.text = "%d" % waves_cleared
 	gold_val_label.text = "+%d 🪙" % gold_earned
 	best_val_label.text = "%d" % best_score
 

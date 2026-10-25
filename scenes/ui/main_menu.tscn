@@ -4,12 +4,7 @@
 [ext_resource type="Shader" path="res://assets/shaders/candy_menu_bg.gdshader" id="2_bg_shader"]
 [ext_resource type="Theme" uid="uid://candytheme001" path="res://resources/candy_theme.tres" id="3_theme"]
 [ext_resource type="Texture2D" path="res://assets/ui/patch_candy_card.png" id="4_card_biscuit"]
-[ext_resource type="Texture2D" path="res://assets/ui/patch_candy_card_pink.png" id="5_card_pink"]
-[ext_resource type="Texture2D" path="res://assets/ui/patch_candy_card_blue.png" id="6_card_blue"]
 [ext_resource type="Texture2D" path="res://assets/ui/booster_pack.png" id="7_booster"]
-[ext_resource type="Texture2D" path="res://assets/ui/icon_ball_standard.png" id="8_ball_std"]
-[ext_resource type="Texture2D" path="res://assets/ui/icon_ball_fizz.png" id="9_ball_fizz"]
-[ext_resource type="Texture2D" path="res://assets/ui/icon_ball_locked.png" id="10_ball_lock"]
 [ext_resource type="Texture2D" path="res://assets/ui/patch_nav_dock.png" id="11_nav_dock"]
 [ext_resource type="Texture2D" path="res://assets/ui/patch_badge_gold.png" id="14_badge_gold"]
 [ext_resource type="Texture2D" path="res://assets/ui/patch_badge_silver.png" id="15_badge_silver"]
@@ -20,6 +15,16 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/card_picker_modal.tscn" id="21_picker_modal"]
 [ext_resource type="PackedScene" path="res://scenes/ui/account_modal.tscn" id="22_account_modal"]
 [ext_resource type="Texture2D" uid="uid://bo6ntiq2wwkhg" path="res://assets/ui/candy_cane_pattern.png" id="23_candy_cane"]
+[ext_resource type="Texture2D" path="res://assets/ui/ribbon_red_banner.png" id="24_ribbon_tex"]
+[ext_resource type="Texture2D" path="res://assets/ui/icon_nav_shop.png" id="25_nav_shop"]
+[ext_resource type="Texture2D" path="res://assets/ui/icon_nav_cards.png" id="26_nav_cards"]
+[ext_resource type="Texture2D" path="res://assets/ui/icon_nav_battle.png" id="27_nav_battle"]
+[ext_resource type="Texture2D" path="res://assets/ui/icon_nav_top.png" id="28_nav_top"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_deck_board.png" id="29_deck_board"]
+[ext_resource type="Texture2D" path="res://assets/ui/btn_jouer_green.png" id="30_btn_jouer"]
+[ext_resource type="Texture2D" path="res://assets/ui/btn_jouer_green_pressed.png" id="31_btn_jouer_pressed"]
+[ext_resource type="PackedScene" path="res://scenes/ui/play/adventure_view.tscn" id="32_adv_view"]
+[ext_resource type="PackedScene" path="res://scenes/ui/play/survival_view.tscn" id="33_surv_view"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_MenuBg"]
 shader = ExtResource("2_bg_shader")
@@ -36,57 +41,118 @@ content_margin_left = 22.0
 content_margin_top = 18.0
 content_margin_right = 22.0
 content_margin_bottom = 22.0
-bg_color = Color(0.18, 0.09, 0.04, 0.98)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 8
-border_color = Color(0.85, 0.58, 0.20, 1)
+bg_color = Color(0.92, 0.86, 0.77, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 6
+border_color = Color(0.76, 0.64, 0.50, 1)
 corner_radius_top_left = 24
 corner_radius_top_right = 24
 corner_radius_bottom_right = 24
 corner_radius_bottom_left = 24
-shadow_color = Color(0.10, 0.04, 0.02, 0.55)
-shadow_size = 12
-shadow_offset = Vector2(0, 8)
+shadow_color = Color(0.18, 0.08, 0.03, 0.25)
+shadow_size = 10
+shadow_offset = Vector2(0, 5)
 
-[sub_resource type="StyleBoxFlat" id="StyleBox_BlueCard"]
-content_margin_left = 20.0
-content_margin_top = 18.0
-content_margin_right = 20.0
-content_margin_bottom = 24.0
-bg_color = Color(0.18, 0.09, 0.04, 0.88)
-border_width_left = 4
+[sub_resource type="StyleBoxTexture" id="StyleBox_DeckBoard"]
+content_margin_left = 18.0
+content_margin_top = 14.0
+content_margin_right = 18.0
+content_margin_bottom = 22.0
+texture = ExtResource("29_deck_board")
+texture_margin_left = 35.0
+texture_margin_top = 110.0
+texture_margin_right = 35.0
+texture_margin_bottom = 35.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_DeckTabsWell"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.24, 0.13, 0.07, 1)
+border_width_left = 3
 border_width_top = 4
-border_width_right = 4
-border_width_bottom = 9
-border_color = Color(0.90, 0.64, 0.24, 1)
-corner_radius_top_left = 26
-corner_radius_top_right = 26
-corner_radius_bottom_right = 26
-corner_radius_bottom_left = 26
-shadow_color = Color(0.10, 0.04, 0.02, 0.65)
-shadow_size = 16
-shadow_offset = Vector2(0, 10)
+border_width_right = 3
+border_width_bottom = 2
+border_color = Color(0.14, 0.07, 0.03, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0.08, 0.03, 0.01, 0.35)
+shadow_size = 4
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_DeckTabNormal"]
+content_margin_left = 16.0
+content_margin_top = 6.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0.79, 0.70, 0.58, 1)
+border_width_bottom = 5
+border_color = Color(0.64, 0.53, 0.41, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_DeckTabPressed"]
+content_margin_left = 16.0
+content_margin_top = 6.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0.96, 0.65, 0.14, 1)
+border_width_bottom = 6
+border_color = Color(0.72, 0.40, 0.04, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0.96, 0.55, 0.10, 0.3)
+shadow_size = 6
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_BtnJouerNormal"]
+content_margin_left = 24.0
+content_margin_top = 16.0
+content_margin_right = 24.0
+content_margin_bottom = 24.0
+texture = ExtResource("30_btn_jouer")
+texture_margin_left = 40.0
+texture_margin_top = 20.0
+texture_margin_right = 40.0
+texture_margin_bottom = 30.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_BtnJouerPressed"]
+content_margin_left = 24.0
+content_margin_top = 22.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+texture = ExtResource("31_btn_jouer_pressed")
+texture_margin_left = 40.0
+texture_margin_top = 24.0
+texture_margin_right = 40.0
+texture_margin_bottom = 24.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_NavDock"]
-content_margin_left = 12.0
-content_margin_top = 10.0
-content_margin_right = 12.0
-content_margin_bottom = 12.0
-bg_color = Color(0.16, 0.08, 0.04, 0.98)
-border_width_left = 3
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.05, 0.26, 0.42, 1)
 border_width_top = 3
-border_width_right = 3
-border_width_bottom = 5
-border_color = Color(0.50, 0.28, 0.12, 1)
-corner_radius_top_left = 22
-corner_radius_top_right = 22
-corner_radius_bottom_right = 22
-corner_radius_bottom_left = 22
-shadow_color = Color(0.10, 0.04, 0.02, 0.5)
+border_color = Color(0.04, 0.20, 0.32, 1)
+shadow_color = Color(0.04, 0.15, 0.24, 0.40)
 shadow_size = 8
-shadow_offset = Vector2(0, 4)
+shadow_offset = Vector2(0, -2)
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_BadgeGold"]
 content_margin_left = 14.0
@@ -145,43 +211,168 @@ shadow_color = Color(0.12, 0.05, 0.02, 0.4)
 shadow_size = 4
 shadow_offset = Vector2(0, 3)
 
+[sub_resource type="StyleBoxFlat" id="StyleBox_CategoryTray"]
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 16.0
+bg_color = Color(0.92, 0.86, 0.77, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 6
+border_color = Color(0.76, 0.64, 0.50, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0.18, 0.08, 0.03, 0.25)
+shadow_size = 10
+shadow_offset = Vector2(0, 6)
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_RedRibbon"]
+content_margin_left = 40.0
+content_margin_top = 8.0
+content_margin_right = 40.0
+content_margin_bottom = 14.0
+texture = ExtResource("24_ribbon_tex")
+texture_margin_left = 74.0
+texture_margin_top = 10.0
+texture_margin_right = 74.0
+texture_margin_bottom = 18.0
+expand_margin_left = 22.0
+expand_margin_top = 0.0
+expand_margin_right = 22.0
+expand_margin_bottom = 0.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_ShopBoard"]
+content_margin_left = 12.0
+content_margin_top = 22.0
+content_margin_right = 12.0
+content_margin_bottom = 32.0
+bg_color = Color(0.92, 0.87, 0.80, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 6
+border_color = Color(0.74, 0.65, 0.54, 1)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+shadow_color = Color(0.18, 0.08, 0.02, 0.22)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
+
 [sub_resource type="StyleBoxFlat" id="StyleBox_SectionBanner"]
 content_margin_left = 18.0
 content_margin_top = 8.0
 content_margin_right = 18.0
 content_margin_bottom = 10.0
-bg_color = Color(0.20, 0.10, 0.04, 0.95)
+bg_color = Color(0.78, 0.16, 0.18, 1)
 border_width_left = 3
 border_width_top = 2
 border_width_right = 3
-border_width_bottom = 5
-border_color = Color(0.88, 0.65, 0.22, 1)
+border_width_bottom = 6
+border_color = Color(0.50, 0.08, 0.10, 1)
 corner_radius_top_left = 14
 corner_radius_top_right = 14
 corner_radius_bottom_right = 14
 corner_radius_bottom_left = 14
-shadow_color = Color(0.10, 0.04, 0.02, 0.5)
-shadow_size = 6
+shadow_color = Color(0.35, 0.04, 0.06, 0.45)
+shadow_size = 4
 shadow_offset = Vector2(0, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_FilterShelf"]
-content_margin_left = 14.0
-content_margin_top = 6.0
-content_margin_right = 14.0
-content_margin_bottom = 8.0
-bg_color = Color(0.18, 0.09, 0.04, 0.92)
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0.88, 0.74, 0.55, 1)
 border_width_left = 3
 border_width_top = 2
 border_width_right = 3
 border_width_bottom = 5
-border_color = Color(0.85, 0.60, 0.22, 1)
+border_color = Color(0.65, 0.46, 0.28, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0.20, 0.10, 0.04, 0.25)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_CyanPill"]
+content_margin_left = 14.0
+content_margin_top = 6.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+bg_color = Color(0.12, 0.62, 0.82, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 5
+border_color = Color(0.06, 0.35, 0.50, 1)
 corner_radius_top_left = 16
 corner_radius_top_right = 16
 corner_radius_bottom_right = 16
 corner_radius_bottom_left = 16
-shadow_color = Color(0.10, 0.04, 0.02, 0.45)
-shadow_size = 6
+shadow_color = Color(0.04, 0.22, 0.32, 0.35)
+shadow_size = 4
 shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_SlotOccupied"]
+content_margin_left = 6.0
+content_margin_top = 8.0
+content_margin_right = 6.0
+content_margin_bottom = 8.0
+bg_color = Color(0.96, 0.91, 0.82, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 5
+border_color = Color(0.78, 0.64, 0.48, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0.18, 0.08, 0.03, 0.20)
+shadow_size = 4
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_SlotEmpty"]
+content_margin_left = 6.0
+content_margin_top = 8.0
+content_margin_right = 6.0
+content_margin_bottom = 8.0
+bg_color = Color(0.85, 0.77, 0.67, 0.45)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.72, 0.62, 0.50, 0.50)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_EmptyBoosterBtn"]
+content_margin_left = 18.0
+content_margin_top = 8.0
+content_margin_right = 18.0
+content_margin_bottom = 12.0
+bg_color = Color(0.82, 0.74, 0.64, 1)
+border_width_left = 2
+border_width_top = 3
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.68, 0.58, 0.48, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -229,57 +420,79 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 30.0
-offset_top = 60.0
-offset_right = -30.0
+offset_left = 16.0
+offset_top = 18.0
+offset_right = -16.0
 offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 22
-
-[node name="HeaderLabel" type="Label" parent="ContentContainer/CollectionTab/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
-theme_override_colors/font_shadow_color = Color(1, 1, 1, 0.8)
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 38
-text = "🍬 COLLECTION"
-horizontal_alignment = 1
+theme_override_constants/separation = 18
 
 [node name="BoostersCard" type="PanelContainer" parent="ContentContainer/CollectionTab/VBox"]
-custom_minimum_size = Vector2(0, 190)
+custom_minimum_size = Vector2(0, 246)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBox_PinkCard")
 
-[node name="HBox" type="HBoxContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard"]
+[node name="VBox" type="VBoxContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
 alignment = 1
 
-[node name="BagAnchor" type="Control" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox"]
-custom_minimum_size = Vector2(130, 150)
+[node name="Title" type="Label" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/HeaderHBox"]
 layout_mode = 2
-size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.24, 0.11, 0.04, 1)
+theme_override_colors/font_shadow_color = Color(1, 0.95, 0.88, 0.8)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 19
+text = "🍬 RÉSERVE DE SACHETS"
 
-[node name="BoosterGlow" type="TextureRect" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox/BagAnchor"]
-modulate = Color(1, 0.85, 0.3, 0.6)
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -75.0
-offset_top = -75.0
-offset_right = 75.0
-offset_bottom = 75.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("18_sparkle")
-expand_mode = 1
-stretch_mode = 5
+[node name="Badge" type="Label" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/HeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.62, 0.12, 1)
+theme_override_colors/font_shadow_color = Color(0.25, 0.1, 0.04, 0.8)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 17
+text = "(4 / 4)"
 
-[node name="BoosterIcon" type="TextureRect" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox/BagAnchor"]
+[node name="Spacer" type="Control" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ShopShortcutBtn" type="Button" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/HeaderHBox"]
+custom_minimum_size = Vector2(130, 36)
+layout_mode = 2
+theme_type_variation = &"ButtonCyan"
+theme_override_font_sizes/font_size = 15
+text = "🛍️ + Boutique"
+
+[node name="SlotsHBox" type="HBoxContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Slot0" type="PanelContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox"]
+custom_minimum_size = Vector2(0, 160)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBox_SlotOccupied")
+
+[node name="VBox" type="VBoxContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot0"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="IconAnchor" type="Control" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot0/VBox"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Glow" type="TextureRect" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot0/VBox/IconAnchor"]
+modulate = Color(1, 0.85, 0.3, 0.5)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -287,65 +500,335 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -58.0
-offset_top = -72.0
+offset_top = -58.0
 offset_right = 58.0
-offset_bottom = 72.0
+offset_bottom = 58.0
 grow_horizontal = 2
 grow_vertical = 2
-pivot_offset = Vector2(58, 72)
+mouse_filter = 2
+texture = ExtResource("18_sparkle")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot0/VBox/IconAnchor"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -44.0
+offset_top = -54.0
+offset_right = 44.0
+offset_bottom = 46.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 texture = ExtResource("7_booster")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="BadgeCount" type="Label" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox/BagAnchor"]
+[node name="EmptyIcon" type="Label" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot0/VBox/IconAnchor"]
+visible = false
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -38.0
-offset_top = 6.0
-offset_right = -4.0
-offset_bottom = 34.0
-grow_horizontal = 0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(0.4, 0.05, 0.05, 1)
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 18
-text = "x2"
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -24.0
+offset_top = -24.0
+offset_right = 24.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.65, 0.52, 0.4, 0.7)
+theme_override_font_sizes/font_size = 32
+text = "➕"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="VBoxB" type="VBoxContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox"]
+[node name="Name" type="Label" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot0/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.11, 0.04, 1)
+theme_override_colors/font_shadow_color = Color(1, 0.95, 0.88, 0.8)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 14
+text = "Silver Pop"
+horizontal_alignment = 1
+clip_text = true
+
+[node name="BtnSlotClick" type="Button" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot0"]
+layout_mode = 2
+focus_mode = 0
+flat = true
+
+[node name="Slot1" type="PanelContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox"]
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 10
+theme_override_styles/panel = SubResource("StyleBox_SlotOccupied")
+
+[node name="VBox" type="VBoxContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot1"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
 alignment = 1
 
-[node name="Title" type="Label" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox/VBoxB"]
+[node name="IconAnchor" type="Control" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot1/VBox"]
+custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
-theme_override_colors/font_color = Color(1.0, 0.94, 0.82, 1)
-theme_override_colors/font_shadow_color = Color(0.0, 0.0, 0.0, 0.85)
+mouse_filter = 2
+
+[node name="Glow" type="TextureRect" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot1/VBox/IconAnchor"]
+modulate = Color(1, 0.85, 0.3, 0.5)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -58.0
+offset_top = -58.0
+offset_right = 58.0
+offset_bottom = 58.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("18_sparkle")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot1/VBox/IconAnchor"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -44.0
+offset_top = -54.0
+offset_right = 44.0
+offset_bottom = 46.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_booster")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EmptyIcon" type="Label" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot1/VBox/IconAnchor"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -24.0
+offset_top = -24.0
+offset_right = 24.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.65, 0.52, 0.4, 0.7)
+theme_override_font_sizes/font_size = 32
+text = "➕"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Name" type="Label" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot1/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.11, 0.04, 1)
+theme_override_colors/font_shadow_color = Color(1, 0.95, 0.88, 0.8)
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 21
-text = "🍬 SACHET CLASSIQUE
-(2 DISPONIBLES)"
-horizontal_alignment = 0
+theme_override_font_sizes/font_size = 14
+text = "Golden Crush"
+horizontal_alignment = 1
+clip_text = true
 
-[node name="BtnsHBox" type="HBoxContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox/VBoxB"]
+[node name="BtnSlotClick" type="Button" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot1"]
 layout_mode = 2
-theme_override_constants/separation = 10
+focus_mode = 0
+flat = true
 
-[node name="OpenBtn" type="Button" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox/VBoxB/BtnsHBox"]
-custom_minimum_size = Vector2(160, 56)
+[node name="Slot2" type="PanelContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox"]
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
-theme_type_variation = &"ButtonPink"
-theme_override_font_sizes/font_size = 22
-text = "✨ OUVRIR"
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBox_SlotOccupied")
 
-[node name="ShopShortcutBtn" type="Button" parent="ContentContainer/CollectionTab/VBox/BoostersCard/HBox/VBoxB/BtnsHBox"]
-custom_minimum_size = Vector2(140, 56)
+[node name="VBox" type="VBoxContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot2"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "🛍️ + Sachets"
+mouse_filter = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="IconAnchor" type="Control" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot2/VBox"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Glow" type="TextureRect" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot2/VBox/IconAnchor"]
+modulate = Color(1, 0.85, 0.3, 0.5)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -58.0
+offset_top = -58.0
+offset_right = 58.0
+offset_bottom = 58.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("18_sparkle")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot2/VBox/IconAnchor"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -44.0
+offset_top = -54.0
+offset_right = 44.0
+offset_bottom = 46.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_booster")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EmptyIcon" type="Label" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot2/VBox/IconAnchor"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -24.0
+offset_top = -24.0
+offset_right = 24.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.65, 0.52, 0.4, 0.7)
+theme_override_font_sizes/font_size = 32
+text = "➕"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Name" type="Label" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot2/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.11, 0.04, 1)
+theme_override_colors/font_shadow_color = Color(1, 0.95, 0.88, 0.8)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 14
+text = "Diamond Dust"
+horizontal_alignment = 1
+clip_text = true
+
+[node name="BtnSlotClick" type="Button" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot2"]
+layout_mode = 2
+focus_mode = 0
+flat = true
+
+[node name="Slot3" type="PanelContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox"]
+custom_minimum_size = Vector2(0, 160)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBox_SlotOccupied")
+
+[node name="VBox" type="VBoxContainer" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot3"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="IconAnchor" type="Control" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot3/VBox"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Glow" type="TextureRect" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot3/VBox/IconAnchor"]
+modulate = Color(1, 0.85, 0.3, 0.5)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -58.0
+offset_top = -58.0
+offset_right = 58.0
+offset_bottom = 58.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("18_sparkle")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Icon" type="TextureRect" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot3/VBox/IconAnchor"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -44.0
+offset_top = -54.0
+offset_right = 44.0
+offset_bottom = 46.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_booster")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EmptyIcon" type="Label" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot3/VBox/IconAnchor"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -24.0
+offset_top = -24.0
+offset_right = 24.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.65, 0.52, 0.4, 0.7)
+theme_override_font_sizes/font_size = 32
+text = "➕"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Name" type="Label" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot3/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.11, 0.04, 1)
+theme_override_colors/font_shadow_color = Color(1, 0.95, 0.88, 0.8)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 14
+text = "Mystery Mix"
+horizontal_alignment = 1
+clip_text = true
+
+[node name="BtnSlotClick" type="Button" parent="ContentContainer/CollectionTab/VBox/BoostersCard/VBox/SlotsHBox/Slot3"]
+layout_mode = 2
+focus_mode = 0
+flat = true
 
 [node name="FilterBar" type="PanelContainer" parent="ContentContainer/CollectionTab/VBox"]
 layout_mode = 2
@@ -359,97 +842,134 @@ alignment = 0
 [node name="ItemsLabel" type="Label" parent="ContentContainer/CollectionTab/VBox/FilterBar/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 0.94, 0.82, 1)
-theme_override_colors/font_shadow_color = Color(0.12, 0.05, 0.02, 0.9)
+theme_override_colors/font_color = Color(0.24, 0.11, 0.04, 1)
+theme_override_colors/font_shadow_color = Color(1, 0.95, 0.88, 0.8)
 theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 20
 text = "MES BONBONS"
 
-[node name="BtnFilterUpgradable" type="Button" parent="ContentContainer/CollectionTab/VBox/FilterBar/HBox"]
-custom_minimum_size = Vector2(80, 46)
+[node name="BtnSortRarity" type="Button" parent="ContentContainer/CollectionTab/VBox/FilterBar/HBox"]
+custom_minimum_size = Vector2(136, 46)
 layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBox_CyanPill")
+theme_override_styles/hover = SubResource("StyleBox_CyanPill")
+theme_override_styles/pressed = SubResource("StyleBox_CyanPill")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.22, 0.34, 1)
+theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 17
-toggle_mode = true
-text = "⬆ Prêts"
+text = "Rareté"
 
-[node name="FilterRarityOption" type="OptionButton" parent="ContentContainer/CollectionTab/VBox/FilterBar/HBox"]
-custom_minimum_size = Vector2(140, 46)
+[node name="BtnSortLevel" type="Button" parent="ContentContainer/CollectionTab/VBox/FilterBar/HBox"]
+custom_minimum_size = Vector2(136, 46)
 layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBox_CyanPill")
+theme_override_styles/hover = SubResource("StyleBox_CyanPill")
+theme_override_styles/pressed = SubResource("StyleBox_CyanPill")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.22, 0.34, 1)
+theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 17
-item_count = 7
-selected = 0
-popup/item_0/text = "Toutes raretés"
-popup/item_0/id = 0
-popup/item_1/text = "Communes"
-popup/item_1/id = 1
-popup/item_2/text = "Peu communes"
-popup/item_2/id = 2
-popup/item_3/text = "Rares"
-popup/item_3/id = 3
-popup/item_4/text = "Épiques"
-popup/item_4/id = 4
-popup/item_5/text = "Légendaires"
-popup/item_5/id = 5
-popup/item_6/text = "Mythiques"
-popup/item_6/id = 6
-
-[node name="FilterSortOption" type="OptionButton" parent="ContentContainer/CollectionTab/VBox/FilterBar/HBox"]
-custom_minimum_size = Vector2(130, 46)
-layout_mode = 2
-theme_override_font_sizes/font_size = 17
-item_count = 3
-selected = 0
-popup/item_0/text = "Niveau ↓"
-popup/item_0/id = 0
-popup/item_1/text = "Rareté ↓"
-popup/item_1/id = 1
-popup/item_2/text = "Progression ↓"
-popup/item_2/id = 2
+text = "Niveau ↓"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="ContentContainer/CollectionTab/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
 
 [node name="SectionsVBox" type="VBoxContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 20
 
-[node name="BallsBanner" type="PanelContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox"]
+[node name="BallsTrayMargin" type="MarginContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox"]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBox_SectionBanner")
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_right = 24
 
-[node name="BallsHeaderLabel" type="Label" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox/BallsBanner"]
+[node name="BallsTray" type="PanelContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox/BallsTrayMargin"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.94, 0.82, 1)
-theme_override_colors/font_shadow_color = Color(0.12, 0.05, 0.02, 0.9)
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 20
+theme_override_styles/panel = SubResource("StyleBox_CategoryTray")
+
+[node name="VBox" type="VBoxContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox/BallsTrayMargin/BallsTray"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="BallsBanner" type="PanelContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox/BallsTrayMargin/BallsTray/VBox"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_RedRibbon")
+
+[node name="BallsHeaderLabel" type="Label" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox/BallsTrayMargin/BallsTray/VBox/BallsBanner"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.98, 0.92, 1)
+theme_override_colors/font_shadow_color = Color(0.28, 0.04, 0.06, 0.98)
+theme_override_colors/font_outline_color = Color(0.38, 0.06, 0.08, 1)
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
 text = "🔮 BILLES DE JEU"
+horizontal_alignment = 1
 
-[node name="BallsGrid" type="GridContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox"]
+[node name="BallsGridMargin" type="MarginContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox/BallsTrayMargin/BallsTray/VBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
+
+[node name="BallsGrid" type="GridContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox/BallsTrayMargin/BallsTray/VBox/BallsGridMargin"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/h_separation = 16
+theme_override_constants/h_separation = 14
 theme_override_constants/v_separation = 16
 columns = 3
 
-[node name="BumpersBanner" type="PanelContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox"]
+[node name="BumpersTrayMargin" type="MarginContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox"]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBox_SectionBanner")
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_right = 24
 
-[node name="BumpersHeaderLabel" type="Label" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox/BumpersBanner"]
+[node name="BumpersTray" type="PanelContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox/BumpersTrayMargin"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.94, 0.82, 1)
-theme_override_colors/font_shadow_color = Color(0.12, 0.05, 0.02, 0.9)
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 20
+theme_override_styles/panel = SubResource("StyleBox_CategoryTray")
+
+[node name="VBox" type="VBoxContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox/BumpersTrayMargin/BumpersTray"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="BumpersBanner" type="PanelContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox/BumpersTrayMargin/BumpersTray/VBox"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_RedRibbon")
+
+[node name="BumpersHeaderLabel" type="Label" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox/BumpersTrayMargin/BumpersTray/VBox/BumpersBanner"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.98, 0.92, 1)
+theme_override_colors/font_shadow_color = Color(0.28, 0.04, 0.06, 0.98)
+theme_override_colors/font_outline_color = Color(0.38, 0.06, 0.08, 1)
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
 text = "🎯 BUMPERS & DÉFENSES"
+horizontal_alignment = 1
 
-[node name="BumpersGrid" type="GridContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox"]
+[node name="BumpersGridMargin" type="MarginContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox/BumpersTrayMargin/BumpersTray/VBox"]
+layout_mode = 2
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
+
+[node name="BumpersGrid" type="GridContainer" parent="ContentContainer/CollectionTab/VBox/ScrollContainer/SectionsVBox/BumpersTrayMargin/BumpersTray/VBox/BumpersGridMargin"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/h_separation = 16
+theme_override_constants/h_separation = 14
 theme_override_constants/v_separation = 16
 columns = 3
 
@@ -467,103 +987,67 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = 20.0
-offset_right = -24.0
-offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 28
-alignment = 1
+theme_override_constants/separation = 0
 
-[node name="DeckCard" type="PanelContainer" parent="ContentContainer/PlayTab/VBox"]
+[node name="SubNavModeBar" type="PanelContainer" parent="ContentContainer/PlayTab/VBox"]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBox_BlueCard")
+theme_override_styles/panel = SubResource("StyleBox_DeckTabsWell")
 
-[node name="VBox" type="VBoxContainer" parent="ContentContainer/PlayTab/VBox/DeckCard"]
-layout_mode = 2
-theme_override_constants/separation = 14
-alignment = 1
-
-[node name="DeckTabsRow" type="HBoxContainer" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox"]
+[node name="ModeTabsRow" type="HBoxContainer" parent="ContentContainer/PlayTab/VBox/SubNavModeBar"]
 layout_mode = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="BtnDeck1" type="Button" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckTabsRow"]
-custom_minimum_size = Vector2(120, 52)
+[node name="BtnSubTabAdventure" type="Button" parent="ContentContainer/PlayTab/VBox/SubNavModeBar/ModeTabsRow"]
+custom_minimum_size = Vector2(230, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+focus_mode = 0
+theme_override_colors/font_color = Color(0.27, 0.16, 0.08, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(0.27, 0.16, 0.08, 1)
+theme_override_colors/font_hover_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.35, 0.18, 0.04, 0.9)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBox_DeckTabNormal")
+theme_override_styles/pressed = SubResource("StyleBox_DeckTabPressed")
+theme_override_styles/hover = SubResource("StyleBox_DeckTabNormal")
+theme_override_styles/hover_pressed = SubResource("StyleBox_DeckTabPressed")
 toggle_mode = true
-text = "DECK 1"
+button_pressed = true
+text = "🗺️  AVENTURE"
 
-[node name="BtnDeck2" type="Button" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckTabsRow"]
-custom_minimum_size = Vector2(120, 52)
+[node name="BtnSubTabSurvival" type="Button" parent="ContentContainer/PlayTab/VBox/SubNavModeBar/ModeTabsRow"]
+custom_minimum_size = Vector2(230, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+focus_mode = 0
+theme_override_colors/font_color = Color(0.27, 0.16, 0.08, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(0.27, 0.16, 0.08, 1)
+theme_override_colors/font_hover_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.35, 0.18, 0.04, 0.9)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBox_DeckTabNormal")
+theme_override_styles/pressed = SubResource("StyleBox_DeckTabPressed")
+theme_override_styles/hover = SubResource("StyleBox_DeckTabNormal")
+theme_override_styles/hover_pressed = SubResource("StyleBox_DeckTabPressed")
 toggle_mode = true
-text = "DECK 2"
+text = "♾️  SURVIE"
 
-[node name="BtnDeck3" type="Button" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckTabsRow"]
-custom_minimum_size = Vector2(120, 52)
+[node name="ViewsContainer" type="Control" parent="ContentContainer/PlayTab/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-toggle_mode = true
-text = "DECK 3"
+size_flags_vertical = 3
 
-[node name="DeckSubtitle" type="Label" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.90, 0.74, 0.95)
-theme_override_colors/font_shadow_color = Color(0.12, 0.05, 0.02, 0.9)
-theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 15
-text = "6 BONBONS DE DÉPART (TOUCHER POUR MODIFIER)"
-horizontal_alignment = 1
+[node name="AdventureView" parent="ContentContainer/PlayTab/VBox/ViewsContainer" instance=ExtResource("32_adv_view")]
+layout_mode = 1
 
-[node name="CandyCaneRibbon" type="TextureRect" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox"]
-custom_minimum_size = Vector2(0, 8)
-layout_mode = 2
-texture = ExtResource("23_candy_cane")
-expand_mode = 1
-stretch_mode = 1
+[node name="SurvivalView" parent="ContentContainer/PlayTab/VBox/ViewsContainer" instance=ExtResource("33_surv_view")]
+visible = false
+layout_mode = 1
 
-[node name="DeckSlotsGrid" type="GridContainer" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox"]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_constants/h_separation = 18
-theme_override_constants/v_separation = 18
-columns = 3
-
-[node name="Slot0" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("20_deck_slot")]
-layout_mode = 2
-
-[node name="Slot1" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("20_deck_slot")]
-layout_mode = 2
-slot_index = 1
-
-[node name="Slot2" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("20_deck_slot")]
-layout_mode = 2
-slot_index = 2
-
-[node name="Slot3" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("20_deck_slot")]
-layout_mode = 2
-slot_index = 3
-
-[node name="Slot4" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("20_deck_slot")]
-layout_mode = 2
-slot_index = 4
-
-[node name="Slot5" parent="ContentContainer/PlayTab/VBox/DeckCard/VBox/DeckSlotsGrid" instance=ExtResource("20_deck_slot")]
-layout_mode = 2
-slot_index = 5
-
-[node name="BtnLaunchGame" type="Button" parent="ContentContainer/PlayTab/VBox"]
-custom_minimum_size = Vector2(400, 100)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_type_variation = &"ButtonPink"
-theme_override_font_sizes/font_size = 42
-text = "▶ JOUER"
 
 [node name="LeaderboardTab" type="Control" parent="ContentContainer"]
 visible = false
@@ -657,70 +1141,37 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = 50.0
-offset_right = -24.0
-offset_bottom = -20.0
+offset_left = 0.0
+offset_top = 16.0
+offset_right = 0.0
+offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 16
-
-[node name="HeaderLabel" type="Label" parent="ContentContainer/ShopTab/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
-theme_override_colors/font_shadow_color = Color(1, 1, 1, 0.8)
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 36
-text = "🛍️ BOUTIQUE SUCRÉE"
-horizontal_alignment = 1
+theme_override_constants/separation = 14
 
 [node name="ScrollContainer" type="ScrollContainer" parent="ContentContainer/ShopTab/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
 
-[node name="SectionsVBox" type="VBoxContainer" parent="ContentContainer/ShopTab/VBox/ScrollContainer"]
+[node name="ShopBoardMargin" type="MarginContainer" parent="ContentContainer/ShopTab/VBox/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 20
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 28
 
-[node name="SectionBoostersLabel" type="Label" parent="ContentContainer/ShopTab/VBox/ScrollContainer/SectionsVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
-theme_override_font_sizes/font_size = 22
-text = "🍬 SACHETS DE BONBONS"
-
-[node name="BoostersGrid" type="GridContainer" parent="ContentContainer/ShopTab/VBox/ScrollContainer/SectionsVBox"]
+[node name="ShopBoardPanel" type="PanelContainer" parent="ContentContainer/ShopTab/VBox/ScrollContainer/ShopBoardMargin"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 14
-columns = 2
+theme_override_styles/panel = SubResource("StyleBox_ShopBoard")
 
-[node name="SectionCardsLabel" type="Label" parent="ContentContainer/ShopTab/VBox/ScrollContainer/SectionsVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
-theme_override_font_sizes/font_size = 22
-text = "⚡ CARTES DU JOUR"
-
-[node name="CardsGrid" type="GridContainer" parent="ContentContainer/ShopTab/VBox/ScrollContainer/SectionsVBox"]
+[node name="SectionsVBox" type="VBoxContainer" parent="ContentContainer/ShopTab/VBox/ScrollContainer/ShopBoardMargin/ShopBoardPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 14
-columns = 2
-
-[node name="SectionCurrencyLabel" type="Label" parent="ContentContainer/ShopTab/VBox/ScrollContainer/SectionsVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
-theme_override_font_sizes/font_size = 22
-text = "💎 BANQUE & TRÉSORERIE"
-
-[node name="CurrencyGrid" type="GridContainer" parent="ContentContainer/ShopTab/VBox/ScrollContainer/SectionsVBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 14
-columns = 2
+theme_override_constants/separation = 30
 
 [node name="NavBar" type="PanelContainer" parent="."]
 layout_mode = 1
@@ -728,42 +1179,291 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 6.0
-offset_top = -104.0
-offset_right = -6.0
-offset_bottom = -4.0
+offset_left = 0.0
+offset_top = -108.0
+offset_right = 0.0
+offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBox_NavDock")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="NavBar"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 0
 alignment = 1
 
 [node name="BtnShop" type="Button" parent="NavBar/HBoxContainer"]
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 18
-text = "🛍️ Boutique"
+theme_type_variation = &"NavButton"
+
+[node name="VBox" type="VBoxContainer" parent="NavBar/HBoxContainer/BtnShop"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+alignment = 1
+theme_override_constants/separation = 2
+
+[node name="IconAnchor" type="Control" parent="NavBar/HBoxContainer/BtnShop/VBox"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Icon" type="TextureRect" parent="NavBar/HBoxContainer/BtnShop/VBox/IconAnchor"]
+custom_minimum_size = Vector2(58, 52)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -29.0
+offset_top = -26.0
+offset_right = 29.0
+offset_bottom = 26.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("25_nav_shop")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HBoxLbl" type="HBoxContainer" parent="NavBar/HBoxContainer/BtnShop/VBox"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="ArrowL" type="Label" parent="NavBar/HBoxContainer/BtnShop/VBox/HBoxLbl"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.65, 0.90, 1)
+theme_override_font_sizes/font_size = 16
+text = "◀"
+
+[node name="Label" type="Label" parent="NavBar/HBoxContainer/BtnShop/VBox/HBoxLbl"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.20, 0.32, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
+text = "SHOP"
+horizontal_alignment = 1
+
+[node name="ArrowR" type="Label" parent="NavBar/HBoxContainer/BtnShop/VBox/HBoxLbl"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.65, 0.90, 1)
+theme_override_font_sizes/font_size = 16
+text = "▶"
 
 [node name="BtnCollection" type="Button" parent="NavBar/HBoxContainer"]
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 18
-text = "📦 Collection"
+theme_type_variation = &"NavButtonActive"
+
+[node name="VBox" type="VBoxContainer" parent="NavBar/HBoxContainer/BtnCollection"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+alignment = 1
+theme_override_constants/separation = 2
+
+[node name="IconAnchor" type="Control" parent="NavBar/HBoxContainer/BtnCollection/VBox"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Icon" type="TextureRect" parent="NavBar/HBoxContainer/BtnCollection/VBox/IconAnchor"]
+custom_minimum_size = Vector2(58, 52)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -29.0
+offset_top = -26.0
+offset_right = 29.0
+offset_bottom = 26.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("26_nav_cards")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HBoxLbl" type="HBoxContainer" parent="NavBar/HBoxContainer/BtnCollection/VBox"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+theme_override_constants/separation = 4
+
+[node name="ArrowL" type="Label" parent="NavBar/HBoxContainer/BtnCollection/VBox/HBoxLbl"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.65, 0.90, 1)
+theme_override_font_sizes/font_size = 16
+text = "◀"
+
+[node name="Label" type="Label" parent="NavBar/HBoxContainer/BtnCollection/VBox/HBoxLbl"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.28, 0.12, 0.04, 1)
+theme_override_font_sizes/font_size = 16
+text = "COLLECTION"
+horizontal_alignment = 1
+
+[node name="ArrowR" type="Label" parent="NavBar/HBoxContainer/BtnCollection/VBox/HBoxLbl"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.65, 0.90, 1)
+theme_override_font_sizes/font_size = 16
+text = "▶"
 
 [node name="BtnPlay" type="Button" parent="NavBar/HBoxContainer"]
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 18
-text = "▶ Jeu"
+theme_type_variation = &"NavButton"
+
+[node name="VBox" type="VBoxContainer" parent="NavBar/HBoxContainer/BtnPlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+alignment = 1
+theme_override_constants/separation = 2
+
+[node name="IconAnchor" type="Control" parent="NavBar/HBoxContainer/BtnPlay/VBox"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Icon" type="TextureRect" parent="NavBar/HBoxContainer/BtnPlay/VBox/IconAnchor"]
+custom_minimum_size = Vector2(58, 52)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -29.0
+offset_top = -26.0
+offset_right = 29.0
+offset_bottom = 26.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("27_nav_battle")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HBoxLbl" type="HBoxContainer" parent="NavBar/HBoxContainer/BtnPlay/VBox"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="ArrowL" type="Label" parent="NavBar/HBoxContainer/BtnPlay/VBox/HBoxLbl"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.65, 0.90, 1)
+theme_override_font_sizes/font_size = 16
+text = "◀"
+
+[node name="Label" type="Label" parent="NavBar/HBoxContainer/BtnPlay/VBox/HBoxLbl"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.20, 0.32, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
+text = "JOUER"
+horizontal_alignment = 1
+
+[node name="ArrowR" type="Label" parent="NavBar/HBoxContainer/BtnPlay/VBox/HBoxLbl"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.65, 0.90, 1)
+theme_override_font_sizes/font_size = 16
+text = "▶"
 
 [node name="BtnLeaderboard" type="Button" parent="NavBar/HBoxContainer"]
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 18
-text = "🏆 Top"
+theme_type_variation = &"NavButton"
+
+[node name="VBox" type="VBoxContainer" parent="NavBar/HBoxContainer/BtnLeaderboard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+alignment = 1
+theme_override_constants/separation = 2
+
+[node name="IconAnchor" type="Control" parent="NavBar/HBoxContainer/BtnLeaderboard/VBox"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Icon" type="TextureRect" parent="NavBar/HBoxContainer/BtnLeaderboard/VBox/IconAnchor"]
+custom_minimum_size = Vector2(58, 52)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -29.0
+offset_top = -26.0
+offset_right = 29.0
+offset_bottom = 26.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("28_nav_top")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HBoxLbl" type="HBoxContainer" parent="NavBar/HBoxContainer/BtnLeaderboard/VBox"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="ArrowL" type="Label" parent="NavBar/HBoxContainer/BtnLeaderboard/VBox/HBoxLbl"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.65, 0.90, 1)
+theme_override_font_sizes/font_size = 16
+text = "◀"
+
+[node name="Label" type="Label" parent="NavBar/HBoxContainer/BtnLeaderboard/VBox/HBoxLbl"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.04, 0.20, 0.32, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
+text = "TOP"
+horizontal_alignment = 1
+
+[node name="ArrowR" type="Label" parent="NavBar/HBoxContainer/BtnLeaderboard/VBox/HBoxLbl"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.65, 0.90, 1)
+theme_override_font_sizes/font_size = 16
+text = "▶"
 
 [node name="TopGoldBar" type="MarginContainer" parent="."]
 layout_mode = 1

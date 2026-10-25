@@ -9,6 +9,21 @@
 
 [sub_resource type="StyleBoxEmpty" id="StyleBox_CardEmpty"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBox_EmptySlot"]
+bg_color = Color(0.81, 0.72, 0.60, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.68, 0.58, 0.46, 1)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+shadow_color = Color(0.40, 0.30, 0.20, 0.25)
+shadow_size = 2
+shadow_offset = Vector2(1, 2)
+
 [node name="CollectionCard" type="PanelContainer"]
 custom_minimum_size = Vector2(196, 258)
 offset_right = 196.0
@@ -16,6 +31,12 @@ offset_bottom = 258.0
 pivot_offset = Vector2(98, 129)
 theme_override_styles/panel = SubResource("StyleBox_CardEmpty")
 script = ExtResource("1_script")
+
+[node name="EmptySlot" type="Panel" parent="."]
+visible = false
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBox_EmptySlot")
 
 [node name="CardFrame" type="TextureRect" parent="."]
 layout_mode = 2

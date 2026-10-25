@@ -64,18 +64,46 @@ func purchase_item(
 	if profile == null or item == null:
 		return false
 
-	if use_diamonds:
-		if item.diamond_price < 0 or profile.diamonds < item.diamond_price:
-			return false
-		if not spend_diamonds(item.diamond_price, profile):
-			return false
-	else:
-		if item.gold_price < 0 or profile.gold < item.gold_price:
-			return false
-		if not spend_gold(item.gold_price, profile):
-			return false
+	# 1. Flux achat argent réel (in-app purchase)
+	if item.is_real_money():
+		EventBus.shop_real_money_offer_requested.emit(item.id)
+		return true
 
-	var payload: Dictionary = item.reward_payload
+	# 2. Récompense déjà récupérée (ex: cadeau unique du jour)
+	if item.is_claimed:
+		return false
+
+	# 3. Débit de monnaie (si non gratuit)
+	if not item.is_free():
+		if use_diamonds:
+			if item.diamond_price < 0 or profile.diamonds < item.diamond_price:
+				return false
+			if not spend_diamonds(item.diamond_price, profile):
+				return false
+		else:
+			if item.gold_price < 0 or profile.gold < item.gold_price:
+				return false
+			if not spend_gold(item.gold_price, profile):
+				return false
+
+	# 4. Attribution des récompenses (les bundles sont dépliés)
+	for reward in item.get_reward_entries():
+		_grant_reward(reward, item, profile, available_boosters, inventory_service)
+
+	if item.is_free():
+		item.is_claimed = true
+
+	var currency_used: StringName = &"free" if item.is_free() else (&"diamonds" if use_diamonds else &"gold")
+	EventBus.shop_item_purchased.emit(item.id, currency_used)
+	return true
+
+func _grant_reward(
+	payload: Dictionary,
+	item: ShopItemData,
+	profile: PlayerProfileScript,
+	available_boosters: Array[BoosterData],
+	inventory_service: RefCounted
+) -> void:
 	var ptype: String = payload.get("type", "")
 	match ptype:
 		"gold":
@@ -86,19 +114,16 @@ func purchase_item(
 			var b: BoosterData = BoosterData.new()
 			b.id = payload.get("id", &"booster")
 			b.display_name = payload.get("display_name", "Sachet")
-			b.booster_type = payload.get("booster_type", BoosterData.BoosterType.CLASSIC_SOLO)
+			b.booster_type = payload.get("booster_type", BoosterData.BoosterType.SILVER_POP)
 			b.min_gold = payload.get("min_gold", 40)
 			b.max_gold = payload.get("max_gold", 100)
-			b.icon_texture = item.icon_texture
+			b.icon_texture = payload.get("icon_texture", item.icon_texture)
 			available_boosters.append(b)
 		"cards":
 			var cid: StringName = payload.get("card_id", &"fizz")
 			var count: int = payload.get("count", 1)
 			if inventory_service != null:
 				inventory_service.add_cards_to_inventory(cid, count, profile.cards_inventory)
-
-	EventBus.shop_item_purchased.emit(item.id, "diamonds" if use_diamonds else "gold")
-	return true
 
 func apply_booster_rewards(
 	result: Dictionary,
@@ -110,6 +135,9 @@ func apply_booster_rewards(
 
 	if result.has("gold"):
 		add_gold(result["gold"], profile)
+
+	if result.has("diamonds") and int(result["diamonds"]) > 0:
+		add_diamonds(int(result["diamonds"]), profile)
 
 	if result.has("drops") and inventory_service != null:
 		for drop in result["drops"]:
