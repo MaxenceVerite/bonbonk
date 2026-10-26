@@ -122,6 +122,9 @@ var campaign_unlocked_level: int:
 var campaign_selected_world: int = 1
 var campaign_selected_level: int = 1
 
+# Sélection active d'arène en Survie (session de jeu)
+var survival_selected_world: int = 1
+
 var campaign_levels_data: Dictionary:
 	get:
 		return current_profile.campaign_levels_data if current_profile != null else {}
@@ -510,6 +513,12 @@ func record_campaign_level_results(level: LevelData, score: int, stars: int, _hp
 	# Progression du niveau suivant si premier succès (palier maximal conservé)
 	if is_first_clear and level.level_number >= current_profile.campaign_unlocked_level:
 		current_profile.campaign_unlocked_level = level.level_number + 1
+
+	# Déblocage du monde suivant si le boss du niveau 10 est vaincu
+	if is_first_clear and level.level_number >= 10:
+		var current_w_num: int = int(String(level.world_id).trim_prefix("world_"))
+		if current_w_num >= current_profile.campaign_unlocked_world:
+			current_profile.campaign_unlocked_world = current_w_num + 1
 
 	campaign_selected_level = level.level_number + 1
 

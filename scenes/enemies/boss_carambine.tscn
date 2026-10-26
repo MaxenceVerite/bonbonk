@@ -1,0 +1,43 @@
+[gd_scene load_steps=6 format=3 uid="uid://bosscarambine002"]
+
+[ext_resource type="Script" path="res://scripts/enemies/boss_carambine.gd" id="1_carambine"]
+[ext_resource type="Texture2D" path="res://sprites/boss_carambine_sprite.png" id="2_carambine_sprite"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="3_health"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_carambine"]
+radius = 34.0
+
+[node name="BossCarambine" type="CharacterBody2D"]
+z_index = 8
+collision_layer = 8
+collision_mask = 7
+script = ExtResource("1_carambine")
+boss_name = "Carambine"
+boss_max_hp = 140
+target_anchor_y = 200.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_carambine")
+
+[node name="ShadowOuter" type="Polygon2D" parent="."]
+position = Vector2(0, 38)
+scale = Vector2(3.2, 1.2)
+color = Color(0.06, 0.03, 0.01, 0.22)
+polygon = PackedVector2Array(16, 0, 15.69, 3.12, 14.78, 6.12, 13.31, 8.89, 11.31, 11.31, 8.89, 13.31, 6.12, 14.78, 3.12, 15.69, 0, 16, -3.12, 15.69, -6.12, 14.78, -8.89, 13.31, -11.31, 11.31, -13.31, 8.89, -14.78, 6.12, -15.69, 3.12, -16, 0, -15.69, -3.12, -14.78, -6.12, -13.31, -8.89, -11.31, -11.31, -8.89, -13.31, -6.12, -14.78, -3.12, -15.69, 0, -16, 3.12, -15.69, 6.12, -14.78, 8.89, -13.31, 11.31, -11.31, 13.31, -8.89, 14.78, -6.12, 15.69, -3.12)
+
+[node name="ShadowInner" type="Polygon2D" parent="."]
+position = Vector2(0, 38)
+scale = Vector2(2.2, 0.8)
+color = Color(0.04, 0.02, 0.01, 0.38)
+polygon = PackedVector2Array(16, 0, 15.69, 3.12, 14.78, 6.12, 13.31, 8.89, 11.31, 11.31, 8.89, 13.31, 6.12, 14.78, 3.12, 15.69, 0, 16, -3.12, 15.69, -6.12, 14.78, -8.89, 13.31, -11.31, 11.31, -13.31, 8.89, -14.78, 6.12, -15.69, 3.12, -16, 0, -15.69, -3.12, -14.78, -6.12, -13.31, -8.89, -11.31, -11.31, -8.89, -13.31, -6.12, -14.78, -3.12, -15.69, 0, -16, 3.12, -15.69, 6.12, -14.78, 8.89, -13.31, 11.31, -11.31, 13.31, -8.89, 14.78, -6.12, 15.69, -3.12)
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Sprite2D" type="Sprite2D" parent="Visual"]
+scale = Vector2(0.23, 0.23)
+texture = ExtResource("2_carambine_sprite")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("3_health")
+max_health = 140
+current_health = 140

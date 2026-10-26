@@ -112,17 +112,36 @@ func restore_from_temporary_override() -> void:
 	_saved_original_bumper = null
 	queue_redraw()
 
+var _is_hidden_temporarily: bool = false
+
+## Masque ou réactive temporairement le bumper occupant ce slot
+func set_bumper_hidden(is_hidden: bool) -> void:
+	_is_hidden_temporarily = is_hidden
+	if occupied_bumper_instance != null and is_instance_valid(occupied_bumper_instance):
+		occupied_bumper_instance.visible = not is_hidden
+		occupied_bumper_instance.set_process(not is_hidden)
+		occupied_bumper_instance.set_physics_process(not is_hidden)
+		for child in occupied_bumper_instance.get_children():
+			if child is CollisionShape2D:
+				child.set_deferred(&"disabled", is_hidden)
+		if not is_hidden:
+			occupied_bumper_instance.scale = Vector2(0.4, 0.4)
+			var pop_tw: Tween = occupied_bumper_instance.create_tween()
+			pop_tw.tween_property(occupied_bumper_instance, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	queue_redraw()
+
 func clear_bumper() -> void:
 	if _is_temporary_override:
 		restore_from_temporary_override()
 	if occupied_bumper_instance != null and is_instance_valid(occupied_bumper_instance):
 		occupied_bumper_instance.queue_free()
 	occupied_bumper_instance = null
+	_is_hidden_temporarily = false
 	queue_redraw()
 
 func _draw() -> void:
-	# Si un bumper est posé sur ce slot, laisser le bumper visible au premier plan
-	if is_occupied():
+	# Si masqué temporairement ou si un bumper est posé sur ce slot, ne pas dessiner la pastille de fond
+	if _is_hidden_temporarily or is_occupied():
 		return
 
 	var center: Vector2 = Vector2.ZERO

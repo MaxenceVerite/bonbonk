@@ -112,5 +112,94 @@ func _ready() -> void:
 	assert(counter[0] == 1, "1er signal sous-vague émis")
 
 	print("✓ 9. Orchestration de vague continue en Campagne validée")
+
+	# 10. Test de validation : Brocolino est le Boss du Monde 1 (1-10) et Carambine est le Boss du Monde 2 (2-10)
+	var l1_10: LevelData = w1.get_level(10)
+	assert(l1_10 != null, "Niveau 10 du Monde 1 introuvable")
+	assert(l1_10.waves[1].spawns[0]["unit"] == "boss_brocolino", "Le boss du niveau 1-10 (Forêt Dragée) doit être Brocolino")
+
+	var w2: WorldData = worlds[1]
+	assert(w2 != null and w2.id == &"world_2", "Monde 2 Plage Sucrée introuvable")
+	var l2_10: LevelData = w2.get_level(10)
+	assert(l2_10 != null, "Niveau 10 du Monde 2 introuvable")
+	assert(l2_10.waves[1].spawns[0]["unit"] == "boss_carambine", "Le boss du niveau 2-10 (Plage Sucrée) doit être Carambine")
+
+	director.start_wave(10)
+	assert(director.get("_pending_spawns")[0]["scene_path"].contains("boss_brocolino"), "La manche 10 de Survie doit faire apparaître Brocolino")
+	director.start_wave(20)
+	assert(director.get("_pending_spawns")[0]["scene_path"].contains("boss_carambine"), "La manche 20 de Survie doit faire apparaître Carambine")
+	print("✓ 10. Intégration de Brocolino (Monde 1 / Vague 10) et Carambine (Monde 2 / Vague 20) validée")
+
+	# 11. Test de validation : AdventureView navigation multi-monde & synchronisation UI
+	var adv_scene: PackedScene = preload("res://scenes/ui/play/adventure_view.tscn")
+	var adv_instance: Node = adv_scene.instantiate()
+	add_child(adv_instance)
+
+	assert(adv_instance.current_world_num == 1, "Monde initial doit être 1")
+	assert(adv_instance.world_title_label.text.contains("FORÊT DRAGÉE"), "Titre Monde 1 doit être Forêt Dragée")
+	assert(adv_instance.map_texture.texture.resource_path.contains("foret_dragee_saga_map"), "Texture carte Monde 1 doit être foret_dragee")
+	assert(adv_instance.btn_prev_world.disabled == true, "Flèche précédente doit être désactivée au Monde 1")
+	assert(adv_instance.btn_next_world.disabled == false, "Flèche suivante doit être accessible pour visiter le Monde 2")
+
+	# Visite du Monde 2 alors qu'il est encore verrouillé (Monde débloqué = 1)
+	SaveManager.campaign_unlocked_world = 1
+	adv_instance._change_world(2)
+	assert(adv_instance.current_world_num == 2, "Doit pouvoir visiter le Monde 2")
+	assert(adv_instance.world_title_label.text.contains("🔒"), "Titre Monde 2 doit afficher le cadenas de verrouillage")
+	assert(adv_instance.map_texture.texture.resource_path.contains("world_1_saga_map"), "Texture carte Monde 2 doit être la plage")
+	assert(adv_instance._pins[0].current_status == adv_instance._pins[0].Status.LOCKED, "Le niveau 2-1 doit être verrouillé")
+
+	# Vérifier que la modale bloque le jeu sur le Monde 2 verrouillé
+	var w2_data: WorldData = CampaignCatalog.get_world_by_number(2)
+	adv_instance.level_detail_modal.open(w2_data.get_level(1))
+	assert(adv_instance.level_detail_modal.btn_play.disabled == true, "Bouton Jouer doit être désactivé sur un monde verrouillé")
+	assert(adv_instance.level_detail_modal.btn_play.text.contains("MONDE VERROUILLÉ"), "Bouton doit afficher MONDE VERROUILLÉ")
+	adv_instance.level_detail_modal.close()
+
+	# Débloquer le Monde 2 et vérifier la transition vers l'accès débloqué
+	SaveManager.campaign_unlocked_world = 2
+	SaveManager.campaign_unlocked_level = 1
+	adv_instance.refresh()
+	assert(not adv_instance.world_title_label.text.contains("🔒"), "Le cadenas doit disparaître une fois débloqué")
+	assert(adv_instance._pins[0].current_status == adv_instance._pins[0].Status.UNLOCKED, "Le niveau 2-1 doit devenir UNLOCKED")
+	adv_instance.level_detail_modal.open(w2_data.get_level(1))
+	assert(adv_instance.level_detail_modal.btn_play.disabled == false, "Bouton Jouer doit devenir actif sur un monde débloqué")
+	adv_instance.level_detail_modal.close()
+
+	# Revenir au Monde 1
+	adv_instance._change_world(1)
+	assert(adv_instance.current_world_num == 1, "Doit être revenu au Monde 1")
+	adv_instance.queue_free()
+	print("✓ 11. Navigation Multi-Mondes libre & verrouillage strict du Monde 2 validés")
+
+	# 12. Test de validation : Choix d'arène en Survie & pureté du reskin
+	var surv_scene: PackedScene = preload("res://scenes/ui/play/survival_view.tscn")
+	var surv_instance: SurvivalView = surv_scene.instantiate() as SurvivalView
+	add_child(surv_instance)
+
+	assert(SaveManager.survival_selected_world == 1, "Arène par défaut en Survie doit être 1")
+	assert(surv_instance.arena_name_label.text.contains("FORÊT DRAGÉE"), "Le label doit afficher FORÊT DRAGÉE")
+
+	# Basculer vers l'arène suivante
+	surv_instance._on_next_arena_pressed()
+	assert(SaveManager.survival_selected_world == 2, "Arène sélectionnée en Survie doit être 2")
+	assert(surv_instance.arena_name_label.text.contains("PLAGE SUCRÉE"), "Le label doit afficher PLAGE SUCRÉE")
+
+	# Boucler vers l'arène précédente
+	surv_instance._on_prev_arena_pressed()
+	assert(SaveManager.survival_selected_world == 1, "Doit revenir à l'arène 1")
+	surv_instance.queue_free()
+
+	# Vérifier que les flippers conservent l'angle de physique exact de 7°
+	var board_scene: PackedScene = preload("res://scenes/board/board.tscn")
+	var board_inst = board_scene.instantiate()
+	add_child(board_inst)
+	var left_gate = board_inst.get_node("Gates/LeftGate")
+	var right_gate = board_inst.get_node("Gates/RightGate")
+	assert(is_equal_approx(left_gate.rotation_degrees, 7.0), "Angle de repos gauche doit être exactement 7.0°")
+	assert(is_equal_approx(right_gate.rotation_degrees, 173.0), "Angle de repos droit doit être exactement 173.0°")
+	board_inst.queue_free()
+	print("✓ 12. Choix d'arène en Survie & préservation stricte de la physique/reskinning validés")
+
 	print("\n>>> TOUS LES TESTS D'ARCHITECTURE SONT VALIDÉS AVEC SUCCÈS ! <<<\n")
 	get_tree().quit(0)

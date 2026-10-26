@@ -207,6 +207,12 @@ expand_mode = 1
 
 [node name="TreeCluster" parent="." instance=ExtResource("21_tree_canopy")]
 
+[node name="TopCanopySprite" type="Sprite2D" parent="."]
+visible = false
+z_index = 10
+position = Vector2(360, -20)
+scale = Vector2(0.62, 0.62)
+
 
 [node name="DangerZone" type="Area2D" parent="."]
 position = Vector2(300, 1285)

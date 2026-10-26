@@ -23,6 +23,12 @@ var _was_pressed: bool = false
 var current_angular_velocity: float = 0.0
 var _prev_rotation: float = 0.0
 
+func set_gate_texture(tex: Texture2D) -> void:
+	var spr: Sprite2D = get_node_or_null("ChocolateSprite") as Sprite2D
+	if spr != null and tex != null:
+		spr.texture = tex
+		spr.flip_v = is_right
+
 func is_kicking() -> bool:
 	return _current_state == State.KICK
 
@@ -84,9 +90,9 @@ func _ready() -> void:
 	add_to_group(&"flipper_gates")
 	if not active_gates.has(self):
 		active_gates.append(self)
-	# Au repos : légère pente de 7° vers le centre pour que la bille roule naturellement
-	# Porte gauche : orientée vers le centre avec +7° (vers le bas)
-	# Porte droite : orientée vers le centre avec 180° - 7° = 173° (vers le bas)
+	var spr: Sprite2D = get_node_or_null("ChocolateSprite") as Sprite2D
+	if spr != null:
+		spr.flip_v = is_right
 	var base_rest: float = (180.0 - 7.0) if is_right else 7.0
 	rotation_degrees = base_rest
 	

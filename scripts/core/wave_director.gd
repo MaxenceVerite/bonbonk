@@ -94,10 +94,17 @@ func is_boss_wave(wave_num: int) -> bool:
 	return wave_num == 10 or (wave_num > 10 and wave_num % 10 == 0)
 
 func _build_boss_wave_schedule() -> void:
-	# Apparition du Boss Brocolino au centre de l'arène
+	# En mode Survie : Manche 10 = Brocolino (Boss Forêt Dragée), Manche 20 = Carambine (Boss Plage Sucrée), puis alternance
+	var boss_path: String = "res://scenes/enemies/boss_brocolino.tscn"
+	var boss_name: String = "Brocolino"
+	if (current_wave / 10) % 2 == 0:
+		boss_path = "res://scenes/enemies/boss_carambine.tscn"
+		boss_name = "Carambine"
+
+	print("--- WaveDirector: DÉBUT DE LA MANCHE BOSS %d (%s) ---" % [current_wave, boss_name])
 	_pending_spawns.append({
 		"time_left": 0.8,
-		"scene_path": "res://scenes/enemies/boss_brocolino.tscn",
+		"scene_path": boss_path,
 		"spawn_x": 310.0
 	})
 
@@ -111,7 +118,6 @@ func start_wave(wave_num: int) -> void:
 
 	if is_boss_wave(wave_num):
 		wave_points_budget = 50
-		print("--- WaveDirector: DÉBUT DE LA MANCHE BOSS %d (Brocolino) ---" % current_wave)
 		_build_boss_wave_schedule()
 		wave_started.emit(current_wave, wave_points_budget)
 		return

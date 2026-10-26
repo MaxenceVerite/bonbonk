@@ -18,9 +18,12 @@ const CandyCardData = preload("res://scripts/data/candy_card_data.gd")
 # Éléments Carte & Scroll
 @onready var scroll_container: ScrollContainer = $ScrollContainer
 @onready var map_container: Control = $ScrollContainer/MapContainer
+@onready var map_texture: TextureRect = $ScrollContainer/MapContainer/MapTexture
 @onready var pins_parent: Control = $ScrollContainer/MapContainer/PinsContainer
+@onready var btn_prev_world: Button = $TopHeaderBar/HBox/BtnPrevWorld
+@onready var btn_next_world: Button = $TopHeaderBar/HBox/BtnNextWorld
 @onready var world_title_label: Label = $TopHeaderBar/HBox/WorldTitleLabel
-@onready var world_stars_label: Label = $TopHeaderBar/HBox/StarsBadge/Label
+@onready var world_stars_label: Label = $TopHeaderBar/HBox/StarsBadge/HBoxStars/Label
 
 # Barre de Deck Inférieure / Flottante
 @onready var floating_deck_dock: PanelContainer = $FloatingDeckDock
@@ -36,29 +39,69 @@ const CandyCardData = preload("res://scripts/data/candy_card_data.gd")
 var _pins: Array[LevelPinScript] = []
 var _has_scrolled_to_current: bool = false
 var is_dock_expanded: bool = true
+var current_world_num: int = 1
 
-# Coordonnées normalisées des 10 niveaux sur la texture (x_ratio, y_ratio)
+# Coordonnées normalisées par défaut si non spécifiées dans WorldData
 const PIN_RATIOS: Array[Vector2] = [
-	Vector2(0.50, 0.84), # Niveau 1 (Entrée / Devant le château)
-	Vector2(0.44, 0.77), # Niveau 2 (Sentier sableux)
-	Vector2(0.42, 0.70), # Niveau 3 (Courbe gauche)
-	Vector2(0.57, 0.63), # Niveau 4 (Virage droit près des bonbons)
-	Vector2(0.44, 0.55), # Niveau 5 (Milieu plage)
-	Vector2(0.47, 0.47), # Niveau 6 (Traversée)
-	Vector2(0.53, 0.39), # Niveau 7 (Palmier droit)
-	Vector2(0.40, 0.30), # Niveau 8 (Courbe vers les marches)
-	Vector2(0.47, 0.20), # Niveau 9 (Approche du trône)
-	Vector2(0.49, 0.135), # Niveau 10 (Boss Trône)
+	Vector2(0.50, 0.84),
+	Vector2(0.44, 0.77),
+	Vector2(0.42, 0.70),
+	Vector2(0.57, 0.63),
+	Vector2(0.44, 0.55),
+	Vector2(0.47, 0.47),
+	Vector2(0.53, 0.39),
+	Vector2(0.40, 0.30),
+	Vector2(0.47, 0.20),
+	Vector2(0.49, 0.135),
 ]
 
 func _ready() -> void:
+	current_world_num = clampi(SaveManager.campaign_selected_world, 1, CampaignCatalog.get_all_worlds().size())
 	_setup_deck_buttons()
+	_setup_world_nav_buttons()
 	_setup_pins()
 	if level_detail_modal != null:
 		level_detail_modal.play_level_requested.connect(_on_modal_play_requested)
 
 	refresh()
 	call_deferred("_scroll_to_current_level")
+
+func _setup_world_nav_buttons() -> void:
+	if btn_prev_world != null:
+		btn_prev_world.pressed.connect(func() -> void:
+			_change_world(current_world_num - 1)
+		)
+	if btn_next_world != null:
+		btn_next_world.pressed.connect(func() -> void:
+			_change_world(current_world_num + 1)
+		)
+
+func _change_world(target_num: int) -> void:
+	var all_worlds: Array[WorldData] = CampaignCatalog.get_all_worlds()
+	if target_num < 1 or target_num > all_worlds.size():
+		return
+	current_world_num = target_num
+	SaveManager.campaign_selected_world = current_world_num
+	_has_scrolled_to_current = false
+	_update_pins_positions()
+	refresh()
+	call_deferred("_scroll_to_current_level")
+
+func _update_pins_positions() -> void:
+	var w: WorldData = CampaignCatalog.get_world_by_number(current_world_num)
+	if w == null:
+		return
+	if map_texture != null and w.saga_map_texture != null:
+		map_texture.texture = w.saga_map_texture
+
+	var map_size: Vector2 = Vector2(720.0, 1450.0)
+	var ratios: Array[Vector2] = w.pin_positions if not w.pin_positions.is_empty() else PIN_RATIOS
+	for i in range(_pins.size()):
+		if i < ratios.size():
+			var r: Vector2 = ratios[i]
+			var px: float = r.x * map_size.x - 32.0
+			var py: float = r.y * map_size.y - 32.0
+			_pins[i].position = Vector2(px, py)
 
 func _setup_deck_buttons() -> void:
 	if btn_toggle_dock != null:
@@ -108,7 +151,6 @@ func _toggle_deck_dock() -> void:
 func _setup_pins() -> void:
 	_pins.clear()
 	var pin_scene: PackedScene = preload("res://scenes/ui/play/level_pin.tscn")
-	var map_size: Vector2 = Vector2(720.0, 1450.0)
 
 	for i in range(10):
 		var pin_num: int = i + 1
@@ -117,55 +159,67 @@ func _setup_pins() -> void:
 		pin.level_number = pin_num
 		pin.is_boss = (pin_num == 10)
 
-		# Positionnement centré
-		var ratio: Vector2 = PIN_RATIOS[i]
-		var px: float = ratio.x * map_size.x - 32.0
-		var py: float = ratio.y * map_size.y - 32.0
-		pin.position = Vector2(px, py)
-
 		pin.pin_clicked.connect(_on_pin_clicked)
 		pins_parent.add_child(pin)
 		_pins.append(pin)
 
+	_update_pins_positions()
+
 func refresh() -> void:
+	current_world_num = clampi(SaveManager.campaign_selected_world, 1, CampaignCatalog.get_all_worlds().size())
+	_update_pins_positions()
 	_refresh_pins_display()
 	_refresh_header_info()
 	_refresh_deck_dock()
 
 func _refresh_pins_display() -> void:
+	var unlocked_world: int = SaveManager.campaign_unlocked_world
 	var unlocked_lvl: int = SaveManager.campaign_unlocked_level
 	var levels_data: Dictionary = SaveManager.campaign_levels_data
 
 	for pin in _pins:
 		var num: int = pin.level_number
-		var lvl_key: String = "w1_%02d" % num
+		var lvl_key: String = "w%d_%02d" % [current_world_num, num]
 		var info: Dictionary = levels_data.get(lvl_key, {})
 		var stars: int = int(info.get("stars", 0))
 
 		var st: LevelPinScript.Status = LevelPinScript.Status.LOCKED
-		if num < unlocked_lvl:
-			st = LevelPinScript.Status.CLEARED
-		elif num == unlocked_lvl:
-			st = LevelPinScript.Status.UNLOCKED
+		if current_world_num < unlocked_world:
+			st = LevelPinScript.Status.CLEARED if stars > 0 or info.get("cleared", false) else LevelPinScript.Status.UNLOCKED
+		elif current_world_num == unlocked_world:
+			if num < unlocked_lvl:
+				st = LevelPinScript.Status.CLEARED
+			elif num == unlocked_lvl:
+				st = LevelPinScript.Status.UNLOCKED
+			else:
+				st = LevelPinScript.Status.LOCKED
 		else:
 			st = LevelPinScript.Status.LOCKED
 
 		pin.set_level_info(num, st, stars, num == 10)
 
 func _refresh_header_info() -> void:
-	var w: WorldData = CampaignCatalog.get_world_by_number(1)
+	var w: WorldData = CampaignCatalog.get_world_by_number(current_world_num)
+	var is_world_locked: bool = (current_world_num > SaveManager.campaign_unlocked_world)
 	if world_title_label != null and w != null:
-		world_title_label.text = "MONDE 1 : %s" % w.display_name.to_upper()
+		var prefix: String = "🔒 " if is_world_locked else ""
+		world_title_label.text = "%sMONDE %d : %s" % [prefix, w.world_number, w.display_name.to_upper()]
 
-	# Compte total des étoiles du monde 1
+	var all_worlds: Array[WorldData] = CampaignCatalog.get_all_worlds()
+	if btn_prev_world != null:
+		btn_prev_world.disabled = (current_world_num <= 1)
+	if btn_next_world != null:
+		btn_next_world.disabled = (current_world_num >= all_worlds.size())
+
+	# Compte total des étoiles du monde actif
 	var total_stars: int = 0
 	var levels_data: Dictionary = SaveManager.campaign_levels_data
 	for i in range(1, 11):
-		var k: String = "w1_%02d" % i
+		var k: String = "w%d_%02d" % [current_world_num, i]
 		total_stars += int(levels_data.get(k, {}).get("stars", 0))
 
 	if world_stars_label != null:
-		world_stars_label.text = "⭐ %d / 30" % total_stars
+		world_stars_label.text = "%d / 30" % total_stars
 
 func _refresh_deck_dock() -> void:
 	var active_idx: int = SaveManager.active_deck_index
@@ -244,14 +298,23 @@ func _refresh_deck_dock() -> void:
 func _scroll_to_current_level() -> void:
 	if scroll_container == null:
 		return
-	var cur_lvl: int = clampi(SaveManager.campaign_unlocked_level, 1, 10)
-	var ratio: Vector2 = PIN_RATIOS[cur_lvl - 1]
+	var cur_lvl: int = 1
+	if current_world_num == SaveManager.campaign_unlocked_world:
+		cur_lvl = clampi(SaveManager.campaign_unlocked_level, 1, 10)
+	elif current_world_num < SaveManager.campaign_unlocked_world:
+		cur_lvl = 10
+	else:
+		cur_lvl = 1
+
+	var w: WorldData = CampaignCatalog.get_world_by_number(current_world_num)
+	var ratios: Array[Vector2] = w.pin_positions if (w != null and not w.pin_positions.is_empty()) else PIN_RATIOS
+	var ratio: Vector2 = ratios[cur_lvl - 1]
 	var target_y: float = ratio.y * 1450.0 - (scroll_container.size.y * 0.5)
 	target_y = clampf(target_y, 0.0, maxf(0.0, 1450.0 - scroll_container.size.y))
 	scroll_container.scroll_vertical = int(target_y)
 
 func _on_pin_clicked(level_number: int) -> void:
-	var w: WorldData = CampaignCatalog.get_world_by_number(1)
+	var w: WorldData = CampaignCatalog.get_world_by_number(current_world_num)
 	if w == null:
 		return
 	var lvl_data: LevelData = w.get_level(level_number)
@@ -260,5 +323,6 @@ func _on_pin_clicked(level_number: int) -> void:
 
 func _on_modal_play_requested(level_data: LevelData) -> void:
 	if level_data != null:
+		SaveManager.campaign_selected_world = current_world_num
 		SaveManager.campaign_selected_level = level_data.level_number
 		level_play_requested.emit(level_data)

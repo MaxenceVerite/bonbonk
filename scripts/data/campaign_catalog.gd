@@ -36,16 +36,62 @@ static func get_level(world_id: StringName, level_num: int) -> LevelData:
 static func _build_default_worlds() -> Array[WorldData]:
 	var list: Array[WorldData] = []
 	var beach_texture: Texture2D = load("res://assets/board/arena_candy_beach_clean_1280.png")
+	var beach_map: Texture2D = load("res://assets/maps/world_1_saga_map.png")
+	var beach_flipper: Texture2D = load("res://assets/ui/flipper_chocolate.png")
+	var beach_wall_l: Texture2D = load("res://assets/board/guide_wall_left.png")
+	var beach_wall_r: Texture2D = load("res://assets/board/guide_wall_right.png")
+	var beach_top_ext: Texture2D = load("res://assets/board/top_sand_seamless.png")
+
+	var foret_texture: Texture2D = load("res://assets/board/arena_foret_dragee.png")
+	var foret_map: Texture2D = load("res://assets/maps/foret_dragee_saga_map.png")
+	var foret_canopy: Texture2D = load("res://assets/board/canopy_foret_dragee.png")
+	var foret_flipper: Texture2D = load("res://assets/ui/flipper_dragee.png")
+	var foret_wall_l: Texture2D = load("res://assets/board/guide_wall_dragee_left.png")
+	var foret_wall_r: Texture2D = load("res://assets/board/guide_wall_dragee_right.png")
+	var foret_top_ext: Texture2D = load("res://assets/board/top_dragee_seamless.png")
+
+	var pin_ratios_foret: Array[Vector2] = [
+		Vector2(0.40, 0.94), # 1: Entrée sous-bois
+		Vector2(0.60, 0.86), # 2: Pain d'épices
+		Vector2(0.64, 0.77), # 3: Sucettes tourbillons
+		Vector2(0.44, 0.69), # 4: Pont de gaufre sur chocolat
+		Vector2(0.35, 0.61), # 5: Champignons dragées
+		Vector2(0.53, 0.53), # 6: Oursons gélifiés
+		Vector2(0.35, 0.44), # 7: Maison cupcake
+		Vector2(0.48, 0.35), # 8: Étang aux sucettes
+		Vector2(0.45, 0.27), # 9: Allée des marches
+		Vector2(0.50, 0.17), # 10: Trône de Brocolino
+	]
+
+	var pin_ratios_plage: Array[Vector2] = [
+		Vector2(0.50, 0.84), # 1: Entrée / Devant le château
+		Vector2(0.44, 0.77), # 2: Sentier sableux
+		Vector2(0.42, 0.70), # 3: Courbe gauche
+		Vector2(0.57, 0.63), # 4: Virage droit près des bonbons
+		Vector2(0.44, 0.55), # 5: Milieu plage
+		Vector2(0.47, 0.47), # 6: Traversée
+		Vector2(0.53, 0.39), # 7: Palmier droit
+		Vector2(0.40, 0.30), # 8: Courbe vers les marches
+		Vector2(0.47, 0.20), # 9: Approche du trône
+		Vector2(0.49, 0.135), # 10: Carambine au trône
+	]
 
 	# =========================================================================
-	# MONDE 1 : PLAGE SUCRÉE
+	# MONDE 1 : FORÊT DRAGÉE
 	# =========================================================================
 	var w1: WorldData = WorldData.new()
 	w1.id = &"world_1"
 	w1.world_number = 1
-	w1.display_name = "Plage Sucrée"
-	w1.subtitle = "Le rivage de sucre rose et d'océan pétillant"
-	w1.arena_texture = beach_texture
+	w1.display_name = "Forêt Dragée"
+	w1.subtitle = "Un sous-bois féerique aux racines de réglisse et dragées pastel"
+	w1.arena_texture = foret_texture
+	w1.canopy_texture = foret_canopy
+	w1.flipper_texture = foret_flipper
+	w1.wall_left_texture = foret_wall_l
+	w1.wall_right_texture = foret_wall_r
+	w1.top_extension_texture = foret_top_ext
+	w1.saga_map_texture = foret_map
+	w1.pin_positions = pin_ratios_foret
 	w1.arena_modulate = Color.WHITE
 	w1.completion_reward_booster_id = &"golden_crush"
 
@@ -316,60 +362,56 @@ static func _build_default_worlds() -> Array[WorldData]:
 	]
 	w1.levels.append(l9)
 
-	# Niveau 1-10 (Le Boss du Trône : Brocolino Suprême)
+	# Niveau 1-10 (Le Boss du Trône : Brocolino)
 	var l10: LevelData = LevelData.new()
 	l10.id = &"w1_10"
 	l10.world_id = w1.id
 	l10.level_number = 10
-	l10.display_title = "Le Boss du Trône"
-	l10.description = "Le terrible Brocolino t'attend sur son trône royal ! Repousse l'assaut final !"
-	l10.star_thresholds = [2800, 5500, 8000]
+	l10.display_title = "Le Trône Végétal : Brocolino"
+	l10.description = "Brocolino défend son trône au sommet de la forêt ! Brisez ses bumpers brocolis et esquivez ses pluies de spores !"
+	l10.star_thresholds = [3000, 6000, 9000]
 	l10.first_clear_gold = 500
 	l10.first_clear_diamonds = 30
-	l10.first_clear_booster_id = &"diamond_dust"
+	l10.first_clear_booster_id = &"golden_crush"
 	l10.waves = [
 		_create_wave(1, [
 			{ "unit": "tomato", "delay": 0.5, "x_ratio": 0.2 },
 			{ "unit": "tomato", "delay": 0.8, "x_ratio": 0.8 },
-			{ "unit": "ananas", "delay": 1.8, "x_ratio": 0.5 },
-			{ "unit": "watermelon", "delay": 2.8, "x_ratio": 0.5 },
+			{ "unit": "watermelon", "delay": 2.0, "x_ratio": 0.5 },
 		]),
 		_create_wave(2, [
 			{ "unit": "boss_brocolino", "delay": 0.8, "x_ratio": 0.5 },
-			{ "unit": "coconut", "delay": 3.5, "x_ratio": 0.2 },
-			{ "unit": "pomegranate", "delay": 5.0, "x_ratio": 0.8 },
-		]),
-		_create_wave(3, [
-			{ "unit": "watermelon", "delay": 0.5, "x_ratio": 0.3 },
-			{ "unit": "watermelon", "delay": 1.0, "x_ratio": 0.7 },
-			{ "unit": "grape_bunch", "delay": 2.5, "x_ratio": 0.5 },
-			{ "unit": "ananas", "delay": 3.5, "x_ratio": 0.2 },
-			{ "unit": "ananas", "delay": 4.0, "x_ratio": 0.8 },
 		])
 	]
 	w1.levels.append(l10)
 	list.append(w1)
 
 	# =========================================================================
-	# MONDE 2 : VERGER ACIDULÉ
+	# MONDE 2 : PLAGE SUCRÉE
 	# =========================================================================
 	var w2: WorldData = WorldData.new()
 	w2.id = &"world_2"
 	w2.world_number = 2
-	w2.display_name = "Verger Acidulé"
-	w2.subtitle = "Un verger vibrant aux senteurs d'agrumes et de bonbons piquants"
+	w2.display_name = "Plage Sucrée"
+	w2.subtitle = "Le rivage de sucre rose et d'océan pétillant"
 	w2.arena_texture = beach_texture
-	# Teinte acidulée distinctive (vert menthe / citron)
-	w2.arena_modulate = Color(0.82, 1.05, 0.78, 1.0)
-	w2.completion_reward_booster_id = &"mystery_mix"
+	w2.canopy_texture = null
+	w2.flipper_texture = beach_flipper
+	w2.wall_left_texture = beach_wall_l
+	w2.wall_right_texture = beach_wall_r
+	w2.top_extension_texture = beach_top_ext
+	w2.saga_map_texture = beach_map
+	w2.pin_positions = pin_ratios_plage
+	w2.arena_modulate = Color.WHITE
+	w2.completion_reward_booster_id = &"diamond_dust"
 
-	# Niveau 2-1
+	# Niveau 2-1 (Arrivée sur la Plage)
 	var l21: LevelData = LevelData.new()
 	l21.id = &"w2_01"
 	l21.world_id = w2.id
 	l21.level_number = 1
-	l21.display_title = "Zeste d'Énergie"
-	l21.description = "Bienvenue dans le verger ! Les grenades font leur apparition."
+	l21.display_title = "Arrivée sur la Plage"
+	l21.description = "Bienvenue sur le rivage ! Les grenades font leur apparition."
 	l21.star_thresholds = [600, 1500, 2600]
 	l21.first_clear_gold = 150
 	l21.first_clear_diamonds = 8
@@ -391,7 +433,7 @@ static func _build_default_worlds() -> Array[WorldData]:
 	]
 	w2.levels.append(l21)
 
-	# Niveau 2-2
+	# Niveau 2-2 (Grappes Rebelles)
 	var l22: LevelData = LevelData.new()
 	l22.id = &"w2_02"
 	l22.world_id = w2.id
@@ -417,7 +459,7 @@ static func _build_default_worlds() -> Array[WorldData]:
 	]
 	w2.levels.append(l22)
 
-	# Niveau 2-3
+	# Niveau 2-3 (Coques de Coco)
 	var l23: LevelData = LevelData.new()
 	l23.id = &"w2_03"
 	l23.world_id = w2.id
@@ -444,6 +486,202 @@ static func _build_default_worlds() -> Array[WorldData]:
 		])
 	]
 	w2.levels.append(l23)
+
+	# Niveau 2-4 (Sauts d'Ananas de Plage)
+	var l24: LevelData = LevelData.new()
+	l24.id = &"w2_04"
+	l24.world_id = w2.id
+	l24.level_number = 4
+	l24.display_title = "Sauts d'Ananas de Plage"
+	l24.description = "Les ananas rebondissent vigoureusement sur le sable chaud."
+	l24.star_thresholds = [1200, 2800, 4200]
+	l24.first_clear_gold = 220
+	l24.first_clear_diamonds = 12
+	l24.first_clear_booster_id = &"golden_crush"
+	l24.waves = [
+		_create_wave(1, [
+			{ "unit": "ananas", "delay": 0.5, "x_ratio": 0.3 },
+			{ "unit": "ananas", "delay": 1.2, "x_ratio": 0.7 },
+		]),
+		_create_wave(2, [
+			{ "unit": "coconut", "delay": 0.5, "x_ratio": 0.5 },
+			{ "unit": "ananas", "delay": 1.6, "x_ratio": 0.25 },
+			{ "unit": "tomato", "delay": 2.2, "x_ratio": 0.75 },
+		]),
+		_create_wave(3, [
+			{ "unit": "watermelon", "delay": 0.5, "x_ratio": 0.5 },
+			{ "unit": "ananas", "delay": 1.8, "x_ratio": 0.3 },
+			{ "unit": "ananas", "delay": 2.4, "x_ratio": 0.7 },
+		])
+	]
+	w2.levels.append(l24)
+
+	# Niveau 2-5 (Garde Côtière)
+	var l25: LevelData = LevelData.new()
+	l25.id = &"w2_05"
+	l25.world_id = w2.id
+	l25.level_number = 5
+	l25.display_title = "Garde Côtière"
+	l25.description = "Des pastèques et des ananas patrouillent le rivage !"
+	l25.star_thresholds = [1400, 3200, 4800]
+	l25.first_clear_gold = 250
+	l25.first_clear_diamonds = 15
+	l25.first_clear_booster_id = &"golden_crush"
+	l25.waves = [
+		_create_wave(1, [
+			{ "unit": "coconut", "delay": 0.5, "x_ratio": 0.35 },
+			{ "unit": "grape_bunch", "delay": 1.2, "x_ratio": 0.65 },
+		]),
+		_create_wave(2, [
+			{ "unit": "watermelon", "delay": 0.5, "x_ratio": 0.5 },
+			{ "unit": "coconut", "delay": 1.5, "x_ratio": 0.2 },
+			{ "unit": "pomegranate", "delay": 2.2, "x_ratio": 0.8 },
+		]),
+		_create_wave(3, [
+			{ "unit": "watermelon", "delay": 0.5, "x_ratio": 0.3 },
+			{ "unit": "coconut", "delay": 1.6, "x_ratio": 0.7 },
+			{ "unit": "grape_bunch", "delay": 2.8, "x_ratio": 0.5 },
+		])
+	]
+	w2.levels.append(l25)
+
+	# Niveau 2-6 (Dunes de Sucre)
+	var l26: LevelData = LevelData.new()
+	l26.id = &"w2_06"
+	l26.world_id = w2.id
+	l26.level_number = 6
+	l26.display_title = "Dunes de Sucre"
+	l26.description = "Les rafales de grenades et de raisins balaient les dunes."
+	l26.star_thresholds = [1600, 3600, 5200]
+	l26.first_clear_gold = 280
+	l26.first_clear_diamonds = 15
+	l26.first_clear_booster_id = &"golden_crush"
+	l26.waves = [
+		_create_wave(1, [
+			{ "unit": "pomegranate", "delay": 0.5, "x_ratio": 0.3 },
+			{ "unit": "pomegranate", "delay": 1.2, "x_ratio": 0.7 },
+		]),
+		_create_wave(2, [
+			{ "unit": "grape_bunch", "delay": 0.5, "x_ratio": 0.4 },
+			{ "unit": "coconut", "delay": 1.8, "x_ratio": 0.6 },
+		]),
+		_create_wave(3, [
+			{ "unit": "pomegranate", "delay": 0.5, "x_ratio": 0.2 },
+			{ "unit": "grape_bunch", "delay": 1.5, "x_ratio": 0.5 },
+			{ "unit": "coconut", "delay": 2.5, "x_ratio": 0.8 },
+		])
+	]
+	w2.levels.append(l26)
+
+	# Niveau 2-7 (L'Ouragan Tropical)
+	var l27: LevelData = LevelData.new()
+	l27.id = &"w2_07"
+	l27.world_id = w2.id
+	l27.level_number = 7
+	l27.display_title = "L'Ouragan Tropical"
+	l27.description = "Des noix de coco ultra résistantes tombent en masse !"
+	l27.star_thresholds = [1800, 4000, 5800]
+	l27.first_clear_gold = 300
+	l27.first_clear_diamonds = 18
+	l27.first_clear_booster_id = &"golden_crush"
+	l27.waves = [
+		_create_wave(1, [
+			{ "unit": "coconut", "delay": 0.5, "x_ratio": 0.25 },
+			{ "unit": "coconut", "delay": 1.0, "x_ratio": 0.75 },
+		]),
+		_create_wave(2, [
+			{ "unit": "watermelon", "delay": 0.5, "x_ratio": 0.5 },
+			{ "unit": "coconut", "delay": 1.6, "x_ratio": 0.3 },
+			{ "unit": "coconut", "delay": 2.2, "x_ratio": 0.7 },
+		]),
+		_create_wave(3, [
+			{ "unit": "coconut", "delay": 0.5, "x_ratio": 0.2 },
+			{ "unit": "watermelon", "delay": 1.4, "x_ratio": 0.5 },
+			{ "unit": "coconut", "delay": 2.6, "x_ratio": 0.8 },
+		])
+	]
+	w2.levels.append(l27)
+
+	# Niveau 2-8 (Pluie de Grenades)
+	var l28: LevelData = LevelData.new()
+	l28.id = &"w2_08"
+	l28.world_id = w2.id
+	l28.level_number = 8
+	l28.display_title = "Pluie de Grenades"
+	l28.description = "Des grenades explosives avancent sur la plage avec la troupe."
+	l28.star_thresholds = [2000, 4500, 6500]
+	l28.first_clear_gold = 350
+	l28.first_clear_diamonds = 20
+	l28.first_clear_booster_id = &"diamond_dust"
+	l28.waves = [
+		_create_wave(1, [
+			{ "unit": "pomegranate", "delay": 0.5, "x_ratio": 0.3 },
+			{ "unit": "grape_bunch", "delay": 1.2, "x_ratio": 0.7 },
+		]),
+		_create_wave(2, [
+			{ "unit": "watermelon", "delay": 0.5, "x_ratio": 0.5 },
+			{ "unit": "pomegranate", "delay": 1.5, "x_ratio": 0.25 },
+			{ "unit": "pomegranate", "delay": 2.2, "x_ratio": 0.75 },
+		]),
+		_create_wave(3, [
+			{ "unit": "pomegranate", "delay": 0.5, "x_ratio": 0.2 },
+			{ "unit": "coconut", "delay": 1.5, "x_ratio": 0.5 },
+			{ "unit": "pomegranate", "delay": 2.5, "x_ratio": 0.8 },
+		])
+	]
+	w2.levels.append(l28)
+
+	# Niveau 2-9 (Le Belvédère Côtier)
+	var l29: LevelData = LevelData.new()
+	l29.id = &"w2_09"
+	l29.world_id = w2.id
+	l29.level_number = 9
+	l29.display_title = "Le Belvédère Côtier"
+	l29.description = "Dernier bastion avant le sommet ! L'armée côtière est au complet."
+	l29.star_thresholds = [2400, 5000, 7200]
+	l29.first_clear_gold = 400
+	l29.first_clear_diamonds = 25
+	l29.first_clear_booster_id = &"diamond_dust"
+	l29.waves = [
+		_create_wave(1, [
+			{ "unit": "coconut", "delay": 0.5, "x_ratio": 0.25 },
+			{ "unit": "watermelon", "delay": 1.2, "x_ratio": 0.75 },
+		]),
+		_create_wave(2, [
+			{ "unit": "grape_bunch", "delay": 0.5, "x_ratio": 0.3 },
+			{ "unit": "pomegranate", "delay": 1.4, "x_ratio": 0.7 },
+			{ "unit": "coconut", "delay": 2.2, "x_ratio": 0.5 },
+		]),
+		_create_wave(3, [
+			{ "unit": "watermelon", "delay": 0.5, "x_ratio": 0.35 },
+			{ "unit": "watermelon", "delay": 1.6, "x_ratio": 0.65 },
+			{ "unit": "pomegranate", "delay": 2.8, "x_ratio": 0.5 },
+		])
+	]
+	w2.levels.append(l29)
+
+	# Niveau 2-10 (Le Boss du Rivage : Carambine)
+	var l210: LevelData = LevelData.new()
+	l210.id = &"w2_10"
+	l210.world_id = w2.id
+	l210.level_number = 10
+	l210.display_title = "L'Étoile du Rivage : Carambine"
+	l210.description = "La bondissante Carambine s'abat sur la Plage Sucrée ! Renvoyez ses étoiles et brisez son rayon avant l'impact fatal !"
+	l210.star_thresholds = [3500, 7000, 10000]
+	l210.first_clear_gold = 700
+	l210.first_clear_diamonds = 40
+	l210.first_clear_booster_id = &"diamond_dust"
+	l210.waves = [
+		_create_wave(1, [
+			{ "unit": "coconut", "delay": 0.5, "x_ratio": 0.25 },
+			{ "unit": "watermelon", "delay": 1.5, "x_ratio": 0.75 },
+			{ "unit": "pomegranate", "delay": 2.5, "x_ratio": 0.5 },
+		]),
+		_create_wave(2, [
+			{ "unit": "boss_carambine", "delay": 0.8, "x_ratio": 0.5 },
+		])
+	]
+	w2.levels.append(l210)
 	list.append(w2)
 
 	return list

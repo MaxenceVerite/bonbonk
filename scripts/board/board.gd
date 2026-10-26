@@ -25,6 +25,46 @@ extends Node2D
 @onready var bumper_container: Node2D = $BumperContainer
 @onready var bumper_slot_container: Node2D = $BumperSlotContainer
 @onready var playfield_texture: TextureRect = $PlayfieldTexture
+@onready var left_wall_sprite: Sprite2D = get_node_or_null("FixedLedges/LeftWallSprite") as Sprite2D
+@onready var right_wall_sprite: Sprite2D = get_node_or_null("FixedLedges/RightWallSprite") as Sprite2D
+@onready var top_sand_extension: TextureRect = get_node_or_null("TopSandExtension") as TextureRect
+@onready var tree_cluster: Node2D = get_node_or_null("TreeCluster") as Node2D
+@onready var top_canopy_sprite: Sprite2D = get_node_or_null("TopCanopySprite") as Sprite2D
+
+func set_world_theme(world_data: WorldData) -> void:
+	if world_data == null:
+		return
+	set_arena_theme(world_data.arena_texture, world_data.arena_modulate)
+	
+	# Flippers / Portes
+	if world_data.flipper_texture != null:
+		if left_gate != null:
+			left_gate.set_gate_texture(world_data.flipper_texture)
+		if right_gate != null:
+			right_gate.set_gate_texture(world_data.flipper_texture)
+			
+	# Murs guides latéraux
+	if world_data.wall_left_texture != null and left_wall_sprite != null:
+		left_wall_sprite.texture = world_data.wall_left_texture
+	if world_data.wall_right_texture != null and right_wall_sprite != null:
+		right_wall_sprite.texture = world_data.wall_right_texture
+		
+	# Extension haute
+	if world_data.top_extension_texture != null and top_sand_extension != null:
+		top_sand_extension.texture = world_data.top_extension_texture
+		
+	# Canopée supérieure responsive
+	if world_data.canopy_texture != null:
+		if top_canopy_sprite != null:
+			top_canopy_sprite.texture = world_data.canopy_texture
+			top_canopy_sprite.visible = true
+		if tree_cluster != null:
+			tree_cluster.visible = false
+	else:
+		if top_canopy_sprite != null:
+			top_canopy_sprite.visible = false
+		if tree_cluster != null:
+			tree_cluster.visible = true
 
 func set_arena_theme(texture: Texture2D, modulate_col: Color = Color.WHITE) -> void:
 	if playfield_texture != null:
@@ -88,6 +128,30 @@ func start_game() -> void:
 	is_game_running = true
 	set_bumper_slots_placement_mode(false)
 	# Le joueur choisit quand lancer sa première bille en touchant un Pod !
+
+## Animation d'entrée en scène du plateau : pop en cascade des bumpers et petit éveil des batteurs
+func play_board_intro_reveal() -> void:
+	if bumper_slot_container != null:
+		var delay: float = 0.05
+		for slot in bumper_slot_container.get_children():
+			if slot is BumperSlot and slot.is_occupied():
+				var b: Node2D = slot.occupied_bumper_instance
+				if b != null and is_instance_valid(b):
+					b.scale = Vector2(0.2, 0.2)
+					var pop_tw: Tween = b.create_tween()
+					pop_tw.tween_interval(delay)
+					pop_tw.tween_property(b, "scale", Vector2.ONE, 0.28).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+					delay += 0.08
+
+	# Petit mouvement d'éveil des deux portes en bois
+	if left_gate != null:
+		left_gate.rotation_degrees = -12.0
+		var g_tw: Tween = left_gate.create_tween()
+		g_tw.tween_property(left_gate, "rotation_degrees", 0.0, 0.32).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	if right_gate != null:
+		right_gate.rotation_degrees = 12.0
+		var g_tw_r: Tween = right_gate.create_tween()
+		g_tw_r.tween_property(right_gate, "rotation_degrees", 0.0, 0.32).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func on_wave_cleared_stability() -> void:
 	is_game_running = false
@@ -197,11 +261,26 @@ func clear_all_bumpers() -> void:
 
 const BroccoliBumperScene: PackedScene = preload("res://scenes/board/broccoli_bumper.tscn")
 
+func hide_all_bumpers_temporarily(is_hidden: bool) -> void:
+	if bumper_slot_container != null:
+		for slot in bumper_slot_container.get_children():
+			if slot is BumperSlot:
+				slot.set_bumper_hidden(is_hidden)
+
 func restore_temporary_bumper_overrides() -> void:
+	hide_all_bumpers_temporarily(false)
 	if bumper_slot_container != null:
 		for slot in bumper_slot_container.get_children():
 			if slot is BumperSlot and slot.has_temporary_override():
 				slot.restore_from_temporary_override()
+
+func get_occupied_or_active_bumper_slots() -> Array[BumperSlot]:
+	var result: Array[BumperSlot] = []
+	if bumper_slot_container != null:
+		for slot in bumper_slot_container.get_children():
+			if slot is BumperSlot and slot.is_occupied():
+				result.append(slot)
+	return result
 
 func get_slots_available_for_broccoli() -> Array[BumperSlot]:
 	var available: Array[BumperSlot] = []

@@ -734,6 +734,8 @@ func _on_adventure_play_requested(level_data: LevelData) -> void:
 	if level_data != null:
 		selected_campaign_level = level_data.level_number
 		SaveManager.campaign_selected_level = level_data.level_number
+		if adventure_view != null:
+			SaveManager.campaign_selected_world = adventure_view.current_world_num
 	_on_launch_game()
 
 func _on_survival_play_requested() -> void:

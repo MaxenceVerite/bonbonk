@@ -25,6 +25,7 @@
 [ext_resource type="Texture2D" path="res://assets/ui/btn_jouer_green_pressed.png" id="31_btn_jouer_pressed"]
 [ext_resource type="PackedScene" path="res://scenes/ui/play/adventure_view.tscn" id="32_adv_view"]
 [ext_resource type="PackedScene" path="res://scenes/ui/play/survival_view.tscn" id="33_surv_view"]
+[ext_resource type="FontFile" uid="uid://cskmqyam17ki0" path="res://assets/fonts/Fredoka-Variable.ttf" id="34_fredoka"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_MenuBg"]
 shader = ExtResource("2_bg_shader")
@@ -68,52 +69,65 @@ texture_margin_bottom = 35.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
+[sub_resource type="FontVariation" id="Font_SubTabLabel"]
+base_font = ExtResource("34_fredoka")
+variation_opentype = {
+2003265652: 850
+}
+variation_embolden = 0.25
+spacing_glyph = 2
+
 [sub_resource type="StyleBoxFlat" id="StyleBox_DeckTabsWell"]
-content_margin_left = 10.0
-content_margin_top = 8.0
-content_margin_right = 10.0
-content_margin_bottom = 10.0
-bg_color = Color(0.24, 0.13, 0.07, 1)
-border_width_left = 3
-border_width_top = 4
-border_width_right = 3
-border_width_bottom = 2
-border_color = Color(0.14, 0.07, 0.03, 1)
-corner_radius_top_left = 18
-corner_radius_top_right = 18
-corner_radius_bottom_right = 18
-corner_radius_bottom_left = 18
-shadow_color = Color(0.08, 0.03, 0.01, 0.35)
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.14, 0.07, 0.03, 1)
+border_width_bottom = 4
+border_color = Color(0.09, 0.04, 0.01, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_TabLeft_Normal"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+bg_color = Color(0.22, 0.11, 0.05, 1)
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.12, 0.05, 0.02, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_TabLeft_Pressed"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.96, 0.65, 0.14, 1)
+border_width_right = 2
+border_width_bottom = 6
+border_color = Color(0.72, 0.38, 0.04, 1)
+shadow_color = Color(0.96, 0.55, 0.1, 0.25)
 shadow_size = 4
 shadow_offset = Vector2(0, 2)
 
-[sub_resource type="StyleBoxFlat" id="StyleBox_DeckTabNormal"]
-content_margin_left = 16.0
-content_margin_top = 6.0
-content_margin_right = 16.0
-content_margin_bottom = 10.0
-bg_color = Color(0.79, 0.70, 0.58, 1)
-border_width_bottom = 5
-border_color = Color(0.64, 0.53, 0.41, 1)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
+[sub_resource type="StyleBoxFlat" id="StyleBox_TabRight_Normal"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+bg_color = Color(0.22, 0.11, 0.05, 1)
+border_width_bottom = 4
+border_color = Color(0.12, 0.05, 0.02, 1)
 
-[sub_resource type="StyleBoxFlat" id="StyleBox_DeckTabPressed"]
-content_margin_left = 16.0
-content_margin_top = 6.0
-content_margin_right = 16.0
-content_margin_bottom = 10.0
+[sub_resource type="StyleBoxFlat" id="StyleBox_TabRight_Pressed"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
 bg_color = Color(0.96, 0.65, 0.14, 1)
 border_width_bottom = 6
-border_color = Color(0.72, 0.40, 0.04, 1)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
-shadow_color = Color(0.96, 0.55, 0.10, 0.3)
-shadow_size = 6
+border_color = Color(0.72, 0.38, 0.04, 1)
+shadow_color = Color(0.96, 0.55, 0.1, 0.25)
+shadow_size = 4
 shadow_offset = Vector2(0, 2)
 
 [sub_resource type="StyleBoxTexture" id="StyleBox_BtnJouerNormal"]
@@ -997,45 +1011,53 @@ theme_override_styles/panel = SubResource("StyleBox_DeckTabsWell")
 
 [node name="ModeTabsRow" type="HBoxContainer" parent="ContentContainer/PlayTab/VBox/SubNavModeBar"]
 layout_mode = 2
-theme_override_constants/separation = 16
-alignment = 1
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
 
 [node name="BtnSubTabAdventure" type="Button" parent="ContentContainer/PlayTab/VBox/SubNavModeBar/ModeTabsRow"]
-custom_minimum_size = Vector2(230, 48)
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 0
-theme_override_colors/font_color = Color(0.27, 0.16, 0.08, 1)
+theme_override_fonts/font = SubResource("Font_SubTabLabel")
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.74, 0.60, 0.48, 1)
 theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
-theme_override_colors/font_hover_color = Color(0.27, 0.16, 0.08, 1)
+theme_override_colors/font_hover_color = Color(0.85, 0.72, 0.60, 1)
 theme_override_colors/font_hover_pressed_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0.35, 0.18, 0.04, 0.9)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 22
-theme_override_styles/normal = SubResource("StyleBox_DeckTabNormal")
-theme_override_styles/pressed = SubResource("StyleBox_DeckTabPressed")
-theme_override_styles/hover = SubResource("StyleBox_DeckTabNormal")
-theme_override_styles/hover_pressed = SubResource("StyleBox_DeckTabPressed")
+theme_override_colors/font_outline_color = Color(0.24, 0.10, 0.02, 1)
+theme_override_constants/outline_size = 6
+theme_override_colors/font_shadow_color = Color(0.12, 0.04, 0.01, 0.85)
+theme_override_constants/shadow_offset_y = 3
+theme_override_styles/normal = SubResource("StyleBox_TabLeft_Normal")
+theme_override_styles/pressed = SubResource("StyleBox_TabLeft_Pressed")
+theme_override_styles/hover = SubResource("StyleBox_TabLeft_Normal")
+theme_override_styles/hover_pressed = SubResource("StyleBox_TabLeft_Pressed")
 toggle_mode = true
 button_pressed = true
-text = "🗺️  AVENTURE"
+text = "AVENTURE"
 
 [node name="BtnSubTabSurvival" type="Button" parent="ContentContainer/PlayTab/VBox/SubNavModeBar/ModeTabsRow"]
-custom_minimum_size = Vector2(230, 48)
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 0
-theme_override_colors/font_color = Color(0.27, 0.16, 0.08, 1)
+theme_override_fonts/font = SubResource("Font_SubTabLabel")
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.74, 0.60, 0.48, 1)
 theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
-theme_override_colors/font_hover_color = Color(0.27, 0.16, 0.08, 1)
+theme_override_colors/font_hover_color = Color(0.85, 0.72, 0.60, 1)
 theme_override_colors/font_hover_pressed_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0.35, 0.18, 0.04, 0.9)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 22
-theme_override_styles/normal = SubResource("StyleBox_DeckTabNormal")
-theme_override_styles/pressed = SubResource("StyleBox_DeckTabPressed")
-theme_override_styles/hover = SubResource("StyleBox_DeckTabNormal")
-theme_override_styles/hover_pressed = SubResource("StyleBox_DeckTabPressed")
+theme_override_colors/font_outline_color = Color(0.24, 0.10, 0.02, 1)
+theme_override_constants/outline_size = 6
+theme_override_colors/font_shadow_color = Color(0.12, 0.04, 0.01, 0.85)
+theme_override_constants/shadow_offset_y = 3
+theme_override_styles/normal = SubResource("StyleBox_TabRight_Normal")
+theme_override_styles/pressed = SubResource("StyleBox_TabRight_Pressed")
+theme_override_styles/hover = SubResource("StyleBox_TabRight_Normal")
+theme_override_styles/hover_pressed = SubResource("StyleBox_TabRight_Pressed")
 toggle_mode = true
-text = "♾️  SURVIE"
+text = "SURVIE"
 
 [node name="ViewsContainer" type="Control" parent="ContentContainer/PlayTab/VBox"]
 layout_mode = 2

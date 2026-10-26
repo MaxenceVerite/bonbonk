@@ -1,0 +1,214 @@
+[gd_scene load_steps=9 format=3 uid="uid://stageintro001"]
+
+[ext_resource type="Script" path="res://scripts/ui/stage_intro_overlay.gd" id="1_intro_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_candy_card.png" id="2_card_bg"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_btn_yellow_n.png" id="3_btn_yellow"]
+[ext_resource type="Texture2D" path="res://assets/ui/sparkle_star.png" id="4_sparkle_star"]
+[ext_resource type="Script" path="res://scripts/ui/stage_intro_fx_canvas.gd" id="5_fx_script"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_Card"]
+texture = ExtResource("2_card_bg")
+texture_margin_left = 24.0
+texture_margin_top = 20.0
+texture_margin_right = 24.0
+texture_margin_bottom = 26.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_TapPrompt"]
+texture = ExtResource("3_btn_yellow")
+texture_margin_left = 18.0
+texture_margin_top = 8.0
+texture_margin_right = 18.0
+texture_margin_bottom = 12.0
+
+[sub_resource type="LabelSettings" id="LabelSettings_Ready"]
+font_size = 76
+font_color = Color(1, 0.94, 0.32, 1)
+outline_size = 16
+outline_color = Color(0.25, 0.08, 0.02, 1)
+shadow_size = 10
+shadow_color = Color(0.12, 0.02, 0.02, 0.75)
+shadow_offset = Vector2(0, 5)
+
+[sub_resource type="LabelSettings" id="LabelSettings_Bonbonk"]
+font_size = 88
+font_color = Color(1, 0.2, 0.65, 1)
+outline_size = 18
+outline_color = Color(0.24, 0.04, 0.16, 1)
+shadow_size = 12
+shadow_color = Color(0.1, 0.01, 0.08, 0.85)
+shadow_offset = Vector2(0, 6)
+
+[node name="StageIntroOverlay" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_intro_script")
+
+[node name="Darkener" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.05, 0.02, 0.08, 0)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BannerCard" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(520, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBox_Card")
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/BannerCard"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 22
+
+[node name="CardVBox" type="VBoxContainer" parent="CenterContainer/BannerCard/Margin"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="WorldTagLabel" type="Label" parent="CenterContainer/BannerCard/Margin/CardVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.62, 0.12, 1)
+theme_override_colors/font_shadow_color = Color(0.15, 0.05, 0.02, 0.4)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 20
+text = "★ MONDE 1 • PLAGE SUCRÉE ★"
+horizontal_alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/BannerCard/Margin/CardVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.32, 0.14, 0.06, 1)
+theme_override_colors/font_shadow_color = Color(0.85, 0.6, 0.4, 0.3)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 34
+text = "NIVEAU 1-1"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="CenterContainer/BannerCard/Margin/CardVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.35, 0.22, 1)
+theme_override_font_sizes/font_size = 20
+text = "Défendez les portes !"
+horizontal_alignment = 1
+
+[node name="StarsContainer" type="HBoxContainer" parent="CenterContainer/BannerCard/Margin/CardVBox"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="StarsLabel" type="Label" parent="CenterContainer/BannerCard/Margin/CardVBox/StarsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "⭐ ⭐ ⭐"
+horizontal_alignment = 1
+
+[node name="PromptMargin" type="MarginContainer" parent="CenterContainer/BannerCard/Margin/CardVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_top = 4
+
+[node name="TapPromptBox" type="PanelContainer" parent="CenterContainer/BannerCard/Margin/CardVBox/PromptMargin"]
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBox_TapPrompt")
+
+[node name="TapPromptLabel" type="Label" parent="CenterContainer/BannerCard/Margin/CardVBox/PromptMargin/TapPromptBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.32, 0.12, 0.02, 1)
+theme_override_colors/font_shadow_color = Color(1, 0.9, 0.4, 0.5)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 16
+text = "▶  TOUCHER POUR JOUER  ◀"
+horizontal_alignment = 1
+
+[node name="CalloutContainer" type="CenterContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ReadyBox" type="HBoxContainer" parent="CalloutContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="SparkleLeft" type="TextureRect" parent="CalloutContainer/ReadyBox"]
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("4_sparkle_star")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ReadyLabel" type="Label" parent="CalloutContainer/ReadyBox"]
+layout_mode = 2
+text = "PRÊT ?"
+label_settings = SubResource("LabelSettings_Ready")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SparkleRight" type="TextureRect" parent="CalloutContainer/ReadyBox"]
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("4_sparkle_star")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BonbonkLabel" type="Label" parent="CalloutContainer"]
+visible = false
+layout_mode = 2
+text = "BONBONK !"
+label_settings = SubResource("LabelSettings_Bonbonk")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FXCanvas" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("5_fx_script")
+
+[node name="FlashOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.95, 0.98, 0)

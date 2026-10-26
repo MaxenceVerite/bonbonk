@@ -126,12 +126,17 @@ func _execute_command(input: String) -> void:
 			else:
 				print_log("[color=#e06c75]Erreur: Main introuvable[/color]")
 
-		"boss", "brocolino":
+		"boss", "brocolino", "carambine":
 			if main_node != null:
 				var board: Board = main_node.get_node_or_null("Board") as Board
+				var boss_scene: String = "res://scenes/enemies/boss_brocolino.tscn"
+				var boss_lbl: String = "Brocolino"
+				if cmd == "carambine" or (not args.is_empty() and args[0].to_lower() == "carambine"):
+					boss_scene = "res://scenes/enemies/boss_carambine.tscn"
+					boss_lbl = "Carambine"
 				if board != null and board.is_game_running:
-					board.spawn_enemy_by_path("res://scenes/enemies/boss_brocolino.tscn", 310.0)
-					print_log("[color=#98c379]Boss Brocolino invoqué sur le terrain ![/color]")
+					board.spawn_enemy_by_path(boss_scene, 310.0)
+					print_log("[color=#98c379]Boss %s invoqué sur le terrain ![/color]" % boss_lbl)
 				else:
 					main_node.dev_jump_to_wave(10)
 					print_log("[color=#98c379]Lancement de la manche 10 (Boss) ![/color]")

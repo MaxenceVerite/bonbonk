@@ -12,6 +12,7 @@ const LevelData = preload("res://scripts/data/level_data.gd")
 const WorldData = preload("res://scripts/data/world_data.gd")
 const CampaignCatalog = preload("res://scripts/data/campaign_catalog.gd")
 const LevelCompleteModal = preload("res://scripts/ui/level_complete_modal.gd")
+const StageIntroOverlay = preload("res://scripts/ui/stage_intro_overlay.gd")
 
 enum ScreenState { TITLE, MENU, GAME }
 var current_screen_state: ScreenState = ScreenState.TITLE
@@ -26,6 +27,7 @@ var current_screen_state: ScreenState = ScreenState.TITLE
 @onready var bumper_placement_overlay: BumperPlacementOverlay = %BumperPlacementOverlay
 @onready var game_over_modal: GameOverModal = %GameOverModal
 @onready var level_complete_modal: LevelCompleteModal = %LevelCompleteModal
+@onready var stage_intro_overlay: StageIntroOverlay = %StageIntroOverlay
 
 # HUD
 @onready var btn_back_to_menu: Button = %BtnBackMenu
@@ -143,6 +145,8 @@ func show_title_screen() -> void:
 		game_over_modal.visible = false
 	if level_complete_modal != null:
 		level_complete_modal.visible = false
+	if stage_intro_overlay != null:
+		stage_intro_overlay.visible = false
 	if wave_director != null:
 		wave_director.stop_waves()
 	if board != null:
@@ -165,6 +169,8 @@ func show_main_menu() -> void:
 		game_over_modal.visible = false
 	if level_complete_modal != null:
 		level_complete_modal.visible = false
+	if stage_intro_overlay != null:
+		stage_intro_overlay.visible = false
 	if wave_director != null:
 		wave_director.stop_waves()
 	
@@ -200,12 +206,14 @@ func launch_game() -> void:
 		if active_level_data == null and active_world_data != null and not active_world_data.levels.is_empty():
 			active_level_data = active_world_data.levels[0]
 		if board != null and active_world_data != null:
-			board.set_arena_theme(active_world_data.arena_texture, active_world_data.arena_modulate)
+			board.set_world_theme(active_world_data)
 	else:
-		active_world_data = CampaignCatalog.get_world_by_number(1)
+		active_world_data = CampaignCatalog.get_world_by_number(SaveManager.survival_selected_world)
+		if active_world_data == null:
+			active_world_data = CampaignCatalog.get_world_by_number(1)
 		active_level_data = null
 		if board != null and active_world_data != null:
-			board.set_arena_theme(active_world_data.arena_texture, active_world_data.arena_modulate)
+			board.set_world_theme(active_world_data)
 
 	# Réinitialisation de la partie
 	if damage_number_manager != null:
@@ -228,12 +236,56 @@ func launch_game() -> void:
 		touch_controls.visible = false
 		bumper_placement_overlay.open_placement(board)
 	else:
-		_start_board_gameplay()
+		_play_stage_intro_and_start()
 
 func _on_bumper_placement_completed() -> void:
+	_play_stage_intro_and_start()
+
+func _play_stage_intro_and_start() -> void:
 	hud.visible = true
 	touch_controls.visible = true
-	_start_board_gameplay()
+
+	# Prépare les données de la bannière
+	var is_campaign: bool = SaveManager.is_campaign()
+	var intro_info: Dictionary = {}
+	if is_campaign and active_level_data != null:
+		intro_info = {
+			"mode": "campaign",
+			"world_title": active_world_data.display_name if active_world_data != null else "Monde 1",
+			"level_title": active_level_data.display_title,
+			"subtitle": "Défendez les portes sucrées !"
+		}
+	else:
+		intro_info = {
+			"mode": "survival",
+			"world_title": "SURVIE ARCADE",
+			"level_title": "MANCHE %d" % current_wave,
+			"subtitle": "Repoussez les vagues de bonbons !"
+		}
+
+	# Animation d'entrée du plateau (pop des bumpers et éveil des portes)
+	if board != null:
+		board.play_board_intro_reveal()
+
+	# Animation de descente fluide du HUD
+	_animate_hud_entry()
+
+	if stage_intro_overlay != null:
+		stage_intro_overlay.play_intro(intro_info, func() -> void:
+			_start_board_gameplay()
+		)
+	else:
+		_start_board_gameplay()
+
+func _animate_hud_entry() -> void:
+	if hud != null:
+		hud.position.y = -90.0
+		var tw: Tween = create_tween()
+		tw.tween_property(hud, "position:y", 0.0, 0.38).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	if ball_factory_ui != null:
+		ball_factory_ui.modulate.a = 0.0
+		var tw_fac: Tween = create_tween()
+		tw_fac.tween_property(ball_factory_ui, "modulate:a", 1.0, 0.35)
 
 func _start_board_gameplay() -> void:
 	if board != null:

@@ -44,6 +44,11 @@
       "display_name": "Brocolino",
       "cost": 50,
       "scene_path": "res://scenes/enemies/boss_brocolino.tscn"
+    },
+    "boss_carambine": {
+      "display_name": "Carambine",
+      "cost": 50,
+      "scene_path": "res://scenes/enemies/boss_carambine.tscn"
     }
   },
   "squad_compositions": [

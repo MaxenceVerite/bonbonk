@@ -9,6 +9,9 @@ signal deck_slot_clicked(slot_index: int)
 
 @onready var best_wave_label: Label = $VBox/StatsCard/HBox/BestWaveBox/ValueLabel
 @onready var best_score_label: Label = $VBox/StatsCard/HBox/BestScoreBox/ValueLabel
+@onready var btn_prev_arena: Button = get_node_or_null("VBox/ArenaSelectorCard/HBox/BtnPrevArena") as Button
+@onready var btn_next_arena: Button = get_node_or_null("VBox/ArenaSelectorCard/HBox/BtnNextArena") as Button
+@onready var arena_name_label: Label = get_node_or_null("VBox/ArenaSelectorCard/HBox/ArenaInfoVBox/ArenaNameLabel") as Label
 @onready var deck_slots_grid: GridContainer = $VBox/DeckCard/VBox/DeckSlotsGrid
 @onready var btn_launch: Button = $VBox/BtnLaunchSurvival
 
@@ -17,6 +20,11 @@ func _ready() -> void:
 		btn_launch.pressed.connect(func() -> void:
 			survival_play_requested.emit()
 		)
+
+	if btn_prev_arena != null:
+		btn_prev_arena.pressed.connect(_on_prev_arena_pressed)
+	if btn_next_arena != null:
+		btn_next_arena.pressed.connect(_on_next_arena_pressed)
 
 	if deck_slots_grid != null:
 		var slot_children: Array = deck_slots_grid.get_children()
@@ -28,9 +36,37 @@ func _ready() -> void:
 
 	refresh()
 
+func _on_prev_arena_pressed() -> void:
+	var worlds: Array[WorldData] = CampaignCatalog.get_all_worlds()
+	if worlds.is_empty():
+		return
+	var cur_num: int = SaveManager.survival_selected_world
+	var next_num: int = cur_num - 1
+	if next_num < 1:
+		next_num = worlds.size()
+	SaveManager.survival_selected_world = next_num
+	_refresh_arena()
+
+func _on_next_arena_pressed() -> void:
+	var worlds: Array[WorldData] = CampaignCatalog.get_all_worlds()
+	if worlds.is_empty():
+		return
+	var cur_num: int = SaveManager.survival_selected_world
+	var next_num: int = cur_num + 1
+	if next_num > worlds.size():
+		next_num = 1
+	SaveManager.survival_selected_world = next_num
+	_refresh_arena()
+
 func refresh() -> void:
 	_refresh_stats()
+	_refresh_arena()
 	_refresh_deck()
+
+func _refresh_arena() -> void:
+	var w: WorldData = CampaignCatalog.get_world_by_number(SaveManager.survival_selected_world)
+	if arena_name_label != null and w != null:
+		arena_name_label.text = w.display_name.to_upper()
 
 func _refresh_stats() -> void:
 	var prof: RefCounted = SaveManager.current_profile

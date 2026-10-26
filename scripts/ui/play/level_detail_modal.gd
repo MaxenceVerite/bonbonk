@@ -99,12 +99,24 @@ func open(level_data: LevelData) -> void:
 	if reward_booster_box != null:
 		reward_booster_box.visible = (level_data.first_clear_booster_id != &"")
 
-	# Statut de déblocage
-	var is_unlocked: bool = (level_data.level_number <= SaveManager.campaign_unlocked_level)
+	# Statut de déblocage multi-monde
+	var world_num: int = int(String(level_data.world_id).trim_prefix("world_"))
+	var is_world_unlocked: bool = (world_num <= SaveManager.campaign_unlocked_world)
+	var is_unlocked: bool = false
+
+	if world_num < SaveManager.campaign_unlocked_world:
+		is_unlocked = true
+	elif world_num == SaveManager.campaign_unlocked_world:
+		is_unlocked = (level_data.level_number <= SaveManager.campaign_unlocked_level)
+	else:
+		is_unlocked = false
+
 	if btn_play != null:
 		btn_play.disabled = not is_unlocked
 		if is_unlocked:
 			btn_play.text = "▶  JOUER"
+		elif not is_world_unlocked:
+			btn_play.text = "🔒 MONDE VERROUILLÉ"
 		else:
 			btn_play.text = "🔒 NIVEAU VERROUILLÉ"
 
@@ -124,6 +136,15 @@ func close() -> void:
 	closed.emit()
 
 func _on_btn_play_pressed() -> void:
-	if current_level_data != null and current_level_data.level_number <= SaveManager.campaign_unlocked_level:
+	if current_level_data == null:
+		return
+	var world_num: int = int(String(current_level_data.world_id).trim_prefix("world_"))
+	var is_unlocked: bool = false
+	if world_num < SaveManager.campaign_unlocked_world:
+		is_unlocked = true
+	elif world_num == SaveManager.campaign_unlocked_world:
+		is_unlocked = (current_level_data.level_number <= SaveManager.campaign_unlocked_level)
+
+	if is_unlocked:
 		visible = false
 		play_level_requested.emit(current_level_data)

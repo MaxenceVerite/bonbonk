@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://carambinestarproj01"]
+
+[ext_resource type="Script" path="res://scripts/effects/carambine_star_projectile.gd" id="1_star_proj"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_star"]
+radius = 32.0
+
+[node name="CarambineStarProjectile" type="Area2D"]
+z_index = 18
+collision_layer = 0
+collision_mask = 34
+script = ExtResource("1_star_proj")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_star")

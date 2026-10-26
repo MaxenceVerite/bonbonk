@@ -8,6 +8,7 @@ extends Enemy
 @export var boss_name: String = "Brocolino"
 @export var boss_max_hp: int = 200
 @export var target_anchor_y: float = 160.0
+@export var anchors_to_top: bool = true
 
 var is_invulnerable: bool = false
 var _invuln_pulse_t: float = 0.0
@@ -110,8 +111,8 @@ func _physics_process(delta: float) -> void:
 		_invuln_pulse_t += delta * 5.0
 		queue_redraw()
 
-	# Les Boss restent ancrés en haut sans avancer vers le bas une fois arrivés
-	if not _is_entering:
+	# Les Boss stationnaires restent ancrés en haut sans avancer vers le bas une fois arrivés
+	if anchors_to_top and not _is_entering:
 		position.y = target_anchor_y + sin(_time_alive * 2.0) * 4.0 # Respiration flottante subtile
 
 func _on_died() -> void:
