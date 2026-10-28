@@ -113,6 +113,24 @@ static func get_green_pill_style() -> StyleBoxFlat:
 	sb.content_margin_bottom = 6.0
 	return sb
 
+static func get_green_pill_pressed_style() -> StyleBoxFlat:
+	var sb: StyleBoxFlat = StyleBoxFlat.new()
+	sb.bg_color = Color(0.18, 0.65, 0.35, 1.0)
+	sb.border_width_left = 2
+	sb.border_width_top = 2
+	sb.border_width_right = 2
+	sb.border_width_bottom = 2
+	sb.border_color = Color(0.08, 0.35, 0.18, 1.0)
+	sb.corner_radius_top_left = 20
+	sb.corner_radius_top_right = 20
+	sb.corner_radius_bottom_right = 20
+	sb.corner_radius_bottom_left = 20
+	sb.content_margin_left = 12.0
+	sb.content_margin_top = 7.0
+	sb.content_margin_right = 12.0
+	sb.content_margin_bottom = 3.0
+	return sb
+
 ## Bouton pilule jaune ("200 🪙" / "500 🪙")
 static func get_yellow_pill_style() -> StyleBoxFlat:
 	var sb: StyleBoxFlat = StyleBoxFlat.new()
@@ -130,6 +148,24 @@ static func get_yellow_pill_style() -> StyleBoxFlat:
 	sb.content_margin_top = 4.0
 	sb.content_margin_right = 8.0
 	sb.content_margin_bottom = 6.0
+	return sb
+
+static func get_yellow_pill_pressed_style() -> StyleBoxFlat:
+	var sb: StyleBoxFlat = StyleBoxFlat.new()
+	sb.bg_color = Color(0.85, 0.60, 0.10, 1.0)
+	sb.border_width_left = 2
+	sb.border_width_top = 2
+	sb.border_width_right = 2
+	sb.border_width_bottom = 2
+	sb.border_color = Color(0.45, 0.25, 0.04, 1.0)
+	sb.corner_radius_top_left = 18
+	sb.corner_radius_top_right = 18
+	sb.corner_radius_bottom_right = 18
+	sb.corner_radius_bottom_left = 18
+	sb.content_margin_left = 8.0
+	sb.content_margin_top = 7.0
+	sb.content_margin_right = 8.0
+	sb.content_margin_bottom = 3.0
 	return sb
 
 ## Bouton pilule bleu / cyan ("15 💎" / "10 💎" / "4,99€")
@@ -150,6 +186,35 @@ static func get_blue_pill_style() -> StyleBoxFlat:
 	sb.content_margin_right = 8.0
 	sb.content_margin_bottom = 6.0
 	return sb
+
+static func get_blue_pill_pressed_style() -> StyleBoxFlat:
+	var sb: StyleBoxFlat = StyleBoxFlat.new()
+	sb.bg_color = Color(0.12, 0.55, 0.82, 1.0)
+	sb.border_width_left = 2
+	sb.border_width_top = 2
+	sb.border_width_right = 2
+	sb.border_width_bottom = 2
+	sb.border_color = Color(0.03, 0.24, 0.45, 1.0)
+	sb.corner_radius_top_left = 18
+	sb.corner_radius_top_right = 18
+	sb.corner_radius_bottom_right = 18
+	sb.corner_radius_bottom_left = 18
+	sb.content_margin_left = 8.0
+	sb.content_margin_top = 7.0
+	sb.content_margin_right = 8.0
+	sb.content_margin_bottom = 3.0
+	return sb
+
+static func wire_tactile_button(btn: Button, item: Resource, is_diamonds: bool, on_purchase_callable: Callable) -> void:
+	btn.pivot_offset = btn.custom_minimum_size * 0.5
+	btn.pressed.connect(func() -> void:
+		Input.vibrate_handheld(25)
+		var tw: Tween = btn.create_tween()
+		tw.tween_property(btn, "scale", Vector2(0.92, 0.92), 0.05).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tw.tween_property(btn, "scale", Vector2.ONE, 0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		if on_purchase_callable.is_valid():
+			on_purchase_callable.call(item, is_diamonds)
+	)
 
 ## Bouton pilule désactivé / grisé (ex: "35 💎" si pas assez de gemmes)
 static func get_disabled_pill_style() -> StyleBoxFlat:
@@ -413,7 +478,7 @@ static func create_featured_card(
 	blue_btn.custom_minimum_size = Vector2(180, 52)
 	blue_btn.add_theme_stylebox_override("normal", get_blue_pill_style())
 	blue_btn.add_theme_stylebox_override("hover", get_blue_pill_style())
-	blue_btn.add_theme_stylebox_override("pressed", get_blue_pill_style())
+	blue_btn.add_theme_stylebox_override("pressed", get_blue_pill_pressed_style())
 	blue_btn.add_theme_font_size_override("font_size", 23)
 	blue_btn.add_theme_color_override("font_color", Color.WHITE)
 	blue_btn.add_theme_color_override("font_outline_color", Color(0.04, 0.22, 0.45, 1.0))
@@ -424,10 +489,7 @@ static func create_featured_card(
 	blue_btn.offset_right = 90.0
 	blue_btn.offset_bottom = 28.0
 
-	blue_btn.pressed.connect(func() -> void:
-		if on_purchase_callable.is_valid():
-			on_purchase_callable.call(item, false)
-	)
+	wire_tactile_button(blue_btn, item, false, on_purchase_callable)
 
 	bottom_btn_anchor.add_child(blue_btn)
 	root_container.add_child(bottom_btn_anchor)
@@ -446,7 +508,7 @@ static func create_reward_card_2col(
 ) -> Control:
 	var panel: PanelContainer = PanelContainer.new()
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.custom_minimum_size = Vector2(0, 130)
+	panel.custom_minimum_size = Vector2(0, 148)
 	panel.add_theme_stylebox_override("panel", get_card_style())
 
 	var hbox: HBoxContainer = HBoxContainer.new()
@@ -455,9 +517,9 @@ static func create_reward_card_2col(
 	hbox.add_theme_constant_override("separation", 12)
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 
-	# 1. Icône à gauche
+	# 1. Icône à gauche (agrandie pour plus de visibilité)
 	var icon: TextureRect = TextureRect.new()
-	icon.custom_minimum_size = Vector2(82, 82)
+	icon.custom_minimum_size = Vector2(104, 104)
 	icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -493,15 +555,12 @@ static func create_reward_card_2col(
 		btn_action.text = btn_txt
 		btn_action.add_theme_stylebox_override("normal", get_green_pill_style())
 		btn_action.add_theme_stylebox_override("hover", get_green_pill_style())
-		btn_action.add_theme_stylebox_override("pressed", get_green_pill_style())
+		btn_action.add_theme_stylebox_override("pressed", get_green_pill_pressed_style())
 		btn_action.add_theme_font_size_override("font_size", 16)
 		btn_action.add_theme_color_override("font_color", Color.WHITE)
 		btn_action.add_theme_color_override("font_outline_color", Color(0.06, 0.28, 0.14, 1.0))
 		btn_action.add_theme_constant_override("outline_size", 3)
-		btn_action.pressed.connect(func() -> void:
-			if on_purchase_callable.is_valid():
-				on_purchase_callable.call(item, false)
-		)
+		wire_tactile_button(btn_action, item, false, on_purchase_callable)
 	right_vbox.add_child(btn_action)
 
 	hbox.add_child(right_vbox)
@@ -520,18 +579,18 @@ static func create_item_tile_card(
 ) -> Control:
 	var panel: PanelContainer = PanelContainer.new()
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.custom_minimum_size = Vector2(0, 206)
+	panel.custom_minimum_size = Vector2(0, 252)
 	panel.add_theme_stylebox_override("panel", get_card_style())
 
 	var vb: VBoxContainer = VBoxContainer.new()
 	vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vb.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vb.add_theme_constant_override("separation", 8)
+	vb.add_theme_constant_override("separation", 6)
 	vb.alignment = BoxContainer.ALIGNMENT_CENTER
 
-	# 1. Icône au centre
+	# 1. Icône au centre (très grande pour valoriser les sachets & trésors)
 	var icon: TextureRect = TextureRect.new()
-	icon.custom_minimum_size = Vector2(90, 90)
+	icon.custom_minimum_size = Vector2(130, 130)
 	icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -564,17 +623,13 @@ static func create_item_tile_card(
 		if can_gold:
 			btn_g.add_theme_stylebox_override("normal", get_yellow_pill_style())
 			btn_g.add_theme_stylebox_override("hover", get_yellow_pill_style())
-			btn_g.add_theme_stylebox_override("pressed", get_yellow_pill_style())
+			btn_g.add_theme_stylebox_override("pressed", get_yellow_pill_pressed_style())
 			btn_g.add_theme_color_override("font_color", Color(0.22, 0.11, 0.03, 1.0))
+			wire_tactile_button(btn_g, item, false, on_purchase_callable)
 		else:
 			btn_g.add_theme_stylebox_override("disabled", get_disabled_pill_style())
 			btn_g.disabled = true
 			btn_g.add_theme_color_override("font_disabled_color", Color(0.40, 0.38, 0.36, 1.0))
-
-		btn_g.pressed.connect(func() -> void:
-			if on_purchase_callable.is_valid():
-				on_purchase_callable.call(item, false)
-		)
 		hb_btns.add_child(btn_g)
 
 		# Bouton Bleu (Diamants)
@@ -586,19 +641,15 @@ static func create_item_tile_card(
 		if can_dia:
 			btn_d.add_theme_stylebox_override("normal", get_blue_pill_style())
 			btn_d.add_theme_stylebox_override("hover", get_blue_pill_style())
-			btn_d.add_theme_stylebox_override("pressed", get_blue_pill_style())
+			btn_d.add_theme_stylebox_override("pressed", get_blue_pill_pressed_style())
 			btn_d.add_theme_color_override("font_color", Color.WHITE)
 			btn_d.add_theme_color_override("font_outline_color", Color(0.04, 0.22, 0.45, 1.0))
 			btn_d.add_theme_constant_override("outline_size", 3)
+			wire_tactile_button(btn_d, item, true, on_purchase_callable)
 		else:
 			btn_d.add_theme_stylebox_override("disabled", get_disabled_pill_style())
 			btn_d.disabled = true
 			btn_d.add_theme_color_override("font_disabled_color", Color(0.40, 0.38, 0.36, 1.0))
-
-		btn_d.pressed.connect(func() -> void:
-			if on_purchase_callable.is_valid():
-				on_purchase_callable.call(item, true)
-		)
 		hb_btns.add_child(btn_d)
 	else:
 		# Un seul bouton (ex: OR & TRÉSORS avec "10 💎")
@@ -611,32 +662,26 @@ static func create_item_tile_card(
 			if can_d:
 				single_btn.add_theme_stylebox_override("normal", get_blue_pill_style())
 				single_btn.add_theme_stylebox_override("hover", get_blue_pill_style())
-				single_btn.add_theme_stylebox_override("pressed", get_blue_pill_style())
+				single_btn.add_theme_stylebox_override("pressed", get_blue_pill_pressed_style())
 				single_btn.add_theme_color_override("font_color", Color.WHITE)
 				single_btn.add_theme_color_override("font_outline_color", Color(0.04, 0.22, 0.45, 1.0))
 				single_btn.add_theme_constant_override("outline_size", 3)
+				wire_tactile_button(single_btn, item, true, on_purchase_callable)
 			else:
 				single_btn.add_theme_stylebox_override("disabled", get_disabled_pill_style())
 				single_btn.disabled = true
-			single_btn.pressed.connect(func() -> void:
-				if on_purchase_callable.is_valid():
-					on_purchase_callable.call(item, true)
-			)
 		else:
 			single_btn.text = "%d 🪙" % maxi(0, item.gold_price)
 			var can_g: bool = (player_gold >= item.gold_price)
 			if can_g:
 				single_btn.add_theme_stylebox_override("normal", get_yellow_pill_style())
 				single_btn.add_theme_stylebox_override("hover", get_yellow_pill_style())
-				single_btn.add_theme_stylebox_override("pressed", get_yellow_pill_style())
+				single_btn.add_theme_stylebox_override("pressed", get_yellow_pill_pressed_style())
 				single_btn.add_theme_color_override("font_color", Color(0.22, 0.11, 0.03, 1.0))
+				wire_tactile_button(single_btn, item, false, on_purchase_callable)
 			else:
 				single_btn.add_theme_stylebox_override("disabled", get_disabled_pill_style())
 				single_btn.disabled = true
-			single_btn.pressed.connect(func() -> void:
-				if on_purchase_callable.is_valid():
-					on_purchase_callable.call(item, false)
-			)
 		hb_btns.add_child(single_btn)
 
 	vb.add_child(hb_btns)

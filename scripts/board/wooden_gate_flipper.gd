@@ -22,6 +22,42 @@ var _current_state: State = State.REST
 var _was_pressed: bool = false
 var current_angular_velocity: float = 0.0
 var _prev_rotation: float = 0.0
+var _is_mega_slam: bool = false
+var _mega_slam_tween: Tween = null
+var _original_kick_speed: float = 1200.0
+
+func is_in_mega_slam() -> bool:
+	return _is_mega_slam
+
+## Déclenche l'allongement et la charge surpuissante du Mega Slam
+func trigger_mega_slam(duration: float = 0.55) -> void:
+	_is_mega_slam = true
+	_original_kick_speed = kick_speed_deg
+	kick_speed_deg = 2400.0 # Vitesse d'ouverture éclair
+	_current_state = State.KICK
+
+	if _mega_slam_tween != null and _mega_slam_tween.is_valid():
+		_mega_slam_tween.kill()
+
+	var spr: Sprite2D = get_node_or_null("ChocolateSprite") as Sprite2D
+	_mega_slam_tween = create_tween()
+	# 1. Allongement rapide (+42% de longueur : comble totalement l'écart central !)
+	_mega_slam_tween.tween_property(self, "scale:x", 1.42, 0.07).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	if spr != null:
+		# Flash électrique doré
+		spr.modulate = Color(2.4, 2.0, 0.5, 1.0)
+
+	_mega_slam_tween.tween_interval(duration)
+	
+	# 2. Rétractation fluide à la taille d'origine
+	_mega_slam_tween.tween_property(self, "scale:x", 1.0, 0.22).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	if spr != null:
+		_mega_slam_tween.parallel().tween_property(spr, "modulate", Color.WHITE, 0.22)
+	
+	_mega_slam_tween.tween_callback(func() -> void:
+		_is_mega_slam = false
+		kick_speed_deg = _original_kick_speed
+	)
 
 func set_gate_texture(tex: Texture2D) -> void:
 	var spr: Sprite2D = get_node_or_null("ChocolateSprite") as Sprite2D
@@ -36,6 +72,8 @@ func is_kicking() -> bool:
 ## La batte n'est capable d'intercepter et smash l'ennemi QUE lors de son ascension rapide !
 ## Si la batte est maintenue levée au repos haut ou si elle redescend, la fenêtre est fermée.
 func is_in_parry_window() -> bool:
+	if _is_mega_slam:
+		return true
 	if _current_state != State.KICK:
 		return false
 	# Vitesse angulaire ascensionnelle significative
@@ -115,7 +153,7 @@ func _physics_process(delta: float) -> void:
 	var rest_deg: float = (180.0 - 7.0) if is_right else 7.0
 	var kick_deg: float = (180.0 + 65.0) if is_right else -65.0
 	
-	if is_pressed:
+	if is_pressed or _is_mega_slam:
 		_current_state = State.KICK
 	else:
 		_current_state = State.RETURN

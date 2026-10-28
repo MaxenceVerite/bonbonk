@@ -49,5 +49,10 @@ signal cloud_sync_status_changed(status: String, message: String)
 signal cloud_sync_completed(success: bool)
 signal open_account_modal_requested
 
-
-
+# Mécanique Avancée : Mega Slam & Super Chain
+signal mega_slam_requested
+signal mega_slam_activated
+signal mega_slam_cooldown_updated(current: float, max_duration: float, is_ready: bool)
+signal super_chain_started(ball: RigidBody2D)
+signal super_chain_enemy_hit(ball: RigidBody2D, enemy: Node2D, combo_count: int)
+signal super_chain_completed(ball: RigidBody2D)

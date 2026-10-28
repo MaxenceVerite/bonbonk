@@ -1,77 +1,145 @@
-[gd_scene load_steps=7 format=3 uid="uid://b8vlevelpin01"]
+[gd_scene load_steps=12 format=3 uid="uid://b8vlevelpin01"]
 
 [ext_resource type="Script" path="res://scripts/ui/play/level_pin.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/ui/sparkle_star.png" id="2_glow"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBox_PinNormal"]
+[sub_resource type="StyleBoxFlat" id="StyleBox_GroundShadow"]
+bg_color = Color(0.12, 0.08, 0.04, 0.35)
+corner_radius_top_left = 28
+corner_radius_top_right = 28
+corner_radius_bottom_right = 28
+corner_radius_bottom_left = 28
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_ClearedNormal"]
 content_margin_left = 0.0
 content_margin_top = 0.0
 content_margin_right = 0.0
 content_margin_bottom = 0.0
-bg_color = Color(0.96, 0.72, 0.22, 1)
+bg_color = Color(0.24, 0.78, 0.44, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
-border_width_bottom = 6
-border_color = Color(0.72, 0.44, 0.08, 1)
+border_width_bottom = 7
+border_color = Color(0.10, 0.48, 0.24, 1)
 corner_radius_top_left = 32
 corner_radius_top_right = 32
 corner_radius_bottom_right = 32
 corner_radius_bottom_left = 32
-shadow_color = Color(0.18, 0.08, 0.03, 0.35)
-shadow_size = 6
+shadow_color = Color(0.08, 0.25, 0.12, 0.35)
+shadow_size = 5
 shadow_offset = Vector2(0, 3)
 
-[sub_resource type="StyleBoxFlat" id="StyleBox_PinPressed"]
+[sub_resource type="StyleBoxFlat" id="StyleBox_ClearedPressed"]
 content_margin_left = 0.0
 content_margin_top = 0.0
 content_margin_right = 0.0
 content_margin_bottom = 0.0
-bg_color = Color(0.86, 0.60, 0.15, 1)
+bg_color = Color(0.18, 0.68, 0.36, 1)
 border_width_left = 3
-border_width_top = 5
+border_width_top = 6
 border_width_right = 3
 border_width_bottom = 2
-border_color = Color(0.55, 0.30, 0.04, 1)
+border_color = Color(0.08, 0.38, 0.18, 1)
 corner_radius_top_left = 32
 corner_radius_top_right = 32
 corner_radius_bottom_right = 32
 corner_radius_bottom_left = 32
 
-[sub_resource type="StyleBoxFlat" id="StyleBox_PinHover"]
+[sub_resource type="StyleBoxFlat" id="StyleBox_ActiveNormal"]
 content_margin_left = 0.0
 content_margin_top = 0.0
 content_margin_right = 0.0
 content_margin_bottom = 0.0
-bg_color = Color(1, 0.80, 0.32, 1)
+bg_color = Color(1, 0.22, 0.38, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
-border_width_bottom = 6
-border_color = Color(0.78, 0.48, 0.10, 1)
+border_width_bottom = 7
+border_color = Color(0.70, 0.08, 0.20, 1)
 corner_radius_top_left = 32
 corner_radius_top_right = 32
 corner_radius_bottom_right = 32
 corner_radius_bottom_left = 32
-shadow_color = Color(0.96, 0.65, 0.15, 0.4)
+shadow_color = Color(1, 0.2, 0.35, 0.45)
 shadow_size = 8
-shadow_offset = Vector2(0, 3)
+shadow_offset = Vector2(0, 4)
 
-[sub_resource type="StyleBoxFlat" id="StyleBox_PinDisabled"]
+[sub_resource type="StyleBoxFlat" id="StyleBox_ActivePressed"]
 content_margin_left = 0.0
 content_margin_top = 0.0
 content_margin_right = 0.0
 content_margin_bottom = 0.0
-bg_color = Color(0.48, 0.44, 0.42, 1)
+bg_color = Color(0.85, 0.15, 0.28, 1)
 border_width_left = 3
-border_width_top = 3
+border_width_top = 6
+border_width_right = 3
+border_width_bottom = 2
+border_color = Color(0.55, 0.05, 0.15, 1)
+corner_radius_top_left = 32
+corner_radius_top_right = 32
+corner_radius_bottom_right = 32
+corner_radius_bottom_left = 32
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_LockedNormal"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.50, 0.44, 0.42, 1)
+border_width_left = 3
+border_width_top = 2
 border_width_right = 3
 border_width_bottom = 5
-border_color = Color(0.32, 0.28, 0.26, 1)
+border_color = Color(0.32, 0.26, 0.24, 1)
 corner_radius_top_left = 32
 corner_radius_top_right = 32
 corner_radius_bottom_right = 32
 corner_radius_bottom_left = 32
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_BossNormal"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.62, 0.20, 0.88, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 7
+border_color = Color(1, 0.84, 0.20, 1)
+corner_radius_top_left = 32
+corner_radius_top_right = 32
+corner_radius_bottom_right = 32
+corner_radius_bottom_left = 32
+shadow_color = Color(0.40, 0.10, 0.55, 0.5)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_GlossHighlight"]
+bg_color = Color(1, 1, 1, 0.35)
+corner_radius_top_left = 26
+corner_radius_top_right = 26
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_StarsBanner"]
+content_margin_left = 6.0
+content_margin_top = 1.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
+bg_color = Color(0.18, 0.10, 0.06, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 2
+border_color = Color(0.92, 0.78, 0.55, 0.75)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.25)
+shadow_size = 3
+shadow_offset = Vector2(0, 2)
 
 [node name="LevelPin" type="Control"]
 custom_minimum_size = Vector2(64, 64)
@@ -82,7 +150,33 @@ offset_bottom = 64.0
 pivot_offset = Vector2(32, 32)
 script = ExtResource("1_script")
 
-[node name="GlowPulse" type="TextureRect" parent="."]
+[node name="GroundShadow" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -28.0
+offset_top = -18.0
+offset_right = 28.0
+offset_bottom = 34.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBox_GroundShadow")
+
+[node name="PinAnchor" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(32, 32)
+mouse_filter = 2
+
+[node name="GlowPulse" type="TextureRect" parent="PinAnchor"]
 visible = false
 modulate = Color(1, 0.90, 0.35, 0.7)
 layout_mode = 1
@@ -91,19 +185,52 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -46.0
-offset_top = -46.0
-offset_right = 46.0
-offset_bottom = 46.0
+offset_left = -50.0
+offset_top = -50.0
+offset_right = 50.0
+offset_bottom = 50.0
 grow_horizontal = 2
 grow_vertical = 2
-pivot_offset = Vector2(46, 46)
+pivot_offset = Vector2(50, 50)
 mouse_filter = 2
 texture = ExtResource("2_glow")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Button" type="Button" parent="."]
+[node name="ActivePointer" type="Control" parent="PinAnchor"]
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_top = -32.0
+offset_bottom = -32.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="ArrowLabel" type="Label" parent="PinAnchor/ActivePointer"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -16.0
+offset_top = -26.0
+offset_right = 16.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.90, 0.20, 1)
+theme_override_colors/font_shadow_color = Color(0.40, 0.10, 0.05, 0.9)
+theme_override_colors/font_outline_color = Color(0.40, 0.12, 0.05, 1)
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 22
+text = "▼"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="Button" type="Button" parent="PinAnchor"]
 custom_minimum_size = Vector2(58, 58)
 layout_mode = 1
 anchors_preset = 8
@@ -118,89 +245,111 @@ offset_bottom = 29.0
 grow_horizontal = 2
 grow_vertical = 2
 focus_mode = 0
-theme_override_styles/normal = SubResource("StyleBox_PinNormal")
-theme_override_styles/pressed = SubResource("StyleBox_PinPressed")
-theme_override_styles/hover = SubResource("StyleBox_PinHover")
-theme_override_styles/disabled = SubResource("StyleBox_PinDisabled")
+theme_override_styles/normal = SubResource("StyleBox_ClearedNormal")
+theme_override_styles/pressed = SubResource("StyleBox_ClearedPressed")
 
-[node name="CenterContainer" type="CenterContainer" parent="Button"]
+[node name="GlossHighlight" type="Panel" parent="PinAnchor/Button"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 6.0
+offset_top = 4.0
+offset_right = -6.0
+offset_bottom = 22.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBox_GlossHighlight")
+
+[node name="CenterContainer" type="CenterContainer" parent="PinAnchor/Button"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -2.0
+offset_bottom = -2.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="NumberLabel" type="Label" parent="Button/CenterContainer"]
+[node name="NumberLabel" type="Label" parent="PinAnchor/Button/CenterContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_shadow_color = Color(0.35, 0.18, 0.04, 0.9)
-theme_override_colors/font_outline_color = Color(0.40, 0.20, 0.05, 1)
-theme_override_constants/shadow_offset_y = 2
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_shadow_color = Color(0.18, 0.08, 0.04, 0.95)
+theme_override_colors/font_outline_color = Color(0.22, 0.10, 0.05, 1)
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 26
 text = "1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="LockIcon" type="Label" parent="Button/CenterContainer"]
+[node name="LockIcon" type="Label" parent="PinAnchor/Button/CenterContainer"]
 visible = false
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.6)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 24
 text = "🔒"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BossCrown" type="Label" parent="."]
+[node name="BossCrown" type="Label" parent="PinAnchor"]
 visible = false
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -20.0
-offset_top = -26.0
-offset_right = 20.0
-offset_bottom = 8.0
+offset_left = -22.0
+offset_top = -28.0
+offset_right = 22.0
+offset_bottom = 6.0
 grow_horizontal = 2
-theme_override_font_sizes/font_size = 24
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 26
 text = "👑"
 horizontal_alignment = 1
 
-[node name="StarsHBox" type="HBoxContainer" parent="."]
+[node name="StarsBanner" type="PanelContainer" parent="PinAnchor"]
+visible = false
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -30.0
-offset_top = -4.0
-offset_right = 30.0
-offset_bottom = 16.0
+offset_left = -32.0
+offset_top = -10.0
+offset_right = 32.0
+offset_bottom = 14.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
-theme_override_constants/separation = -2
+theme_override_styles/panel = SubResource("StyleBox_StarsBanner")
+
+[node name="StarsHBox" type="HBoxContainer" parent="PinAnchor/StarsBanner"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
 alignment = 1
 
-[node name="Star1" type="Label" parent="StarsHBox"]
+[node name="Star1" type="Label" parent="PinAnchor/StarsBanner/StarsHBox"]
 layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.6)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 text = "⭐"
 
-[node name="Star2" type="Label" parent="StarsHBox"]
+[node name="Star2" type="Label" parent="PinAnchor/StarsBanner/StarsHBox"]
 layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.6)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 15
 text = "⭐"
 
-[node name="Star3" type="Label" parent="StarsHBox"]
+[node name="Star3" type="Label" parent="PinAnchor/StarsBanner/StarsHBox"]
 layout_mode = 2
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.6)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
 theme_override_constants/shadow_offset_y = 1
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 12
 text = "⭐"

@@ -46,6 +46,15 @@ var _current_aim_target: Enemy = null
 @onready var shadow: Polygon2D = $Shadow
 @onready var trail: Line2D = $BallTrail
 
+# Mécanique Super Chain (Mega Slam)
+var is_super_chain: bool = false
+var _chain_enemies_hit: Array[Enemy] = []
+var _chain_target: Enemy = null
+var _chain_combo_count: int = 0
+var _chain_timer: float = 0.0
+const CHAIN_MAX_DURATION: float = 3.2
+const SUPER_CHAIN_SPEED: float = 2400.0
+
 # Registre statique O(1) de toutes les billes actives dans l'arène
 static var active_balls: Array[Ball] = []
 
@@ -109,14 +118,23 @@ func _on_body_entered(body: Node) -> void:
 	if body is CandyBumper:
 		var bumper: CandyBumper = body as CandyBumper
 		bumper.on_hit_by_ball(self, global_position)
+		if is_super_chain:
+			return
 		for kw in get_all_keywords():
 			kw.on_hit_bumper(self, bumper)
 	elif body is WoodenGateFlipper:
+		var flipper: WoodenGateFlipper = body as WoodenGateFlipper
+		if flipper != null and flipper.is_in_mega_slam():
+			enter_super_chain()
+			return
 		for kw in get_all_keywords():
 			kw.on_hit_flipper(self, body)
 	elif body is Enemy:
 		var enemy: Enemy = body as Enemy
 		if enemy != null and is_instance_valid(enemy) and not enemy.is_dying():
+			if is_super_chain:
+				_handle_super_chain_hit(enemy)
+				return
 			var durability_penalty: int = enemy.enemy_data.spiky_ball_durability_loss if (enemy.enemy_data and enemy.enemy_data.is_spiky) else 1
 			hit_enemy_with_target(enemy, durability_penalty)
 			var ctx: HitContext = HitContext.create(self, enemy, impact_damage, global_position, linear_velocity, HitContext.DamageType.PHYSICAL)
@@ -158,7 +176,7 @@ func configure_for_type(p_ball_type: StringName, lvl: int = 1) -> void:
 	if def == null:
 		var defs: Dictionary = CardCatalog.get_default_definitions()
 		def = defs.get(p_ball_type, null)
-	var card_lvl: int = card_state.get("level", lvl) if not card_state.is_empty() else lvl
+	var card_lvl: int = SaveManager.get_in_game_card_level(p_ball_type)
 	if def != null:
 		configure_from_card(def, card_lvl)
 
@@ -198,6 +216,18 @@ func _physics_process(delta: float) -> void:
 	# Assistance à la visée magnétique (courbure douce vers les ennemis en ascension)
 	if aim_assist_enabled:
 		_apply_aim_assist(delta)
+
+	# Super Chain (Mega Slam) : maintien de vélocité vive et navigation vers la cible
+	if is_super_chain:
+		_chain_timer += delta
+		if _chain_target != null and is_instance_valid(_chain_target) and not _chain_target.is_dying():
+			var dir_to_target: Vector2 = (_chain_target.global_position - global_position).normalized()
+			linear_velocity = dir_to_target * SUPER_CHAIN_SPEED
+		elif linear_velocity.length() < SUPER_CHAIN_SPEED:
+			linear_velocity = linear_velocity.normalized() * SUPER_CHAIN_SPEED
+
+		if global_position.y <= 95.0 or _chain_timer >= CHAIN_MAX_DURATION:
+			exit_super_chain()
 
 	# Mots-clés continus
 	for kw in get_all_keywords():
@@ -392,6 +422,10 @@ func on_pool_acquire() -> void:
 	_stuck_timer = 0.0
 	_aim_assist_scan_timer = 0.0
 	_current_aim_target = null
+	is_super_chain = false
+	_chain_target = null
+	_chain_enemies_hit.clear()
+	gravity_scale = 1.0
 	current_durability = max_durability
 	durability_changed.emit(current_durability, max_durability)
 
@@ -399,4 +433,136 @@ func reset_position(spawn_pos: Vector2) -> void:
 	global_position = spawn_pos
 	linear_velocity = Vector2.ZERO
 	angular_velocity = 0.0
+	is_super_chain = false
+	gravity_scale = 1.0
 	current_durability = max_durability
+
+## Active le mode Super Chain (propulsé par le Mega Slam)
+func enter_super_chain() -> void:
+	if _is_shattering or freeze:
+		return
+	is_super_chain = true
+	_chain_enemies_hit.clear()
+	_chain_combo_count = 0
+	_chain_timer = 0.0
+	gravity_scale = 0.0
+
+	# Juiciness Visuel : Aura ardente dorée & trainée plasma éclatante
+	if visual_ball != null:
+		visual_ball.modulate = Color(2.4, 2.0, 0.8, 1.0)
+	if core_glow != null:
+		core_glow.color = Color(3.0, 2.2, 0.5, 1.0)
+		core_glow.scale = Vector2(1.85, 1.85)
+	if trail != null:
+		trail.default_color = Color(1.0, 0.88, 0.25, 0.95)
+		trail.width = 22.0
+
+	# Premier ennemi cible en ascension
+	_chain_target = _find_next_chain_target()
+	if _chain_target != null:
+		var launch_dir: Vector2 = (_chain_target.global_position - global_position).normalized()
+		linear_velocity = launch_dir * SUPER_CHAIN_SPEED
+	else:
+		linear_velocity = Vector2(randf_range(-60.0, 60.0), -SUPER_CHAIN_SPEED)
+
+	# Feedback Hitstop & Haptique
+	var HitstopScript = preload("res://scripts/core/hitstop_manager.gd")
+	HitstopScript.trigger(0.045, 0.04)
+	Input.vibrate_handheld(45)
+
+	var ParryImpactScript = preload("res://scripts/effects/parry_impact_effect.gd")
+	ParryImpactScript.spawn(get_parent() as Node2D, global_position, Vector2.UP)
+
+	EventBus.super_chain_started.emit(self)
+
+## Quitte le mode Super Chain en atteignant le sommet du plateau
+func exit_super_chain() -> void:
+	if not is_super_chain:
+		return
+	is_super_chain = false
+	_chain_target = null
+	_chain_enemies_hit.clear()
+	gravity_scale = 1.0
+
+	# Transition douce au sommet : vitesse d'apex en cloche naturelle
+	linear_velocity = Vector2(randf_range(-140.0, 140.0), -220.0)
+
+	# Rétablissement de l'apparence normale
+	apply_skin(ball_color, core_color, trail_color)
+	if core_glow != null:
+		core_glow.scale = Vector2.ONE
+	if trail != null:
+		trail.width = 10.0
+
+	# Déflagration d'étoiles au sommet
+	var ParryImpactScript = preload("res://scripts/effects/parry_impact_effect.gd")
+	ParryImpactScript.spawn(get_parent() as Node2D, global_position, Vector2.UP)
+
+	EventBus.super_chain_completed.emit(self)
+
+## Gestion de l'impact transperçant pendant le Super Chain
+func _handle_super_chain_hit(enemy: Enemy) -> void:
+	if enemy == null or not is_instance_valid(enemy) or _chain_enemies_hit.has(enemy):
+		return
+	_chain_enemies_hit.append(enemy)
+	_chain_combo_count += 1
+
+	# Dégâts colossaux transperçants (pulvérise les sbires)
+	var super_dmg: int = impact_damage * 8 + 35
+	var ctx: HitContext = HitContext.create(self, enemy, super_dmg, global_position, linear_velocity, HitContext.DamageType.PARRY, true)
+	enemy.take_hit_with_context(ctx)
+	EventBus.ball_hit_enemy.emit(ctx)
+	EventBus.super_chain_enemy_hit.emit(self, enemy, _chain_combo_count)
+
+	# Feedback punchy
+	var HitstopScript = preload("res://scripts/core/hitstop_manager.gd")
+	HitstopScript.trigger(0.038, 0.05)
+	Input.vibrate_handheld(25)
+
+	var ParryImpactScript = preload("res://scripts/effects/parry_impact_effect.gd")
+	ParryImpactScript.spawn(get_parent() as Node2D, global_position, linear_velocity.normalized())
+
+	# Recherche de la cible suivante située AU-DESSUS
+	_chain_target = _find_next_chain_target()
+	if _chain_target != null:
+		var next_dir: Vector2 = (_chain_target.global_position - global_position).normalized()
+		linear_velocity = next_dir * SUPER_CHAIN_SPEED
+	else:
+		# Aucun ennemi plus haut : catapulte tout droit vers le haut de l'écran
+		linear_velocity = Vector2(randf_range(-40.0, 40.0), -SUPER_CHAIN_SPEED)
+
+## Cherche le prochain ennemi strictement situé au-dessus de la bille
+func _find_next_chain_target() -> Enemy:
+	var enemies: Array[Enemy] = Enemy.get_active_enemies()
+	if enemies.is_empty():
+		return null
+
+	var best_target: Enemy = null
+	var best_dist: float = 999999.0
+	var my_y: float = global_position.y
+
+	for enemy in enemies:
+		if enemy == null or not is_instance_valid(enemy) or enemy.is_dying():
+			continue
+		if _chain_enemies_hit.has(enemy):
+			continue
+		# Doit être STRICTEMENT plus haut (Y inférieur)
+		if enemy.global_position.y >= (my_y - 12.0):
+			continue
+		var dist: float = global_position.distance_to(enemy.global_position)
+		if dist < best_dist and dist < 650.0:
+			best_dist = dist
+			best_target = enemy
+
+	# Si aucun dans le rayon direct, prendre le plus proche au-dessus
+	if best_target == null:
+		for enemy in enemies:
+			if enemy == null or not is_instance_valid(enemy) or enemy.is_dying():
+				continue
+			if enemy.global_position.y < (my_y - 15.0):
+				var dist: float = global_position.distance_to(enemy.global_position)
+				if dist < best_dist:
+					best_dist = dist
+					best_target = enemy
+
+	return best_target

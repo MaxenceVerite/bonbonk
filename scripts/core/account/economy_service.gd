@@ -41,6 +41,14 @@ func record_game_results(profile: PlayerProfileScript, final_score: int, waves_c
 		if final_score > best:
 			profile.stats["best_score"] = final_score
 			is_new_record = true
+
+		# Records spécifiques du Mode Survie pour le Classement Mondial Supabase
+		if final_score > profile.survival_best_score:
+			profile.survival_best_score = final_score
+			is_new_record = true
+		if waves_cleared > profile.survival_best_wave:
+			profile.survival_best_wave = waves_cleared
+
 		profile.stats["games_played"] = profile.stats.get("games_played", 0) + 1
 
 	if gold_earned > 0:

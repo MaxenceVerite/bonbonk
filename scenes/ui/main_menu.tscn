@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3 uid="uid://cx4j1mainmenu01"]
+[gd_scene load_steps=32 format=3 uid="uid://cx4j1mainmenu01"]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
 [ext_resource type="Shader" path="res://assets/shaders/candy_menu_bg.gdshader" id="2_bg_shader"]
@@ -26,6 +26,9 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/play/adventure_view.tscn" id="32_adv_view"]
 [ext_resource type="PackedScene" path="res://scenes/ui/play/survival_view.tscn" id="33_surv_view"]
 [ext_resource type="FontFile" uid="uid://cskmqyam17ki0" path="res://assets/fonts/Fredoka-Variable.ttf" id="34_fredoka"]
+[ext_resource type="PackedScene" path="res://scenes/ui/player_name_modal.tscn" id="35_name_modal"]
+[ext_resource type="PackedScene" path="res://scenes/ui/play/leaderboard_view.tscn" id="36_leaderboard_view"]
+[ext_resource type="PackedScene" path="res://scenes/ui/shop/shop_reward_modal.tscn" id="37_shop_reward_modal"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_MenuBg"]
 shader = ExtResource("2_bg_shader")
@@ -1080,74 +1083,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="ContentContainer/LeaderboardTab"]
+[node name="LeaderboardView" parent="ContentContainer/LeaderboardTab" instance=ExtResource("36_leaderboard_view")]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = 60.0
-offset_right = -32.0
-offset_bottom = -20.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 22
-
-[node name="HeaderLabel" type="Label" parent="ContentContainer/LeaderboardTab/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
-theme_override_colors/font_shadow_color = Color(1, 1, 1, 0.8)
-theme_override_constants/shadow_offset_y = 2
-theme_override_font_sizes/font_size = 38
-text = "🏆 CLASSEMENT"
-horizontal_alignment = 1
-
-[node name="RankingList" type="VBoxContainer" parent="ContentContainer/LeaderboardTab/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="Rank1" type="PanelContainer" parent="ContentContainer/LeaderboardTab/VBox/RankingList"]
-custom_minimum_size = Vector2(0, 68)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBox_BadgeGold")
-
-[node name="Label" type="Label" parent="ContentContainer/LeaderboardTab/VBox/RankingList/Rank1"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
-theme_override_font_sizes/font_size = 22
-text = " 🥇  1. PixelMaster — 14 500 pts"
-
-[node name="Rank2" type="PanelContainer" parent="ContentContainer/LeaderboardTab/VBox/RankingList"]
-custom_minimum_size = Vector2(0, 68)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBox_BadgeSilver")
-
-[node name="Label" type="Label" parent="ContentContainer/LeaderboardTab/VBox/RankingList/Rank2"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
-theme_override_font_sizes/font_size = 22
-text = " 🥈  2. PinballKing — 11 200 pts"
-
-[node name="Rank3" type="PanelContainer" parent="ContentContainer/LeaderboardTab/VBox/RankingList"]
-custom_minimum_size = Vector2(0, 68)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBox_BadgeBronze")
-
-[node name="Label" type="Label" parent="ContentContainer/LeaderboardTab/VBox/RankingList/Rank3"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
-theme_override_font_sizes/font_size = 22
-text = " 🥉  3. TomatoSlayer — 8 900 pts"
-
-[node name="RankMe" type="PanelContainer" parent="ContentContainer/LeaderboardTab/VBox/RankingList"]
-custom_minimum_size = Vector2(0, 68)
-layout_mode = 2
-
-[node name="Label" type="Label" parent="ContentContainer/LeaderboardTab/VBox/RankingList/RankMe"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
-theme_override_font_sizes/font_size = 22
-text = " ⭐  4. Vous — 0 pts"
 
 [node name="ShopTab" type="Control" parent="ContentContainer"]
 visible = false
@@ -1573,3 +1510,20 @@ visible = false
 
 [node name="AccountModal" parent="." instance=ExtResource("22_account_modal")]
 visible = false
+
+[node name="PlayerNameModal" parent="." instance=ExtResource("35_name_modal")]
+visible = false
+
+[node name="ShopRewardModal" parent="." instance=ExtResource("37_shop_reward_modal")]
+visible = false
+
+[node name="CurrencyFlyLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+z_index = 150
+

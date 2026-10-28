@@ -9,11 +9,18 @@ signal deck_slot_clicked(slot_index: int)
 
 @onready var best_wave_label: Label = $VBox/StatsCard/HBox/BestWaveBox/ValueLabel
 @onready var best_score_label: Label = $VBox/StatsCard/HBox/BestScoreBox/ValueLabel
-@onready var btn_prev_arena: Button = get_node_or_null("VBox/ArenaSelectorCard/HBox/BtnPrevArena") as Button
-@onready var btn_next_arena: Button = get_node_or_null("VBox/ArenaSelectorCard/HBox/BtnNextArena") as Button
-@onready var arena_name_label: Label = get_node_or_null("VBox/ArenaSelectorCard/HBox/ArenaInfoVBox/ArenaNameLabel") as Label
+
+@onready var btn_prev_arena: Button = get_node_or_null("VBox/ArenaSelectorCard/Margin/HBox/BtnPrevArena") as Button
+@onready var btn_next_arena: Button = get_node_or_null("VBox/ArenaSelectorCard/Margin/HBox/BtnNextArena") as Button
+@onready var arena_name_label: Label = get_node_or_null("VBox/ArenaSelectorCard/Margin/HBox/ArenaInfoVBox/ArenaNameLabel") as Label
+@onready var arena_header_label: Label = get_node_or_null("VBox/ArenaSelectorCard/Margin/HBox/ArenaInfoVBox/ArenaHeaderLabel") as Label
+@onready var arena_banner_tex: TextureRect = get_node_or_null("VBox/ArenaSelectorCard/BannerTexture") as TextureRect
+@onready var arena_info_vbox: VBoxContainer = get_node_or_null("VBox/ArenaSelectorCard/Margin/HBox/ArenaInfoVBox") as VBoxContainer
+
 @onready var deck_slots_grid: GridContainer = $VBox/DeckCard/VBox/DeckSlotsGrid
 @onready var btn_launch: Button = $VBox/BtnLaunchSurvival
+
+var _arena_switch_tween: Tween = null
 
 func _ready() -> void:
 	if btn_launch != null:
@@ -37,26 +44,55 @@ func _ready() -> void:
 	refresh()
 
 func _on_prev_arena_pressed() -> void:
-	var worlds: Array[WorldData] = CampaignCatalog.get_all_worlds()
-	if worlds.is_empty():
-		return
-	var cur_num: int = SaveManager.survival_selected_world
-	var next_num: int = cur_num - 1
-	if next_num < 1:
-		next_num = worlds.size()
-	SaveManager.survival_selected_world = next_num
-	_refresh_arena()
+	_navigate_arena(-1)
 
 func _on_next_arena_pressed() -> void:
+	_navigate_arena(1)
+
+func _navigate_arena(direction: int) -> void:
 	var worlds: Array[WorldData] = CampaignCatalog.get_all_worlds()
 	if worlds.is_empty():
 		return
 	var cur_num: int = SaveManager.survival_selected_world
-	var next_num: int = cur_num + 1
-	if next_num > worlds.size():
-		next_num = 1
+	var total: int = worlds.size()
+	var next_num: int = posmod((cur_num - 1) + direction, total) + 1
 	SaveManager.survival_selected_world = next_num
-	_refresh_arena()
+	_animate_arena_switch(direction)
+
+func _animate_arena_switch(dir: int) -> void:
+	if _arena_switch_tween != null and _arena_switch_tween.is_valid():
+		_arena_switch_tween.kill()
+
+	if arena_info_vbox != null:
+		arena_info_vbox.position.x = 0.0
+		arena_info_vbox.modulate.a = 1.0
+	if arena_banner_tex != null:
+		arena_banner_tex.modulate.a = 1.0
+
+	_arena_switch_tween = create_tween()
+
+	# Phase 1 : sortie rapide (0.10s)
+	# Phase 1 : sortie rapide (0.10s)
+	if arena_info_vbox != null:
+		_arena_switch_tween.tween_property(arena_info_vbox, "position:x", float(-dir * 45), 0.10).as_relative()
+		_arena_switch_tween.parallel().tween_property(arena_info_vbox, "modulate:a", 0.0, 0.10)
+	if arena_banner_tex != null:
+		_arena_switch_tween.parallel().tween_property(arena_banner_tex, "modulate:a", 0.25, 0.10)
+
+	# Phase 2 : transition chaînée
+	_arena_switch_tween.chain().tween_callback(func() -> void:
+		_refresh_arena()
+		if arena_info_vbox != null:
+			arena_info_vbox.position.x = float(dir * 45)
+			arena_info_vbox.modulate.a = 0.0
+	)
+
+	# Phase 3 : entrée rebondissante chaînée (0.20s)
+	if arena_info_vbox != null:
+		_arena_switch_tween.chain().tween_property(arena_info_vbox, "position:x", 0.0, 0.20).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		_arena_switch_tween.parallel().tween_property(arena_info_vbox, "modulate:a", 1.0, 0.16)
+	if arena_banner_tex != null:
+		_arena_switch_tween.parallel().tween_property(arena_banner_tex, "modulate:a", 1.0, 0.20)
 
 func refresh() -> void:
 	_refresh_stats()
@@ -65,8 +101,14 @@ func refresh() -> void:
 
 func _refresh_arena() -> void:
 	var w: WorldData = CampaignCatalog.get_world_by_number(SaveManager.survival_selected_world)
-	if arena_name_label != null and w != null:
+	if w == null:
+		return
+	if arena_name_label != null:
 		arena_name_label.text = w.display_name.to_upper()
+	if arena_header_label != null:
+		arena_header_label.text = "ARÈNE %d • SURVIE" % w.world_number
+	if arena_banner_tex != null and w.banner_texture != null:
+		arena_banner_tex.texture = w.banner_texture
 
 func _refresh_stats() -> void:
 	var prof: RefCounted = SaveManager.current_profile
@@ -82,7 +124,6 @@ func _refresh_stats() -> void:
 		best_score_label.text = "%d PTS" % best_score
 
 func _refresh_deck() -> void:
-	# En mode survie, on utilise le deck actif de survie
 	var cur_deck: Array = SaveManager.get_active_deck()
 	if deck_slots_grid != null:
 		var slot_children: Array = deck_slots_grid.get_children()

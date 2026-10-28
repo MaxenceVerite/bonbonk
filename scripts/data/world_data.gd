@@ -17,6 +17,7 @@ const LevelData = preload("res://scripts/data/level_data.gd")
 @export var wall_right_texture: Texture2D
 @export var top_extension_texture: Texture2D
 @export var saga_map_texture: Texture2D
+@export var banner_texture: Texture2D
 @export var pin_positions: Array[Vector2] = []
 @export var levels: Array[LevelData] = []
 @export var completion_reward_booster_id: StringName = &"golden_crush"

@@ -1,0 +1,76 @@
+[gd_scene load_steps=3 format=3 uid="uid://cx4j1megaslamgauge01"]
+
+[ext_resource type="Script" path="res://scripts/ui/mega_slam_gauge.gd" id="1_gauge"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.06, 0.04, 0.03, 0.88)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.85, 0.3, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 4
+
+[node name="MegaSlamGauge" type="Control"]
+custom_minimum_size = Vector2(180, 42)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 180.0
+offset_bottom = 42.0
+mouse_filter = 2
+script = ExtResource("1_gauge")
+
+[node name="PanelBG" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="FillClip" type="Control" parent="PanelBG"]
+clip_contents = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="FillBar" type="ColorRect" parent="PanelBG/FillClip"]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_right = 176.0
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.85, 0.25, 0.85)
+
+[node name="VBox" type="VBoxContainer" parent="PanelBG"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="LabelTitle" type="Label" parent="PanelBG/VBox"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "⚡ MEGA SLAM ⚡"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LabelHint" type="Label" parent="PanelBG/VBox"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 9
+text = "2 POUCES ENSEMBLE"
+horizontal_alignment = 1
+vertical_alignment = 1

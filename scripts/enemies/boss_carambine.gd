@@ -67,7 +67,7 @@ var _board_ref: Board = null
 
 func _ready() -> void:
 	boss_name = "Carambine"
-	boss_max_hp = 140
+	boss_max_hp = 240
 	target_anchor_y = 220.0
 	anchors_to_top = false
 

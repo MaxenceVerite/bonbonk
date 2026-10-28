@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/play/level_detail_modal.tscn" id="3_modal"]
 [ext_resource type="FontFile" uid="uid://cskmqyam17ki0" path="res://assets/fonts/Fredoka-Variable.ttf" id="4_fredoka"]
 [ext_resource type="Texture2D" uid="uid://dgwsy47dktnq6" path="res://assets/ui/sparkle_star.png" id="5_star_tex"]
+[ext_resource type="Texture2D" path="res://assets/maps/banner_world_1.png" id="6_banner_w1"]
 
 [sub_resource type="FontVariation" id="Font_HeaderTitle"]
 base_font = ExtResource("4_fredoka")
@@ -15,16 +16,17 @@ variation_embolden = 0.25
 spacing_glyph = 1
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_TopHeader"]
-content_margin_left = 20.0
-content_margin_top = 10.0
-content_margin_right = 20.0
-content_margin_bottom = 12.0
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
 bg_color = Color(0.18, 0.09, 0.04, 1)
-border_width_bottom = 4
-border_color = Color(0.11, 0.05, 0.02, 1)
-shadow_color = Color(0.08, 0.03, 0.01, 0.5)
-shadow_size = 6
-shadow_offset = Vector2(0, 3)
+border_width_top = 3
+border_width_bottom = 5
+border_color = Color(0.18, 0.08, 0.03, 1)
+shadow_color = Color(0.10, 0.04, 0.01, 0.5)
+shadow_size = 10
+shadow_offset = Vector2(0, 5)
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_NavArrow_Normal"]
 content_margin_left = 6.0
@@ -154,7 +156,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 62.0
+offset_top = 98.0
 grow_horizontal = 2
 grow_vertical = 2
 horizontal_scroll_mode = 0
@@ -186,78 +188,118 @@ grow_vertical = 2
 mouse_filter = 1
 
 [node name="TopHeaderBar" type="PanelContainer" parent="."]
-custom_minimum_size = Vector2(0, 62)
+clip_children = 2
+custom_minimum_size = Vector2(0, 96)
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 62.0
+offset_bottom = 96.0
 grow_horizontal = 2
 theme_override_styles/panel = SubResource("StyleBox_TopHeader")
 
-[node name="HBox" type="HBoxContainer" parent="TopHeaderBar"]
+[node name="BannerTexture" type="TextureRect" parent="TopHeaderBar"]
+layout_mode = 2
+texture = ExtResource("6_banner_w1")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="DarkOverlay" type="ColorRect" parent="TopHeaderBar"]
+layout_mode = 2
+color = Color(0.10, 0.04, 0.02, 0.38)
+
+[node name="BorderTop" type="VBoxContainer" parent="TopHeaderBar"]
+layout_mode = 2
+size_flags_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="TopDarkLine" type="ColorRect" parent="TopHeaderBar/BorderTop"]
+custom_minimum_size = Vector2(0, 3)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.18, 0.08, 0.03, 1)
+
+[node name="TopGoldLine" type="ColorRect" parent="TopHeaderBar/BorderTop"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.92, 0.74, 0.38, 0.9)
+
+[node name="BorderBottom" type="VBoxContainer" parent="TopHeaderBar"]
+layout_mode = 2
+size_flags_vertical = 8
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="BottomGoldLine" type="ColorRect" parent="TopHeaderBar/BorderBottom"]
+custom_minimum_size = Vector2(0, 2)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.92, 0.74, 0.38, 0.9)
+
+[node name="BottomDarkLine" type="ColorRect" parent="TopHeaderBar/BorderBottom"]
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.16, 0.07, 0.02, 1)
+
+[node name="Margin" type="MarginContainer" parent="TopHeaderBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="HBox" type="HBoxContainer" parent="TopHeaderBar/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="BtnPrevWorld" type="Button" parent="TopHeaderBar/HBox"]
-custom_minimum_size = Vector2(34, 34)
+[node name="BtnPrevWorld" type="Button" parent="TopHeaderBar/Margin/HBox"]
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 size_flags_vertical = 4
 focus_mode = 0
-theme_override_fonts/font = SubResource("Font_HeaderTitle")
-theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(1, 0.95, 0.86, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_colors/font_disabled_color = Color(0.45, 0.30, 0.20, 0.4)
-theme_override_styles/normal = SubResource("StyleBox_NavArrow_Normal")
-theme_override_styles/pressed = SubResource("StyleBox_NavArrow_Pressed")
-theme_override_styles/hover = SubResource("StyleBox_NavArrow_Normal")
-theme_override_styles/disabled = SubResource("StyleBox_NavArrow_Disabled")
+theme_type_variation = &"ButtonSmall"
 text = "◀"
 
-[node name="WorldTitleLabel" type="Label" parent="TopHeaderBar/HBox"]
-layout_mode = 2
-theme_override_fonts/font = SubResource("Font_HeaderTitle")
-theme_override_font_sizes/font_size = 22
-theme_override_colors/font_color = Color(1, 0.95, 0.86, 1)
-theme_override_colors/font_outline_color = Color(0.24, 0.10, 0.02, 1)
-theme_override_constants/outline_size = 6
-theme_override_colors/font_shadow_color = Color(0.10, 0.04, 0.01, 0.9)
-theme_override_constants/shadow_offset_y = 2
-text = "MONDE 1 : FORÊT DRAGÉE"
-vertical_alignment = 1
-
-[node name="BtnNextWorld" type="Button" parent="TopHeaderBar/HBox"]
-custom_minimum_size = Vector2(34, 34)
-layout_mode = 2
-size_flags_vertical = 4
-focus_mode = 0
-theme_override_fonts/font = SubResource("Font_HeaderTitle")
-theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(1, 0.95, 0.86, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_colors/font_disabled_color = Color(0.45, 0.30, 0.20, 0.4)
-theme_override_styles/normal = SubResource("StyleBox_NavArrow_Normal")
-theme_override_styles/pressed = SubResource("StyleBox_NavArrow_Pressed")
-theme_override_styles/hover = SubResource("StyleBox_NavArrow_Normal")
-theme_override_styles/disabled = SubResource("StyleBox_NavArrow_Disabled")
-text = "▶"
-
-[node name="Spacer" type="Control" parent="TopHeaderBar/HBox"]
+[node name="WorldInfoVBox" type="VBoxContainer" parent="TopHeaderBar/Margin/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 2
+alignment = 1
 
-[node name="StarsBadge" type="PanelContainer" parent="TopHeaderBar/HBox"]
+[node name="WorldSubLabel" type="Label" parent="TopHeaderBar/Margin/HBox/WorldInfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.90, 0.70, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.8)
+theme_override_constants/shadow_offset_y = 1
+theme_override_font_sizes/font_size = 13
+text = "MONDE 1"
+horizontal_alignment = 1
+
+[node name="WorldTitleLabel" type="Label" parent="TopHeaderBar/Margin/HBox/WorldInfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.20, 0.08, 0.02, 1)
+theme_override_constants/outline_size = 6
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 22
+text = "FORÊT DRAGÉE"
+horizontal_alignment = 1
+
+[node name="StarsBadge" type="PanelContainer" parent="TopHeaderBar/Margin/HBox"]
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_styles/panel = SubResource("StyleBox_StarsBadge")
 
-[node name="HBoxStars" type="HBoxContainer" parent="TopHeaderBar/HBox/StarsBadge"]
+[node name="HBoxStars" type="HBoxContainer" parent="TopHeaderBar/Margin/HBox/StarsBadge"]
 layout_mode = 2
 theme_override_constants/separation = 6
 alignment = 1
 
-[node name="StarIcon" type="TextureRect" parent="TopHeaderBar/HBox/StarsBadge/HBoxStars"]
+[node name="StarIcon" type="TextureRect" parent="TopHeaderBar/Margin/HBox/StarsBadge/HBoxStars"]
 custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
 size_flags_vertical = 4
@@ -265,18 +307,20 @@ texture = ExtResource("5_star_tex")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Label" type="Label" parent="TopHeaderBar/HBox/StarsBadge/HBoxStars"]
+[node name="Label" type="Label" parent="TopHeaderBar/Margin/HBox/StarsBadge/HBoxStars"]
 layout_mode = 2
-theme_override_fonts/font = SubResource("Font_HeaderTitle")
-theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0.60, 0.30, 0.03, 1)
-theme_override_constants/outline_size = 4
-theme_override_colors/font_shadow_color = Color(0.35, 0.18, 0.04, 0.9)
-theme_override_constants/shadow_offset_y = 1
-text = "0 / 30"
-horizontal_alignment = 1
-vertical_alignment = 1
+theme_override_colors/font_color = Color(0.32, 0.16, 0.05, 1)
+theme_override_font_sizes/font_size = 18
+text = "0/30"
+
+[node name="BtnNextWorld" type="Button" parent="TopHeaderBar/Margin/HBox"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+theme_type_variation = &"ButtonSmall"
+text = "▶"
+
 
 [node name="FloatingDeckDock" type="PanelContainer" parent="."]
 layout_mode = 1

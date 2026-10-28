@@ -1,0 +1,151 @@
+[gd_scene load_steps=8 format=3 uid="uid://player_name_modal001"]
+
+[ext_resource type="Script" path="res://scripts/ui/player_name_modal.gd" id="1_script"]
+[ext_resource type="Theme" uid="uid://candytheme001" path="res://resources/candy_theme.tres" id="2_theme"]
+[ext_resource type="Texture2D" path="res://assets/ui/patch_candy_card.png" id="3_bg"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_ModalCard"]
+texture = ExtResource("3_bg")
+texture_margin_left = 32.0
+texture_margin_top = 34.0
+texture_margin_right = 32.0
+texture_margin_bottom = 36.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_TitleBanner"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+bg_color = Color(0.85, 0.22, 0.24, 1)
+border_width_left = 3
+border_width_top = 2
+border_width_right = 3
+border_width_bottom = 6
+border_color = Color(0.55, 0.12, 0.14, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0.35, 0.06, 0.08, 0.35)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_InnerWell"]
+content_margin_left = 18.0
+content_margin_top = 16.0
+content_margin_right = 18.0
+content_margin_bottom = 18.0
+bg_color = Color(0.96, 0.93, 0.88, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.84, 0.74, 0.62, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[node name="PlayerNameModal" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="DarkOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.06, 0.03, 0.10, 0.85)
+
+[node name="CenterAnchor" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ModalCard" type="PanelContainer" parent="CenterAnchor"]
+custom_minimum_size = Vector2(610, 420)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -305.0
+offset_top = -210.0
+offset_right = 305.0
+offset_bottom = 210.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBox_ModalCard")
+
+[node name="VBox" type="VBoxContainer" parent="CenterAnchor/ModalCard"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="TitleBanner" type="PanelContainer" parent="CenterAnchor/ModalCard/VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBox_TitleBanner")
+
+[node name="LabelTitle" type="Label" parent="CenterAnchor/ModalCard/VBox/TitleBanner"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.4, 0.05, 0.08, 0.8)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 24
+text = "✨ COMMENT T'APPELLES-TU ?"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="WellPanel" type="PanelContainer" parent="CenterAnchor/ModalCard/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_InnerWell")
+
+[node name="WellVBox" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBox/WellPanel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="LabelDesc" type="Label" parent="CenterAnchor/ModalCard/VBox/WellPanel/WellVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.42, 0.28, 0.16, 1)
+theme_override_font_sizes/font_size = 17
+text = "Choisis ton pseudo de joueur pour commencer l'aventure Bonbonk ! Tu pourras le modifier à tout moment."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="EditName" type="LineEdit" parent="CenterAnchor/ModalCard/VBox/WellPanel/WellVBox"]
+custom_minimum_size = Vector2(0, 62)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+alignment = 1
+placeholder_text = "Entre ton pseudo..."
+max_length = 16
+clear_button_enabled = true
+
+[node name="LabelError" type="Label" parent="CenterAnchor/ModalCard/VBox/WellPanel/WellVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.2, 0.2, 1)
+theme_override_font_sizes/font_size = 15
+horizontal_alignment = 1
+
+[node name="BtnConfirm" type="Button" parent="CenterAnchor/ModalCard/VBox"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "C'EST PARTI ! 🍬"

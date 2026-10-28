@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=36 format=3 uid="uid://candytheme001"]
+[gd_resource type="Theme" load_steps=38 format=3 uid="uid://candytheme001"]
 
 [ext_resource type="Texture2D" path="res://assets/ui/patch_candy_card.png" id="1_card"]
 [ext_resource type="FontFile" path="res://assets/fonts/Fredoka-Variable.ttf" id="2_fredoka"]
@@ -20,6 +20,37 @@ axis_stretch_vertical = 1
 
 [sub_resource type="StyleBoxEmpty" id="StyleBox_Empty"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBox_LineEdit_Normal"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(0.98, 0.96, 0.92, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 3
+border_color = Color(0.82, 0.72, 0.6, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_LineEdit_Focus"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+bg_color = Color(1, 0.99, 0.96, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.96, 0.74, 0.18, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
 
 [sub_resource type="StyleBoxFlat" id="Btn_Yellow_Normal"]
 content_margin_left = 18.0
@@ -415,3 +446,7 @@ NavButtonActive/styles/hover = SubResource("Btn_NavActive_Normal")
 NavButtonActive/styles/normal = SubResource("Btn_NavActive_Normal")
 NavButtonActive/styles/pressed = SubResource("Btn_NavActive_Normal")
 PanelContainer/styles/panel = SubResource("StyleBox_Card")
+LineEdit/colors/font_color = Color(0.32, 0.16, 0.08, 1)
+LineEdit/colors/font_placeholder_color = Color(0.6, 0.48, 0.38, 0.7)
+LineEdit/styles/focus = SubResource("StyleBox_LineEdit_Focus")
+LineEdit/styles/normal = SubResource("StyleBox_LineEdit_Normal")

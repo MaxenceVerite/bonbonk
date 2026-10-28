@@ -35,7 +35,7 @@ const TARGET_RIGHT_GATE: Vector2 = Vector2(440.0, 1185.0)
 
 func _ready() -> void:
 	boss_name = "Brocolino"
-	boss_max_hp = 200
+	boss_max_hp = 300
 	target_anchor_y = 165.0
 	super._ready()
 

@@ -1,26 +1,156 @@
-[gd_scene load_steps=6 format=3 uid="uid://accountmodal001"]
+[gd_scene load_steps=14 format=3 uid="uid://accountmodal001"]
 
 [ext_resource type="Script" path="res://scripts/ui/account_modal.gd" id="1_script"]
 [ext_resource type="Theme" uid="uid://candytheme001" path="res://resources/candy_theme.tres" id="2_theme"]
 [ext_resource type="Texture2D" path="res://assets/ui/patch_candy_card.png" id="3_bg"]
+[ext_resource type="Texture2D" path="res://assets/ui/icon_ball_fizz.png" id="4_avatar"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBox_ModalCard"]
 texture = ExtResource("3_bg")
-texture_margin_left = 24.0
-texture_margin_top = 24.0
-texture_margin_right = 24.0
-texture_margin_bottom = 28.0
+texture_margin_left = 32.0
+texture_margin_top = 36.0
+texture_margin_right = 32.0
+texture_margin_bottom = 36.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_TitleBanner"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 12.0
+bg_color = Color(0.85, 0.22, 0.24, 1)
+border_width_left = 3
+border_width_top = 2
+border_width_right = 3
+border_width_bottom = 6
+border_color = Color(0.55, 0.12, 0.14, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+shadow_color = Color(0.35, 0.06, 0.08, 0.35)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_CloseBtn"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.85, 0.22, 0.24, 1)
+border_width_left = 3
+border_width_top = 2
+border_width_right = 3
+border_width_bottom = 5
+border_color = Color(0.50, 0.10, 0.12, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0.2, 0.05, 0.05, 0.4)
+shadow_size = 4
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_CloseBtn_Pressed"]
+content_margin_left = 0.0
+content_margin_top = 3.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.72, 0.18, 0.20, 1)
+border_width_left = 3
+border_width_top = 4
+border_width_right = 3
+border_width_bottom = 2
+border_color = Color(0.50, 0.10, 0.12, 1)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_InnerSection"]
-bg_color = Color(0.96, 0.92, 0.85, 0.95)
+content_margin_left = 20.0
+content_margin_top = 18.0
+content_margin_right = 20.0
+content_margin_bottom = 20.0
+bg_color = Color(0.96, 0.93, 0.88, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 5
+border_color = Color(0.82, 0.72, 0.60, 1)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+shadow_color = Color(0.25, 0.15, 0.08, 0.08)
+shadow_size = 4
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_AvatarFrame"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(1, 0.96, 0.90, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 5
+border_color = Color(0.95, 0.72, 0.20, 1)
+corner_radius_top_left = 44
+corner_radius_top_right = 44
+corner_radius_bottom_right = 44
+corner_radius_bottom_left = 44
+shadow_color = Color(0.35, 0.2, 0.05, 0.2)
+shadow_size = 4
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_PillPencil"]
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+bg_color = Color(0.96, 0.74, 0.18, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.4, 0.2, 0.05, 1)
 corner_radius_top_left = 14
 corner_radius_top_right = 14
 corner_radius_bottom_right = 14
 corner_radius_bottom_left = 14
-content_margin_left = 16.0
-content_margin_top = 14.0
-content_margin_right = 16.0
-content_margin_bottom = 14.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_CopyBtn"]
+content_margin_left = 10.0
+content_margin_top = 3.0
+content_margin_right = 10.0
+content_margin_bottom = 4.0
+bg_color = Color(0.88, 0.82, 0.74, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 3
+border_color = Color(0.65, 0.55, 0.45, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_ToggleCard"]
+content_margin_left = 8.0
+content_margin_top = 10.0
+content_margin_right = 8.0
+content_margin_bottom = 12.0
+bg_color = Color(1, 0.98, 0.94, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.84, 0.74, 0.62, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
 
 [node name="AccountModal" type="Control"]
 visible = false
@@ -40,7 +170,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.08, 0.04, 0.12, 0.82)
+color = Color(0.06, 0.03, 0.10, 0.85)
 
 [node name="CenterAnchor" type="Control" parent="."]
 layout_mode = 1
@@ -53,208 +183,445 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="ModalCard" type="PanelContainer" parent="CenterAnchor"]
-custom_minimum_size = Vector2(580, 820)
+custom_minimum_size = Vector2(630, 820)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -290.0
+offset_left = -315.0
 offset_top = -410.0
-offset_right = 290.0
+offset_right = 315.0
 offset_bottom = 410.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBox_ModalCard")
 
-[node name="VBox" type="VBoxContainer" parent="CenterAnchor/ModalCard"]
+[node name="VBoxMain" type="VBoxContainer" parent="CenterAnchor/ModalCard"]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="Header" type="HBoxContainer" parent="CenterAnchor/ModalCard/VBox"]
+[node name="HeaderContainer" type="Control" parent="CenterAnchor/ModalCard/VBoxMain"]
+custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
 
-[node name="Title" type="Label" parent="CenterAnchor/ModalCard/VBox/Header"]
+[node name="TitleBanner" type="PanelContainer" parent="CenterAnchor/ModalCard/VBoxMain/HeaderContainer"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -170.0
+offset_top = -26.0
+offset_right = 170.0
+offset_bottom = 26.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBox_TitleBanner")
+
+[node name="TitleLabel" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/HeaderContainer/TitleBanner"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.4, 0.05, 0.08, 0.8)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 24
+text = "👑 PROFIL & OPTIONS"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BtnClose" type="Button" parent="CenterAnchor/ModalCard/VBoxMain/HeaderContainer"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -48.0
+offset_top = -24.0
+offset_bottom = 24.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBox_CloseBtn")
+theme_override_styles/hover = SubResource("StyleBox_CloseBtn")
+theme_override_styles/pressed = SubResource("StyleBox_CloseBtn_Pressed")
+text = "✕"
+
+[node name="ProfileView" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="IdentityCard" type="PanelContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_InnerSection")
+
+[node name="HBox" type="HBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/IdentityCard"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="AvatarFrame" type="PanelContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/IdentityCard/HBox"]
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBox_AvatarFrame")
+
+[node name="AvatarIcon" type="TextureRect" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/IdentityCard/HBox/AvatarFrame"]
+layout_mode = 2
+texture = ExtResource("4_avatar")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="InfoVBox" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/IdentityCard/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="HBoxName" type="HBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/IdentityCard/HBox/InfoVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LabelPlayerName" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/IdentityCard/HBox/InfoVBox/HBoxName"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.32, 0.14, 0.05, 1)
+theme_override_font_sizes/font_size = 28
+text = "Raisin"
+
+[node name="BtnEditName" type="Button" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/IdentityCard/HBox/InfoVBox/HBoxName"]
+custom_minimum_size = Vector2(40, 36)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.3, 0.15, 0.05, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBox_PillPencil")
+text = "✏️"
+
+[node name="HBoxDetails" type="HBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/IdentityCard/HBox/InfoVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LabelPlayerId" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/IdentityCard/HBox/InfoVBox/HBoxDetails"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.52, 0.40, 0.30, 1)
+theme_override_font_sizes/font_size = 16
+text = "#8323DC"
+
+[node name="BtnCopyId" type="Button" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/IdentityCard/HBox/InfoVBox/HBoxDetails"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.4, 0.3, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBox_CopyBtn")
+text = "📋 Copier"
+
+[node name="LabelCopyToast" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/IdentityCard/HBox/InfoVBox/HBoxDetails"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.65, 0.25, 1)
+theme_override_font_sizes/font_size = 14
+text = "Copié !"
+
+[node name="Spacer" type="Control" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/IdentityCard/HBox/InfoVBox/HBoxDetails"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LabelSyncStatus" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/IdentityCard/HBox/InfoVBox/HBoxDetails"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.18, 0.58, 0.24, 1)
+theme_override_font_sizes/font_size = 15
+text = "🟢 En ligne"
+
+[node name="SettingsCard" type="PanelContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_InnerSection")
+
+[node name="VBox" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.42, 0.22, 0.1, 1)
+theme_override_font_sizes/font_size = 18
+text = "🔊 SONS & VIBRATIONS"
+
+[node name="HBoxToggles" type="HBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BtnToggleMusic" type="Button" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBox_ToggleCard")
+
+[node name="VBox" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles/BtnToggleMusic"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="Icon" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles/BtnToggleMusic/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "🎵"
+horizontal_alignment = 1
+
+[node name="Label" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles/BtnToggleMusic/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.24, 0.12, 1)
+theme_override_font_sizes/font_size = 14
+text = "Musique"
+horizontal_alignment = 1
+
+[node name="Badge" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles/BtnToggleMusic/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.55, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "OUI"
+horizontal_alignment = 1
+
+[node name="BtnToggleSfx" type="Button" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBox_ToggleCard")
+
+[node name="VBox" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles/BtnToggleSfx"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="Icon" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles/BtnToggleSfx/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "💥"
+horizontal_alignment = 1
+
+[node name="Label" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles/BtnToggleSfx/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.24, 0.12, 1)
+theme_override_font_sizes/font_size = 14
+text = "Effets"
+horizontal_alignment = 1
+
+[node name="Badge" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles/BtnToggleSfx/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.55, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "OUI"
+horizontal_alignment = 1
+
+[node name="BtnToggleVibrate" type="Button" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBox_ToggleCard")
+
+[node name="VBox" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles/BtnToggleVibrate"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="Icon" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles/BtnToggleVibrate/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "📳"
+horizontal_alignment = 1
+
+[node name="Label" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles/BtnToggleVibrate/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.24, 0.12, 1)
+theme_override_font_sizes/font_size = 14
+text = "Vibrations"
+horizontal_alignment = 1
+
+[node name="Badge" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SettingsCard/VBox/HBoxToggles/BtnToggleVibrate/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.55, 0.2, 1)
+theme_override_font_sizes/font_size = 16
+text = "OUI"
+horizontal_alignment = 1
+
+[node name="SaveCard" type="PanelContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_InnerSection")
+
+[node name="VBox" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SaveCard"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LoggedView" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SaveCard/VBox"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SaveCard/VBox/LoggedView"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.16, 0.54, 0.24, 1)
+theme_override_font_sizes/font_size = 18
+text = "✓ PROGRESSION SÉCURISÉE"
+
+[node name="LabelUserEmail" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SaveCard/VBox/LoggedView"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.36, 0.24, 0.15, 1)
+theme_override_font_sizes/font_size = 16
+text = "Lié à : utilisateur@bonbonk.com"
+
+[node name="BtnSignOut" type="Button" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SaveCard/VBox/LoggedView"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Changer de compte / Déconnexion"
+
+[node name="GuestView" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SaveCard/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SaveCard/VBox/GuestView"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.42, 0.22, 0.1, 1)
+theme_override_font_sizes/font_size = 18
+text = "☁️ SAUVEGARDE CLOUD"
+
+[node name="Desc" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SaveCard/VBox/GuestView"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.32, 0.2, 0.9)
+theme_override_font_sizes/font_size = 15
+text = "Lie ton compte pour ne jamais perdre tes cartes et tes trophées, même en changeant de téléphone."
+autowrap_mode = 2
+
+[node name="BtnOpenAuth" type="Button" parent="CenterAnchor/ModalCard/VBoxMain/ProfileView/SaveCard/VBox/GuestView"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 19
+text = "✉️ Sauvegarder ma progression"
+
+[node name="AuthView" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="HBoxTop" type="HBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/AuthView"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="BtnBackFromAuth" type="Button" parent="CenterAnchor/ModalCard/VBoxMain/AuthView/HBoxTop"]
+custom_minimum_size = Vector2(110, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "← Retour"
+
+[node name="Title" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/AuthView/HBoxTop"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.36, 0.17, 0.08, 1)
-theme_override_font_sizes/font_size = 26
-text = "👤 MON COMPTE & CLOUD"
+theme_override_font_sizes/font_size = 22
+text = "☁️ BONBONK ID"
 vertical_alignment = 1
 
-[node name="BtnClose" type="Button" parent="CenterAnchor/ModalCard/VBox/Header"]
-custom_minimum_size = Vector2(48, 48)
+[node name="StepEmail" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/AuthView"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "✕"
+theme_override_constants/separation = 14
 
-[node name="ContentScroll" type="ScrollContainer" parent="CenterAnchor/ModalCard/VBox"]
+[node name="DescEmail" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/AuthView/StepEmail"]
 layout_mode = 2
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="SectionsVBox" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBox/ContentScroll"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 16
-
-[node name="ProfileSection" type="PanelContainer" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBox_InnerSection")
-
-[node name="VBox" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/ProfileSection"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="LabelTitle" type="Label" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/ProfileSection/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.2, 0.1, 1)
-theme_override_font_sizes/font_size = 20
-text = "🏷️ NOM DU JOUEUR"
-
-[node name="HBoxName" type="HBoxContainer" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/ProfileSection/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="EditPlayerName" type="LineEdit" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/ProfileSection/VBox/HBoxName"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 18
-placeholder_text = "Entrez votre pseudo..."
-max_length = 16
-
-[node name="BtnSaveName" type="Button" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/ProfileSection/VBox/HBoxName"]
-custom_minimum_size = Vector2(100, 44)
-layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.32, 0.2, 0.9)
 theme_override_font_sizes/font_size = 16
-text = "OK"
-
-[node name="LabelProfileId" type="Label" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/ProfileSection/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.5, 0.35, 0.25, 0.8)
-theme_override_font_sizes/font_size = 14
-text = "Profil: MAIN • Type: Compte Invité (Local)"
-
-[node name="SyncSection" type="PanelContainer" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBox_InnerSection")
-
-[node name="VBox" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/SyncSection"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="LabelTitle" type="Label" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/SyncSection/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.2, 0.1, 1)
-theme_override_font_sizes/font_size = 20
-text = "☁️ SYNCHRONISATION & RÉSEAU"
-
-[node name="LabelSyncStatus" type="Label" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/SyncSection/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.2, 0.45, 0.25, 1)
-theme_override_font_sizes/font_size = 15
-text = "🟢 Connecté au Cloud (Synchronisation prête)"
+text = "Sauvegarde ta progression ou retrouve ton compte. Aucun mot de passe requis : tu recevras un code de sécurité par email !"
 autowrap_mode = 2
 
-[node name="BtnSyncNow" type="Button" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/SyncSection/VBox"]
-custom_minimum_size = Vector2(0, 48)
+[node name="EditEmail" type="LineEdit" parent="CenterAnchor/ModalCard/VBoxMain/AuthView/StepEmail"]
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "🔄 Synchroniser maintenant"
+theme_override_font_sizes/font_size = 19
+placeholder_text = "ton.email@domaine.com"
 
-[node name="CheckOfflineMode" type="CheckButton" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/SyncSection/VBox"]
+[node name="BtnSendOtp" type="Button" parent="CenterAnchor/ModalCard/VBoxMain/AuthView/StepEmail"]
+custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.3, 0.2, 0.1, 1)
-theme_override_font_sizes/font_size = 16
-text = "Mode Hors-ligne (Test Offline)"
+theme_override_font_sizes/font_size = 18
+text = "Recevoir mon code par email ✉️"
 
-[node name="ProfilesSection" type="PanelContainer" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBox_InnerSection")
-
-[node name="VBox" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/ProfilesSection"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="LabelTitle" type="Label" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/ProfilesSection/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.2, 0.1, 1)
-theme_override_font_sizes/font_size = 20
-text = "🔄 BASCULER DE COMPTE"
-
-[node name="HBoxProfiles" type="HBoxContainer" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/ProfilesSection/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="BtnProfileMain" type="Button" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/ProfilesSection/VBox/HBoxProfiles"]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-size_flags_horizontal = 3
-toggle_mode = true
-theme_override_font_sizes/font_size = 16
-text = "🎮 Compte Joueur"
-
-[node name="BtnProfileSandbox" type="Button" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/ProfilesSection/VBox/HBoxProfiles"]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-size_flags_horizontal = 3
-toggle_mode = true
-theme_override_font_sizes/font_size = 16
-text = "🧪 Sandbox Test"
-
-[node name="SandboxSection" type="PanelContainer" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox"]
+[node name="StepCode" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/AuthView"]
 visible = false
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBox_InnerSection")
+theme_override_constants/separation = 14
 
-[node name="VBox" type="VBoxContainer" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/SandboxSection"]
+[node name="DescCode" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/AuthView/StepCode"]
 layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="LabelTitle" type="Label" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/SandboxSection/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.6, 0.15, 0.1, 1)
-theme_override_font_sizes/font_size = 20
-text = "🧪 OUTILS DE TEST & DEBUG"
-
-[node name="LabelDesc" type="Label" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/SandboxSection/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.3, 0.2, 0.9)
-theme_override_font_sizes/font_size = 14
-text = "Ces actions modifient uniquement le profil Sandbox de test, sans altérer votre vraie progression joueur."
+theme_override_colors/font_color = Color(0.45, 0.32, 0.2, 0.9)
+theme_override_font_sizes/font_size = 16
+text = "Un code de validation vient d'être envoyé à :"
+horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="Grid" type="GridContainer" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/SandboxSection/VBox"]
+[node name="LabelSentEmail" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/AuthView/StepCode"]
 layout_mode = 2
-theme_override_constants/h_separation = 10
-theme_override_constants/v_separation = 10
-columns = 2
+theme_override_colors/font_color = Color(0.32, 0.14, 0.05, 1)
+theme_override_font_sizes/font_size = 18
+text = "joueur@email.com"
+horizontal_alignment = 1
 
-[node name="BtnUnlockAll" type="Button" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/SandboxSection/VBox/Grid"]
-custom_minimum_size = Vector2(0, 48)
+[node name="EditOtpCode" type="LineEdit" parent="CenterAnchor/ModalCard/VBoxMain/AuthView/StepCode"]
+custom_minimum_size = Vector2(300, 64)
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 15
-text = "✨ Débloquer Tout"
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 28
+alignment = 1
+max_length = 8
+placeholder_text = "· · · · · · · ·"
 
-[node name="BtnMaxLevel" type="Button" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/SandboxSection/VBox/Grid"]
-custom_minimum_size = Vector2(0, 48)
+[node name="BtnVerifyOtp" type="Button" parent="CenterAnchor/ModalCard/VBoxMain/AuthView/StepCode"]
+custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 15
-text = "⭐ Tout Niv. 5 (Max)"
+theme_override_font_sizes/font_size = 18
+text = "Valider et lier mon compte ✓"
 
-[node name="BtnAddResources" type="Button" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/SandboxSection/VBox/Grid"]
-custom_minimum_size = Vector2(0, 48)
+[node name="HBoxResend" type="HBoxContainer" parent="CenterAnchor/ModalCard/VBoxMain/AuthView/StepCode"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 15
-text = "💰 +10 000 🪙 & +500 💎"
+theme_override_constants/separation = 12
+alignment = 1
 
-[node name="BtnResetSandbox" type="Button" parent="CenterAnchor/ModalCard/VBox/ContentScroll/SectionsVBox/SandboxSection/VBox/Grid"]
-custom_minimum_size = Vector2(0, 48)
+[node name="BtnChangeEmail" type="Button" parent="CenterAnchor/ModalCard/VBoxMain/AuthView/StepCode/HBoxResend"]
+custom_minimum_size = Vector2(160, 44)
 layout_mode = 2
-size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 14
+text = "Changer d'email"
+
+[node name="BtnResendOtp" type="Button" parent="CenterAnchor/ModalCard/VBoxMain/AuthView/StepCode/HBoxResend"]
+custom_minimum_size = Vector2(160, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Renvoyer le code"
+
+[node name="LabelAuthMsg" type="Label" parent="CenterAnchor/ModalCard/VBoxMain/AuthView"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.2, 0.2, 1)
 theme_override_font_sizes/font_size = 15
-text = "🔄 Reset Sandbox"
+horizontal_alignment = 1
+autowrap_mode = 2
+

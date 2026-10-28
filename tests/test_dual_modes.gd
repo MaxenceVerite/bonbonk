@@ -20,10 +20,10 @@ func _ready() -> void:
 	# 2. Test du premier niveau et calcul des étoiles
 	var l1: LevelData = w1.get_level(1)
 	assert(l1 != null, "Niveau 1 du Monde 1 introuvable")
-	assert(l1.waves.size() == 3, "Niveau 1 doit avoir 3 sous-vagues")
-	assert(l1.calculate_stars(1600, 100, 100) == 3, "Score 1600 + 100% HP doit donner 3 étoiles")
-	assert(l1.calculate_stars(1000, 50, 100) == 2, "Score 1000 + 50% HP doit donner 2 étoiles")
-	assert(l1.calculate_stars(450, 20, 100) == 1, "Score 450 doit donner 1 étoile")
+	assert(l1.waves.size() >= 3, "Niveau 1 doit avoir au moins 3 sous-vagues")
+	assert(l1.calculate_stars(l1.star_thresholds[2] + 100, 100, 100) == 3, "Score au-dessus du seuil 3 + 100% HP doit donner 3 étoiles")
+	assert(l1.calculate_stars(l1.star_thresholds[1] + 50, 50, 100) == 2, "Score seuil 2 + 50% HP doit donner 2 étoiles")
+	assert(l1.calculate_stars(l1.star_thresholds[0] + 10, 20, 100) == 1, "Score seuil 1 doit donner 1 étoile")
 	assert(l1.calculate_stars(0, 0, 100) == 0, "0 HP = 0 étoile")
 	print("✓ 2. Calcul des étoiles de niveau validé (seuil score & ratio PV)")
 
@@ -35,7 +35,16 @@ func _ready() -> void:
 	SaveManager.set_game_mode(SaveManager.GameMode.SURVIVAL)
 	assert(SaveManager.is_survival() == true, "Doit être en mode survie")
 	assert(SaveManager.is_campaign() == false, "Ne doit pas être en mode campagne")
-	print("✓ 3. Typage strict GameMode et Helpers SaveManager validés")
+
+	# Test de normalisation du niveau de carte (Campagne = Niveau 1 strict, Survie = Niveau réel)
+	SaveManager.cards_inventory[&"fizz"] = { "unlocked": true, "level": 4, "cards": 10 }
+	SaveManager.set_game_mode(SaveManager.GameMode.CAMPAIGN)
+	assert(SaveManager.get_in_game_card_level(&"fizz") == 1, "En Campagne, les cartes en jeu doivent être strictement Niveau 1")
+	SaveManager.set_game_mode(SaveManager.GameMode.SURVIVAL)
+	assert(SaveManager.get_in_game_card_level(&"fizz") == 4, "En Survie, les cartes en jeu doivent utiliser leur niveau réel")
+	SaveManager.set_game_mode(SaveManager.GameMode.CAMPAIGN)
+
+	print("✓ 3. Typage strict GameMode, Helpers SaveManager et Normalisation Niveau 1 Campagne validés")
 
 	# 4. Test de la séparation des Decks
 	SaveManager.set_game_mode(SaveManager.GameMode.CAMPAIGN)
@@ -116,13 +125,23 @@ func _ready() -> void:
 	# 10. Test de validation : Brocolino est le Boss du Monde 1 (1-10) et Carambine est le Boss du Monde 2 (2-10)
 	var l1_10: LevelData = w1.get_level(10)
 	assert(l1_10 != null, "Niveau 10 du Monde 1 introuvable")
-	assert(l1_10.waves[1].spawns[0]["unit"] == "boss_brocolino", "Le boss du niveau 1-10 (Forêt Dragée) doit être Brocolino")
+	var l1_boss_found: bool = false
+	for w in l1_10.waves:
+		for s in w.spawns:
+			if s.get("unit") == "boss_brocolino":
+				l1_boss_found = true
+	assert(l1_boss_found, "Le boss du niveau 1-10 (Forêt Dragée) doit être Brocolino")
 
 	var w2: WorldData = worlds[1]
 	assert(w2 != null and w2.id == &"world_2", "Monde 2 Plage Sucrée introuvable")
 	var l2_10: LevelData = w2.get_level(10)
 	assert(l2_10 != null, "Niveau 10 du Monde 2 introuvable")
-	assert(l2_10.waves[1].spawns[0]["unit"] == "boss_carambine", "Le boss du niveau 2-10 (Plage Sucrée) doit être Carambine")
+	var l2_boss_found: bool = false
+	for w in l2_10.waves:
+		for s in w.spawns:
+			if s.get("unit") == "boss_carambine":
+				l2_boss_found = true
+	assert(l2_boss_found, "Le boss du niveau 2-10 (Plage Sucrée) doit être Carambine")
 
 	director.start_wave(10)
 	assert(director.get("_pending_spawns")[0]["scene_path"].contains("boss_brocolino"), "La manche 10 de Survie doit faire apparaître Brocolino")
@@ -138,14 +157,15 @@ func _ready() -> void:
 	assert(adv_instance.current_world_num == 1, "Monde initial doit être 1")
 	assert(adv_instance.world_title_label.text.contains("FORÊT DRAGÉE"), "Titre Monde 1 doit être Forêt Dragée")
 	assert(adv_instance.map_texture.texture.resource_path.contains("foret_dragee_saga_map"), "Texture carte Monde 1 doit être foret_dragee")
-	assert(adv_instance.btn_prev_world.disabled == true, "Flèche précédente doit être désactivée au Monde 1")
+	assert(adv_instance.btn_prev_world.disabled == false, "Flèche précédente doit être active pour navigation circulaire")
 	assert(adv_instance.btn_next_world.disabled == false, "Flèche suivante doit être accessible pour visiter le Monde 2")
 
 	# Visite du Monde 2 alors qu'il est encore verrouillé (Monde débloqué = 1)
 	SaveManager.campaign_unlocked_world = 1
 	adv_instance._change_world(2)
+	adv_instance.refresh()
 	assert(adv_instance.current_world_num == 2, "Doit pouvoir visiter le Monde 2")
-	assert(adv_instance.world_title_label.text.contains("🔒"), "Titre Monde 2 doit afficher le cadenas de verrouillage")
+	assert(adv_instance.world_sub_label.text.contains("🔒"), "Sous-titre Monde 2 doit afficher le cadenas de verrouillage")
 	assert(adv_instance.map_texture.texture.resource_path.contains("world_1_saga_map"), "Texture carte Monde 2 doit être la plage")
 	assert(adv_instance._pins[0].current_status == adv_instance._pins[0].Status.LOCKED, "Le niveau 2-1 doit être verrouillé")
 
@@ -160,16 +180,17 @@ func _ready() -> void:
 	SaveManager.campaign_unlocked_world = 2
 	SaveManager.campaign_unlocked_level = 1
 	adv_instance.refresh()
-	assert(not adv_instance.world_title_label.text.contains("🔒"), "Le cadenas doit disparaître une fois débloqué")
+	assert(not adv_instance.world_sub_label.text.contains("🔒"), "Le cadenas doit disparaître une fois débloqué")
 	assert(adv_instance._pins[0].current_status == adv_instance._pins[0].Status.UNLOCKED, "Le niveau 2-1 doit devenir UNLOCKED")
 	adv_instance.level_detail_modal.open(w2_data.get_level(1))
 	assert(adv_instance.level_detail_modal.btn_play.disabled == false, "Bouton Jouer doit devenir actif sur un monde débloqué")
 	adv_instance.level_detail_modal.close()
 
-	# Revenir au Monde 1
+	# Revenir au Monde 1 et assainir la progression
 	adv_instance._change_world(1)
 	assert(adv_instance.current_world_num == 1, "Doit être revenu au Monde 1")
 	adv_instance.queue_free()
+	SaveManager.sanitize_campaign_progression()
 	print("✓ 11. Navigation Multi-Mondes libre & verrouillage strict du Monde 2 validés")
 
 	# 12. Test de validation : Choix d'arène en Survie & pureté du reskin
@@ -182,11 +203,13 @@ func _ready() -> void:
 
 	# Basculer vers l'arène suivante
 	surv_instance._on_next_arena_pressed()
+	surv_instance.refresh()
 	assert(SaveManager.survival_selected_world == 2, "Arène sélectionnée en Survie doit être 2")
 	assert(surv_instance.arena_name_label.text.contains("PLAGE SUCRÉE"), "Le label doit afficher PLAGE SUCRÉE")
 
 	# Boucler vers l'arène précédente
 	surv_instance._on_prev_arena_pressed()
+	surv_instance.refresh()
 	assert(SaveManager.survival_selected_world == 1, "Doit revenir à l'arène 1")
 	surv_instance.queue_free()
 

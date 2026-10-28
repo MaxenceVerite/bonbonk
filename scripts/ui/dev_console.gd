@@ -24,6 +24,9 @@ func _ready() -> void:
 
 	print_log("[color=#45d65b]Flip Dev Console 1.0[/color] initialisée. Tapez [color=#ffe600]help[/color] pour voir la liste des commandes.")
 
+var _secret_tap_count: int = 0
+var _last_secret_tap_time: float = 0.0
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
 		if event.keycode == KEY_F1:
@@ -38,6 +41,20 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif visible and event.keycode == KEY_DOWN:
 			_navigate_history(1)
 			get_viewport().set_input_as_handled()
+	# Geste secret pour mobile : 5 taps rapides dans le coin supérieur droit (actif UNIQUEMENT si compte admin/dev)
+	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if SaveManager.is_dev_account():
+			var vp_size: Vector2 = get_viewport().get_visible_rect().size
+			if event.position.x > vp_size.x - 70.0 and event.position.y < 70.0:
+				var now_sec: float = Time.get_ticks_msec() / 1000.0
+				if now_sec - _last_secret_tap_time < 0.6:
+					_secret_tap_count += 1
+					if _secret_tap_count >= 5:
+						toggle_console()
+						_secret_tap_count = 0
+				else:
+					_secret_tap_count = 1
+				_last_secret_tap_time = now_sec
 
 func toggle_console() -> void:
 	# Vérification stricte du compte de dev
@@ -51,7 +68,9 @@ func toggle_console() -> void:
 		command_input.grab_focus()
 		history_index = command_history.size()
 		if status_badge != null:
-			status_badge.text = "[DEV: %s]" % SaveManager.active_profile_id.to_upper()
+			var tag: String = "ADMIN" if SaveManager.is_admin() else "DEV"
+			var name_str: String = SaveManager.current_profile.display_name if SaveManager.current_profile != null else "OK"
+			status_badge.text = "[%s: %s]" % [tag, name_str]
 	else:
 		command_input.release_focus()
 

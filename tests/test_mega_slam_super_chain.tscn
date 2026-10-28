@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cx4j1testmegaslam01"]
+
+[ext_resource type="Script" path="res://tests/test_mega_slam_super_chain.gd" id="1_test"]
+
+[node name="TestMegaSlamSuperChain" type="Node"]
+script = ExtResource("1_test")

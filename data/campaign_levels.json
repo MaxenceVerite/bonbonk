@@ -1,0 +1,3907 @@
+{
+  "worlds": [
+    {
+      "id": "world_1",
+      "world_number": 1,
+      "display_name": "Forêt Dragée",
+      "subtitle": "Un sous-bois féerique aux racines de réglisse et dragées pastel",
+      "completion_reward_booster_id": "golden_crush",
+      "levels": [
+        {
+          "number": 1,
+          "title": "Premiers Pas Croquants",
+          "description": "Repousse les premières colonnes maraîchères le long du sentier.",
+          "star_thresholds": [
+            3000,
+            6500,
+            11000
+          ],
+          "rewards": {
+            "gold": 120,
+            "diamonds": 5,
+            "booster": "silver_pop"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "tomato",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 3.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 6.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 10.0,
+                  "x": 0.8
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 14.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "tomato",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 2.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 5.5,
+                  "x": 0.4
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 8.5,
+                  "x": 0.6
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 12.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 19.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "tomato",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 2.5,
+                  "x": 0.7
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 5.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 8.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 11.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.0,
+                  "x": 0.4
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 18.5,
+                  "x": 0.65
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "tomato",
+                  "delay": 0.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 2.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 5.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 8.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 12.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 15.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 19.0,
+                  "x": 0.25
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 2,
+          "title": "Sauts d'Ananas",
+          "description": "Les ananas bondissants sautent au-dessus de la bille pour surprendre tes flippers.",
+          "star_thresholds": [
+            3500,
+            7500,
+            12500
+          ],
+          "rewards": {
+            "gold": 140,
+            "diamonds": 5,
+            "booster": "silver_pop"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "tomato",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 2.8,
+                  "x": 0.7
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 6.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 9.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.0,
+                  "x": 0.8
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.5,
+                  "x": 0.4
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 20.0,
+                  "x": 0.6
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "ananas",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 2.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 5.5,
+                  "x": 0.45
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 8.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 12.0,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 15.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 19.0,
+                  "x": 0.85
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "tomato",
+                  "delay": 0.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 2.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 5.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 8.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 12.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 18.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 22.0,
+                  "x": 0.4
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "ananas",
+                  "delay": 0.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 2.8,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 5.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 8.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 12.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 18.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 22.0,
+                  "x": 0.75
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "title": "Le Panier Maraîcher",
+          "description": "Des escouades denses de tomates soutenues par une imposante pastèque en fin de niveau.",
+          "star_thresholds": [
+            4000,
+            8500,
+            14000
+          ],
+          "rewards": {
+            "gold": 160,
+            "diamonds": 6,
+            "booster": "silver_pop"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "tomato",
+                  "delay": 0.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 2.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 5.0,
+                  "x": 0.8
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 8.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 11.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 18.5,
+                  "x": 0.75
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "tomato",
+                  "delay": 0.5,
+                  "x": 0.4
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 2.5,
+                  "x": 0.6
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 5.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 8.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 12.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 18.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 22.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "tomato",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 2.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 5.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 8.0,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 11.5,
+                  "x": 0.7
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.0,
+                  "x": 0.4
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 18.5,
+                  "x": 0.6
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 22.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 3.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 6.0,
+                  "x": 0.8
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 12.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 19.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 23.0,
+                  "x": 0.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "title": "Grappes Gourmandes",
+          "description": "Les grappes de raisin éclatent en une myriade de baies lors des impacts !",
+          "star_thresholds": [
+            4500,
+            9500,
+            15500
+          ],
+          "rewards": {
+            "gold": 180,
+            "diamonds": 7,
+            "booster": "golden_crush"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "tomato",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 2.8,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 6.5,
+                  "x": 0.7
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 10.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 13.5,
+                  "x": 0.85
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 17.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 20.5,
+                  "x": 0.35
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "grape_bunch",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 3.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 6.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.0,
+                  "x": 0.8
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 12.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 16.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 19.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 22.5,
+                  "x": 0.7
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "tomato",
+                  "delay": 0.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 2.8,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 6.0,
+                  "x": 0.8
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 13.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 19.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 22.5,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "grape_bunch",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 2.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 6.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 19.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 23.0,
+                  "x": 0.8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "title": "Le Mur de Pastèques",
+          "description": "Des pastèques massives et résistantes absorbent les tirs et protègent la vague.",
+          "star_thresholds": [
+            5000,
+            10500,
+            17000
+          ],
+          "rewards": {
+            "gold": 200,
+            "diamonds": 8,
+            "booster": "golden_crush"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 3.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 6.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.5,
+                  "x": 0.4
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 13.0,
+                  "x": 0.6
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 16.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 20.0,
+                  "x": 0.8
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 3.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 6.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 9.0,
+                  "x": 0.8
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 12.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 19.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 22.0,
+                  "x": 0.75
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 3.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 16.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 19.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 22.5,
+                  "x": 0.8
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 3.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 6.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 9.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 12.5,
+                  "x": 0.7
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 16.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 19.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 22.5,
+                  "x": 0.8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 6,
+          "title": "Pluie de Grenades",
+          "description": "Les grenades explosives bombardent l'arène de pépins vifs lors des frappes.",
+          "star_thresholds": [
+            5500,
+            11500,
+            18500
+          ],
+          "rewards": {
+            "gold": 220,
+            "diamonds": 9,
+            "booster": "golden_crush"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "pomegranate",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 3.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 6.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 13.0,
+                  "x": 0.4
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.5,
+                  "x": 0.6
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 20.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "pomegranate",
+                  "delay": 0.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 2.8,
+                  "x": 0.25
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 5.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 8.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 12.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 15.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 19.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 22.0,
+                  "x": 0.8
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "pomegranate",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 3.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 9.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 16.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 19.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 22.5,
+                  "x": 0.75
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 3.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.0,
+                  "x": 0.8
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 16.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 19.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 22.5,
+                  "x": 0.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 7,
+          "title": "Le Bosquet des Saveurs",
+          "description": "Une alliance féroce de pastèques protectrices, grenades et ananas bondissants.",
+          "star_thresholds": [
+            6000,
+            12500,
+            20000
+          ],
+          "rewards": {
+            "gold": 250,
+            "diamonds": 10,
+            "booster": "golden_crush"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 2.8,
+                  "x": 0.7
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 5.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 8.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 12.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 19.0,
+                  "x": 0.7
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "pomegranate",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 3.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 6.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 9.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 12.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 15.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 18.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 22.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 2.8,
+                  "x": 0.75
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 6.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 12.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 18.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 22.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 3.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 6.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 12.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 16.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 19.0,
+                  "x": 0.8
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 22.5,
+                  "x": 0.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 8,
+          "title": "Tornade Végétale",
+          "description": "Cinq vagues d'assaut ininterrompues pour tester tes réflexes de flipper.",
+          "star_thresholds": [
+            7000,
+            14000,
+            22000
+          ],
+          "rewards": {
+            "gold": 280,
+            "diamonds": 11,
+            "booster": "golden_crush"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "tomato",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 2.8,
+                  "x": 0.7
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 5.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 8.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 11.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 15.0,
+                  "x": 0.4
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 18.5,
+                  "x": 0.65
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 2.8,
+                  "x": 0.65
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 5.8,
+                  "x": 0.25
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 9.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 12.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 18.5,
+                  "x": 0.8
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "pomegranate",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 2.8,
+                  "x": 0.7
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 5.8,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 12.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 18.5,
+                  "x": 0.65
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 3.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 6.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 12.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 18.5,
+                  "x": 0.8
+                }
+              ]
+            },
+            {
+              "subwave": 5,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 2.8,
+                  "x": 0.25
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 5.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 8.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 11.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 15.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 18.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 21.5,
+                  "x": 0.7
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 9,
+          "title": "L'Antichambre de Brocolino",
+          "description": "La garde d'élite du seigneur végétal bloque l'accès au trône avec férocité.",
+          "star_thresholds": [
+            8000,
+            16000,
+            25000
+          ],
+          "rewards": {
+            "gold": 320,
+            "diamonds": 12,
+            "booster": "golden_crush"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 2.8,
+                  "x": 0.7
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 5.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 8.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 12.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 18.0,
+                  "x": 0.65
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "pomegranate",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 2.8,
+                  "x": 0.65
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 5.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 8.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 12.0,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 15.0,
+                  "x": 0.85
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 18.5,
+                  "x": 0.4
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 2.8,
+                  "x": 0.7
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 5.8,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 8.8,
+                  "x": 0.25
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 12.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 15.0,
+                  "x": 0.4
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 18.5,
+                  "x": 0.6
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 2.8,
+                  "x": 0.25
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 5.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 8.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 11.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 15.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 18.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 21.0,
+                  "x": 0.8
+                }
+              ]
+            },
+            {
+              "subwave": 5,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 2.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 5.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 8.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 11.5,
+                  "x": 0.7
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 14.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 17.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 20.5,
+                  "x": 0.8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 10,
+          "title": "Le Trône de Brocolino",
+          "description": "Affronte Brocolino, le colosse végétal de la Forêt Dragée, dans un duel épique !",
+          "star_thresholds": [
+            12000,
+            25000,
+            42000
+          ],
+          "rewards": {
+            "gold": 600,
+            "diamonds": 30,
+            "booster": "golden_crush"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 3.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 6.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.0,
+                  "x": 0.8
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 12.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.0,
+                  "x": 0.3
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 19.5,
+                  "x": 0.7
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 23.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "pomegranate",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 3.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 16.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 19.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 22.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 26.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 3.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 13.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 16.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 19.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 22.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 26.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "boss_brocolino",
+                  "delay": 1.0,
+                  "x": 0.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "world_2",
+      "world_number": 2,
+      "display_name": "Plage Sucrée",
+      "subtitle": "Le rivage de sucre rose et d'océan pétillant",
+      "completion_reward_booster_id": "diamond_dust",
+      "levels": [
+        {
+          "number": 1,
+          "title": "Arrivée sur la Plage",
+          "description": "Bienvenue sur le rivage de sucre rose ! Les grenades de mer ouvrent la voie.",
+          "star_thresholds": [
+            3500,
+            7500,
+            13000
+          ],
+          "rewards": {
+            "gold": 160,
+            "diamonds": 6,
+            "booster": "silver_pop"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "tomato",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 3.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 10.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 13.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 17.0,
+                  "x": 0.4
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 20.5,
+                  "x": 0.6
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "pomegranate",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 2.8,
+                  "x": 0.65
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 5.8,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 9.0,
+                  "x": 0.8
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 12.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.0,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 19.5,
+                  "x": 0.7
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "tomato",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 2.8,
+                  "x": 0.75
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 5.8,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 9.0,
+                  "x": 0.3
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 12.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 19.0,
+                  "x": 0.8
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 22.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "pomegranate",
+                  "delay": 0.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 2.8,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 5.8,
+                  "x": 0.8
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 12.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 19.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 22.5,
+                  "x": 0.75
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 2,
+          "title": "Noix de Coco Sauvages",
+          "description": "Les noix de coco à coque blindée exigent plusieurs rebonds de flipper pour céder.",
+          "star_thresholds": [
+            4200,
+            9000,
+            15000
+          ],
+          "rewards": {
+            "gold": 180,
+            "diamonds": 7,
+            "booster": "diamond_dust"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 3.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 6.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 10.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 17.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 20.5,
+                  "x": 0.8
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 3.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 13.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.5,
+                  "x": 0.4
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 20.0,
+                  "x": 0.6
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 3.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 6.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 9.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 13.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 19.5,
+                  "x": 0.7
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 23.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 3.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 19.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 23.0,
+                  "x": 0.8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "title": "Châteaux de Sucre",
+          "description": "Des remparts de noix de coco protégeant des ananas bondissants.",
+          "star_thresholds": [
+            4800,
+            10000,
+            16500
+          ],
+          "rewards": {
+            "gold": 200,
+            "diamonds": 7,
+            "booster": "diamond_dust"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 3.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 10.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 13.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 17.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 20.5,
+                  "x": 0.65
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.4
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 3.0,
+                  "x": 0.6
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 6.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 9.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 13.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 19.5,
+                  "x": 0.7
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 23.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 3.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 19.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 23.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 2.8,
+                  "x": 0.7
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 6.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 13.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 16.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 19.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 23.0,
+                  "x": 0.7
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "title": "Ballet Aquatique",
+          "description": "Grappes de raisin et grenades s'entrelacent autour des récifs de noix de coco.",
+          "star_thresholds": [
+            5400,
+            11500,
+            18500
+          ],
+          "rewards": {
+            "gold": 220,
+            "diamonds": 8,
+            "booster": "diamond_dust"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 3.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 6.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 10.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 17.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 20.5,
+                  "x": 0.8
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "grape_bunch",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 3.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 6.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 13.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 16.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 19.5,
+                  "x": 0.7
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 23.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 3.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.5,
+                  "x": 0.4
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 19.5,
+                  "x": 0.6
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 23.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 2.8,
+                  "x": 0.75
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 6.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 9.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 13.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 16.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 19.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 23.0,
+                  "x": 0.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "title": "Marée de Pastèques",
+          "description": "Les pastèques s'échouent par grappes le long de la plage de sucre.",
+          "star_thresholds": [
+            6000,
+            12800,
+            20500
+          ],
+          "rewards": {
+            "gold": 250,
+            "diamonds": 9,
+            "booster": "diamond_dust"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 3.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 6.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 10.0,
+                  "x": 0.8
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 13.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 17.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 20.5,
+                  "x": 0.65
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 3.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 6.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 16.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 19.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 23.0,
+                  "x": 0.8
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 3.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 16.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 19.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 23.0,
+                  "x": 0.65
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 2.8,
+                  "x": 0.75
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 6.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 13.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 16.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 19.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 23.0,
+                  "x": 0.8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 6,
+          "title": "Bombardement Fruité",
+          "description": "Une escouade de grenades et noix de coco pilonne les deux flippers.",
+          "star_thresholds": [
+            6800,
+            14000,
+            22500
+          ],
+          "rewards": {
+            "gold": 280,
+            "diamonds": 10,
+            "booster": "diamond_dust"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "pomegranate",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 3.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 10.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 13.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 17.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 20.5,
+                  "x": 0.65
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "pomegranate",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 3.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 6.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 13.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 16.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 19.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 23.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 3.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 16.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 19.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 23.0,
+                  "x": 0.65
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 3.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 6.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 9.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 13.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 16.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 19.5,
+                  "x": 0.7
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 23.0,
+                  "x": 0.5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 7,
+          "title": "Les Dunes Scintillantes",
+          "description": "Les forces sucrées se regroupent en colonnes serrées sur les dunes.",
+          "star_thresholds": [
+            7500,
+            15500,
+            24500
+          ],
+          "rewards": {
+            "gold": 310,
+            "diamonds": 11,
+            "booster": "diamond_dust"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 3.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 6.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 13.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 16.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 20.0,
+                  "x": 0.7
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 3.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 6.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 9.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 13.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 16.5,
+                  "x": 0.85
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 19.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 23.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 2.8,
+                  "x": 0.75
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 6.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 12.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 16.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 19.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 22.5,
+                  "x": 0.8
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 2.8,
+                  "x": 0.75
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 6.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.0,
+                  "x": 0.3
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 12.5,
+                  "x": 0.7
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 16.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 19.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 22.5,
+                  "x": 0.8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 8,
+          "title": "Tempête de Nectar",
+          "description": "Cinq vagues impitoyables avant d'approcher le palais côtier de Carambine.",
+          "star_thresholds": [
+            8500,
+            17500,
+            27000
+          ],
+          "rewards": {
+            "gold": 350,
+            "diamonds": 12,
+            "booster": "diamond_dust"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 2.8,
+                  "x": 0.7
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 5.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 8.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 11.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 15.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 18.5,
+                  "x": 0.65
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 2.8,
+                  "x": 0.65
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 5.8,
+                  "x": 0.25
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 12.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 15.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 18.5,
+                  "x": 0.8
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 2.8,
+                  "x": 0.7
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 5.8,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.0,
+                  "x": 0.25
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 12.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 15.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 18.5,
+                  "x": 0.65
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 3.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 6.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 12.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 15.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 18.5,
+                  "x": 0.2
+                }
+              ]
+            },
+            {
+              "subwave": 5,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 2.8,
+                  "x": 0.25
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 5.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 8.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 11.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 15.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 18.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 21.0,
+                  "x": 0.8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 9,
+          "title": "L'Ultime Rempart Côtier",
+          "description": "La garde personnelle de Carambine déploie ses blindages les plus solides.",
+          "star_thresholds": [
+            9500,
+            19500,
+            30000
+          ],
+          "rewards": {
+            "gold": 400,
+            "diamonds": 15,
+            "booster": "diamond_dust"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 2.8,
+                  "x": 0.7
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 5.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 8.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 12.0,
+                  "x": 0.5
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 15.0,
+                  "x": 0.35
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 18.0,
+                  "x": 0.65
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 2.8,
+                  "x": 0.65
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 5.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 8.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 12.0,
+                  "x": 0.3
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 15.0,
+                  "x": 0.85
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 18.5,
+                  "x": 0.4
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 2.8,
+                  "x": 0.7
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 5.8,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 8.8,
+                  "x": 0.25
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 12.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 15.0,
+                  "x": 0.4
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 18.5,
+                  "x": 0.6
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 2.8,
+                  "x": 0.75
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 5.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 8.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 11.5,
+                  "x": 0.65
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 15.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 18.0,
+                  "x": 0.8
+                }
+              ]
+            },
+            {
+              "subwave": 5,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 2.5,
+                  "x": 0.75
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 5.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 8.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 11.5,
+                  "x": 0.7
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 14.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 17.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 20.5,
+                  "x": 0.8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "number": 10,
+          "title": "L'Étoile du Rivage : Carambine",
+          "description": "La bondissante Carambine s'abat sur la Plage Sucrée ! Neutralise son laser et surmonte ses danses d'invocation !",
+          "star_thresholds": [
+            14000,
+            28000,
+            48000
+          ],
+          "rewards": {
+            "gold": 800,
+            "diamonds": 40,
+            "booster": "diamond_dust"
+          },
+          "waves": [
+            {
+              "subwave": 1,
+              "spawns": [
+                {
+                  "unit": "coconut",
+                  "delay": 0.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 3.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 6.0,
+                  "x": 0.2
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.0,
+                  "x": 0.8
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 12.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 16.0,
+                  "x": 0.3
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 19.5,
+                  "x": 0.7
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 23.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 2,
+              "spawns": [
+                {
+                  "unit": "pomegranate",
+                  "delay": 0.5,
+                  "x": 0.3
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 3.0,
+                  "x": 0.7
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 9.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 13.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 16.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "tomato",
+                  "delay": 19.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 22.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 26.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 3,
+              "spawns": [
+                {
+                  "unit": "watermelon",
+                  "delay": 0.5,
+                  "x": 0.25
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 3.0,
+                  "x": 0.75
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 6.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 9.5,
+                  "x": 0.35
+                },
+                {
+                  "unit": "pomegranate",
+                  "delay": 13.0,
+                  "x": 0.65
+                },
+                {
+                  "unit": "grape_bunch",
+                  "delay": 16.5,
+                  "x": 0.5
+                },
+                {
+                  "unit": "ananas",
+                  "delay": 19.5,
+                  "x": 0.2
+                },
+                {
+                  "unit": "coconut",
+                  "delay": 22.5,
+                  "x": 0.8
+                },
+                {
+                  "unit": "watermelon",
+                  "delay": 26.0,
+                  "x": 0.5
+                }
+              ]
+            },
+            {
+              "subwave": 4,
+              "spawns": [
+                {
+                  "unit": "boss_carambine",
+                  "delay": 1.0,
+                  "x": 0.5
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

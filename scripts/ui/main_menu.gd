@@ -13,6 +13,8 @@ const CampaignCatalog = preload("res://scripts/data/campaign_catalog.gd")
 const AdventureView = preload("res://scripts/ui/play/adventure_view.gd")
 const SurvivalView = preload("res://scripts/ui/play/survival_view.gd")
 
+const LeaderboardView = preload("res://scripts/ui/play/leaderboard_view.gd")
+
 signal play_pressed
 
 @onready var tab_collection: Control = $ContentContainer/CollectionTab
@@ -24,15 +26,29 @@ signal play_pressed
 @onready var btn_collection: Button = $NavBar/HBoxContainer/BtnCollection
 @onready var btn_play: Button = $NavBar/HBoxContainer/BtnPlay
 @onready var btn_leaderboard: Button = $NavBar/HBoxContainer/BtnLeaderboard
-@onready var rank_me_label: Label = $ContentContainer/LeaderboardTab/VBox/RankingList/RankMe/Label
+@onready var leaderboard_view: LeaderboardView = $ContentContainer/LeaderboardTab/LeaderboardView
 
 # Éléments Header
 @onready var btn_account: Button = $TopGoldBar/HBox/BtnAccount
+@onready var gold_badge: PanelContainer = $TopGoldBar/HBox/GoldBadge
+@onready var diamond_badge: PanelContainer = $TopGoldBar/HBox/DiamondBadge
 @onready var gold_label: Label = $TopGoldBar/HBox/GoldBadge/HBoxG/GoldLabel
 @onready var diamond_label: Label = $TopGoldBar/HBox/DiamondBadge/HBoxD/DiamondLabel
 @onready var btn_add_gold: Button = $TopGoldBar/HBox/GoldBadge/HBoxG/BtnAddGold
 @onready var btn_add_diamonds: Button = $TopGoldBar/HBox/DiamondBadge/HBoxD/BtnAddDiamonds
 @onready var account_modal: Control = $AccountModal
+@onready var player_name_modal: Control = $PlayerNameModal
+@onready var shop_reward_modal: ShopRewardModal = $ShopRewardModal
+@onready var currency_fly_layer: Control = $CurrencyFlyLayer
+
+const COIN_3D_TEX: Texture2D = preload("res://assets/ui/coin_gold_3d.png")
+const GEM_3D_TEX: Texture2D = preload("res://assets/ui/gem_diamond_3d.png")
+const SPARKLE_TEX: Texture2D = preload("res://assets/ui/sparkle_star.png")
+
+var _pending_reward_item: ShopItemData = null
+var _pending_start_gold: int = 0
+var _pending_start_diamonds: int = 0
+var _is_flying_currency: bool = false
 
 
 # Éléments Rack de Sachets (4 slots façon Clash Royale)
@@ -167,8 +183,50 @@ func _ready() -> void:
 			_refresh_deck_ui()
 		)
 
+	if leaderboard_view != null:
+		leaderboard_view.open_account_requested.connect(func() -> void:
+			if account_modal != null:
+				account_modal.open()
+		)
+		leaderboard_view.play_survival_requested.connect(func() -> void:
+			SaveManager.set_game_mode(SaveManager.GameMode.SURVIVAL)
+			switch_to_tab_index(2, true)
+		)
+
+	if shop_reward_modal != null:
+		shop_reward_modal.purchase_confirmed.connect(_on_shop_purchase_confirmed)
+		shop_reward_modal.purchase_cancelled.connect(_on_shop_purchase_cancelled)
+		shop_reward_modal.reward_claimed.connect(_on_shop_reward_claimed)
+		shop_reward_modal.open_booster_requested.connect(_on_shop_reward_open_booster)
+
+	visibility_changed.connect(func() -> void:
+		if visible:
+			refresh()
+	)
+
 	if btn_account != null and account_modal != null:
 		btn_account.pressed.connect(account_modal.open)
+		if account_modal.has_signal(&"edit_name_requested") and player_name_modal != null:
+			account_modal.edit_name_requested.connect(player_name_modal.open)
+
+	if player_name_modal != null:
+		player_name_modal.name_confirmed.connect(func(_new_name: String) -> void:
+			_refresh_account_button()
+			if account_modal != null and account_modal.has_method(&"_refresh_ui"):
+				account_modal._refresh_ui()
+		)
+		# Demande de pseudo à l'accueil uniquement pour un tout nouveau compte sans nom
+		var current_name: String = SaveManager.current_profile.display_name if SaveManager.current_profile != null else ""
+		var is_default_name: bool = current_name.is_empty() or current_name == "Gourmand" or current_name.begins_with("Gourmand_")
+		if SaveManager.current_profile != null and (not SaveManager.current_profile.has_chosen_name and is_default_name):
+			get_tree().create_timer(0.4).timeout.connect(func() -> void:
+				if player_name_modal != null and SaveManager.current_profile != null:
+					var p_name: String = SaveManager.current_profile.display_name
+					if not SaveManager.current_profile.has_chosen_name and (p_name == "Gourmand" or p_name.begins_with("Gourmand_")):
+						player_name_modal.open()
+			)
+		elif SaveManager.current_profile != null and not is_default_name:
+			SaveManager.current_profile.has_chosen_name = true
 
 	EventBus.profile_loaded.connect(func(_pid: String) -> void:
 		_refresh_account_button()
@@ -197,23 +255,17 @@ func _ready() -> void:
 	switch_to_tab_index(2, false) # Démarre sur le jeu sans animation
 
 func _refresh_leaderboard_ui() -> void:
-	if rank_me_label != null and SaveManager.current_profile != null:
-		var prof: RefCounted = SaveManager.current_profile
-		var best: int = int(prof.stats.get("best_score", 0))
-		rank_me_label.text = " ⭐  4. %s — %d pts" % [prof.display_name, best]
+	if leaderboard_view != null:
+		leaderboard_view.refresh()
 
 func _refresh_account_button() -> void:
 	if btn_account == null or SaveManager.current_profile == null:
 		return
 	var prof: RefCounted = SaveManager.current_profile
-	var is_sandbox: bool = SaveManager.is_sandbox_active()
 	var cloud_icon: String = "⚪"
 	if SaveManager.cloud_sync != null and SaveManager.cloud_sync.is_online():
 		cloud_icon = "🟢"
-	if is_sandbox:
-		btn_account.text = "%s 🧪 %s" % [cloud_icon, prof.display_name]
-	else:
-		btn_account.text = "%s 👤 %s" % [cloud_icon, prof.display_name]
+	btn_account.text = "%s 👤 %s" % [cloud_icon, prof.display_name]
 
 func set_last_score(val: int) -> void:
 	last_score = val
@@ -349,9 +401,25 @@ func switch_to_tab_index(idx: int, animated: bool = true) -> void:
 		_refresh_collection_ui()
 	elif idx == 0:
 		_refresh_shop_ui()
+	elif idx == 2:
+		_refresh_play_tab()
+	elif idx == 3:
+		_refresh_leaderboard_ui()
 		
 	_update_collection_badge()
 	EventBus.main_menu_tab_changed.emit(TAB_KEYS[idx])
+
+## Rafraîchit l'ensemble des données visibles du menu (devises, badges, cartes d'aventure)
+func refresh() -> void:
+	_update_currency_display()
+	_update_collection_badge()
+	_refresh_play_tab()
+	if current_tab_index == 0:
+		_refresh_shop_ui()
+	elif current_tab_index == 1:
+		_refresh_collection_ui()
+	elif current_tab_index == 3:
+		_refresh_leaderboard_ui()
 
 func _update_navbar_ui(active_idx: int) -> void:
 	var nav_buttons: Array[Button] = [btn_shop, btn_collection, btn_play, btn_leaderboard]
@@ -488,18 +556,21 @@ func _end_touch(pos: Vector2) -> void:
 			switch_to_tab_index(current_tab_index, true)
 
 func _update_currency_display() -> void:
-	if gold_label != null:
-		gold_label.text = "%d 🪙" % SaveManager.gold
-	if diamond_label != null:
-		diamond_label.text = "%d 💎" % SaveManager.diamonds
+	if not _is_flying_currency:
+		if gold_label != null:
+			gold_label.text = "%d 🪙" % SaveManager.gold
+		if diamond_label != null:
+			diamond_label.text = "%d 💎" % SaveManager.diamonds
 
 func _on_gold_changed(_new_val: int, _delta: int) -> void:
-	_update_currency_display()
+	if not _is_flying_currency:
+		_update_currency_display()
 	_refresh_collection_ui()
 	_refresh_shop_ui()
 
 func _on_diamonds_changed(_new_val: int, _delta: int) -> void:
-	_update_currency_display()
+	if not _is_flying_currency:
+		_update_currency_display()
 	_refresh_shop_ui()
 
 func _on_card_upgraded(_card_id: StringName, _lvl: int) -> void:
@@ -722,9 +793,336 @@ func _on_shop_card_action(item: ShopItemData, use_diamonds: bool) -> void:
 	if item.is_real_money():
 		EventBus.shop_real_money_offer_requested.emit(item.id)
 		return
+
+	# TANT QU'ON N'A PAS APPUYÉ SUR "CONFIRMER", L'ACHAT N'EST PAS VALIDÉ !
+	# On ouvre l'écran de prévisualisation et confirmation :
+	if shop_reward_modal != null:
+		shop_reward_modal.open_confirmation(item, use_diamonds, SaveManager.gold, SaveManager.diamonds)
+	else:
+		# Fallback direct
+		_on_shop_purchase_confirmed(item, use_diamonds, get_viewport_rect().size * 0.5)
+
+func _on_shop_purchase_cancelled() -> void:
+	_pending_reward_item = null
+
+func _on_shop_purchase_confirmed(item: ShopItemData, use_diamonds: bool, origin_pos: Vector2) -> void:
+	if item == null:
+		return
+
+	var prev_gold: int = SaveManager.gold
+	var prev_diamonds: int = SaveManager.diamonds
+	var is_free: bool = item.is_free()
+
+	# C'EST ICI ET SEULEMENT ICI QUE L'ACHAT EST VALIDÉ ET DÉBITÉ :
 	var success: bool = SaveManager.purchase_item(item, use_diamonds)
-	if success:
+	if not success:
+		if shop_reward_modal != null:
+			shop_reward_modal.close()
+		return
+
+	_pending_reward_item = item
+	_pending_start_gold = prev_gold
+	_pending_start_diamonds = prev_diamonds
+	Input.vibrate_handheld(35)
+
+	var final_gold: int = SaveManager.gold
+	var final_diamonds: int = SaveManager.diamonds
+	var gold_gain: int = maxi(0, final_gold - prev_gold)
+	var dia_gain: int = maxi(0, final_diamonds - prev_diamonds)
+
+	# Vérifier si l'article contient un sachet de cartes
+	var has_booster: bool = false
+	for entry in item.get_reward_entries():
+		if entry.get("type", "") == "booster":
+			has_booster = true
+			break
+
+	# Fermeture immédiate de la modale de confirmation pour ne pas perturber le joueur avec une 2e modale
+	if shop_reward_modal != null:
+		shop_reward_modal.close()
+
+	if has_booster:
+		# Animation du paquet de cartes qui s'envole vers la droite vers l'onglet Collection !
+		_launch_booster_fly_animation(item.icon_texture, origin_pos)
+
+	if gold_gain > 0 or dia_gain > 0:
+		# Envol des pièces / diamants vers le HUD en haut
+		_launch_currency_fly_animation(gold_gain, dia_gain, origin_pos, prev_gold, prev_diamonds)
+	elif not has_booster:
+		_launch_celebration_burst(origin_pos)
 		_refresh_shop_ui()
+		_refresh_collection_ui()
+
+func _on_shop_reward_claimed(item: ShopItemData, origin_pos: Vector2) -> void:
+	var final_gold: int = SaveManager.gold
+	var final_diamonds: int = SaveManager.diamonds
+	var gold_gain: int = maxi(0, final_gold - _pending_start_gold)
+	var dia_gain: int = maxi(0, final_diamonds - _pending_start_diamonds)
+
+	if gold_gain > 0 or dia_gain > 0:
+		_launch_currency_fly_animation(gold_gain, dia_gain, origin_pos, _pending_start_gold, _pending_start_diamonds)
+	else:
+		_launch_celebration_burst(origin_pos)
+		_refresh_shop_ui()
+		_refresh_collection_ui()
+
+func _on_shop_reward_open_booster(booster: BoosterData) -> void:
+	_refresh_shop_ui()
+	_refresh_collection_ui()
+	if booster != null:
+		EventBus.open_booster_modal_requested.emit(booster)
+
+func _launch_booster_fly_animation(booster_tex: Texture2D, origin_pos: Vector2) -> void:
+	if currency_fly_layer == null:
+		_refresh_shop_ui()
+		_refresh_collection_ui()
+		return
+
+	var booster_rect: TextureRect = TextureRect.new()
+	booster_rect.texture = booster_tex if booster_tex != null else preload("res://assets/ui/booster_pack.png")
+	var b_size: Vector2 = Vector2(150, 150)
+	booster_rect.custom_minimum_size = b_size
+	booster_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	booster_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	booster_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	booster_rect.pivot_offset = b_size * 0.5
+	booster_rect.position = origin_pos - (b_size * 0.5)
+	booster_rect.scale = Vector2(0.3, 0.3)
+	currency_fly_layer.add_child(booster_rect)
+
+	# Étoiles d'éclatement au centre
+	_launch_celebration_burst(origin_pos)
+	Input.vibrate_handheld(30)
+
+	var vp_size: Vector2 = get_viewport_rect().size
+	var target_x: float = vp_size.x + 120.0
+	var target_y: float = origin_pos.y + 60.0
+
+	var tw: Tween = create_tween()
+	# 1. Pop-in & anticipation au centre avec tilt (0.16s)
+	tw.tween_property(booster_rect, "scale", Vector2(1.25, 1.25), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(booster_rect, "rotation_degrees", -8.0, 0.16)
+
+	# 2. Envol vif et accéléré vers la droite de l'écran (0.38s)
+	tw.tween_property(booster_rect, "position:x", target_x, 0.38).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.parallel().tween_property(booster_rect, "position:y", target_y, 0.38).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tw.parallel().tween_property(booster_rect, "rotation_degrees", 24.0, 0.38)
+	tw.parallel().tween_property(booster_rect, "scale", Vector2(0.7, 0.7), 0.38)
+
+	# 3. Arrivée à droite & Punch rebond sur le bouton Collection
+	tw.tween_callback(func() -> void:
+		if is_instance_valid(booster_rect):
+			booster_rect.queue_free()
+
+		Input.vibrate_handheld(25)
+		if btn_collection != null:
+			btn_collection.pivot_offset = btn_collection.size * 0.5
+			var b_tw: Tween = btn_collection.create_tween()
+			b_tw.tween_property(btn_collection, "scale", Vector2(1.22, 1.22), 0.05).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			b_tw.tween_property(btn_collection, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+		_refresh_shop_ui()
+		_refresh_collection_ui()
+	)
+
+func _launch_celebration_burst(origin_pos: Vector2) -> void:
+	if currency_fly_layer == null:
+		return
+	for i in range(14):
+		var star: TextureRect = TextureRect.new()
+		star.texture = SPARKLE_TEX
+		star.custom_minimum_size = Vector2(36, 36)
+		star.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		star.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		star.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		star.pivot_offset = Vector2(18, 18)
+		star.position = origin_pos - Vector2(18, 18)
+		star.scale = Vector2(0.2, 0.2)
+		currency_fly_layer.add_child(star)
+
+		var angle: float = randf_range(0.0, TAU)
+		var dist: float = randf_range(60.0, 160.0)
+		var target_offset: Vector2 = Vector2(cos(angle), sin(angle)) * dist
+
+		var tw: Tween = create_tween().set_parallel(true)
+		tw.tween_property(star, "position", star.position + target_offset, 0.45).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tw.tween_property(star, "scale", Vector2.ONE * randf_range(0.8, 1.4), 0.22)
+		tw.tween_property(star, "scale", Vector2.ZERO, 0.23).set_delay(0.22)
+		tw.tween_property(star, "rotation", randf_range(-PI, PI), 0.45)
+		tw.chain().tween_callback(star.queue_free)
+
+func _launch_currency_fly_animation(
+	gold_gain: int,
+	dia_gain: int,
+	origin_pos: Vector2,
+	start_gold: int,
+	start_diamonds: int
+) -> void:
+	if currency_fly_layer == null:
+		_update_currency_display()
+		_refresh_shop_ui()
+		return
+
+	_is_flying_currency = true
+
+	# Garder le texte initial pendant le vol des pièces/diamants
+	if gold_gain > 0 and gold_label != null:
+		gold_label.text = "%d 🪙" % start_gold
+	if dia_gain > 0 and diamond_label != null:
+		diamond_label.text = "%d 💎" % start_diamonds
+
+	var items_to_spawn: Array[Dictionary] = []
+	if gold_gain > 0:
+		var count: int = clampi(gold_gain / 25, 10, 18)
+		for i in range(count):
+			items_to_spawn.append({
+				"is_gold": true,
+				"texture": COIN_3D_TEX,
+				"target_node": gold_badge,
+				"target_label": gold_label,
+				"start_val": start_gold,
+				"target_val": SaveManager.gold,
+				"suffix": "🪙",
+				"index": i,
+				"total": count
+			})
+
+	if dia_gain > 0:
+		var count_dia: int = clampi(dia_gain, 6, 14)
+		for i in range(count_dia):
+			items_to_spawn.append({
+				"is_gold": false,
+				"texture": GEM_3D_TEX,
+				"target_node": diamond_badge,
+				"target_label": diamond_label,
+				"start_val": start_diamonds,
+				"target_val": SaveManager.diamonds,
+				"suffix": "💎",
+				"index": i,
+				"total": count_dia
+			})
+
+	var progress_tracker: Dictionary = {"completed": 0}
+	var total_items: int = items_to_spawn.size()
+
+	# Minuteur de sécurité
+	var safety_tw: Tween = create_tween()
+	safety_tw.tween_interval(1.8)
+	safety_tw.tween_callback(func() -> void:
+		if _is_flying_currency:
+			_is_flying_currency = false
+			_update_currency_display()
+			_refresh_shop_ui()
+	)
+
+	for data in items_to_spawn:
+		var is_gold: bool = data["is_gold"]
+		var tex: Texture2D = data["texture"]
+		var target_badge: PanelContainer = data["target_node"]
+		var target_lbl: Label = data["target_label"]
+		var s_val: int = data["start_val"]
+		var t_val: int = data["target_val"]
+		var suffix: String = data["suffix"]
+		var idx: int = data["index"]
+		var total: int = data["total"]
+
+		var p: TextureRect = TextureRect.new()
+		p.texture = tex
+		var p_size: Vector2 = Vector2(46, 46) if is_gold else Vector2(42, 42)
+		p.custom_minimum_size = p_size
+		p.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		p.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		p.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		p.pivot_offset = p_size * 0.5
+		p.position = origin_pos - (p_size * 0.5)
+		p.scale = Vector2(0.2, 0.2)
+		currency_fly_layer.add_child(p)
+
+		# 1. Éclatement radial initial ("burst" jouissif)
+		var angle: float = randf_range(0.0, TAU)
+		var burst_dist: float = randf_range(40.0, 110.0)
+		var burst_pos: Vector2 = origin_pos - (p_size * 0.5) + Vector2(cos(angle), sin(angle)) * burst_dist
+
+		var tw_burst: Tween = create_tween().set_parallel(true)
+		tw_burst.tween_property(p, "position", burst_pos, 0.16).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		tw_burst.tween_property(p, "scale", Vector2(1.15, 1.15), 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+		# 2. Envol vers le badge en haut
+		var delay: float = 0.14 + (float(idx) * 0.038)
+		var target_center: Vector2 = (target_badge.global_position + (target_badge.size * 0.5)) - (p_size * 0.5) if target_badge != null else Vector2(360, 40)
+		
+		# Trajectoire arquée
+		var control_x: float = lerpf(burst_pos.x, target_center.x, 0.5) + randf_range(-50.0, 50.0)
+		var control_y: float = minf(burst_pos.y, target_center.y) - randf_range(60.0, 120.0)
+		var p1: Vector2 = Vector2(control_x, control_y)
+
+		var tw_fly: Tween = create_tween()
+		tw_fly.tween_interval(delay)
+		
+		# Interpolation quadratique de Bézier
+		var duration: float = 0.40
+		var sub_steps: int = 12
+		for s in range(1, sub_steps + 1):
+			var t: float = float(s) / float(sub_steps)
+			var inv_t: float = 1.0 - t
+			var pt: Vector2 = (inv_t * inv_t * burst_pos) + (2.0 * inv_t * t * p1) + (t * t * target_center)
+			tw_fly.tween_property(p, "position", pt, duration / float(sub_steps))
+		
+		# Scale down légèrement à l'approche et rotation
+		var tw_scale: Tween = create_tween()
+		tw_scale.tween_interval(delay + duration * 0.6)
+		tw_scale.tween_property(p, "scale", Vector2(0.85, 0.85), duration * 0.4)
+
+		# 3. Arrivée & Impact
+		tw_fly.tween_callback(func() -> void:
+			if is_instance_valid(p):
+				p.queue_free()
+
+			# Rebond punch sur le badge cible
+			if target_badge != null:
+				target_badge.pivot_offset = target_badge.size * 0.5
+				var punch_tw: Tween = target_badge.create_tween()
+				punch_tw.tween_property(target_badge, "scale", Vector2(1.22, 1.22), 0.04).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+				punch_tw.tween_property(target_badge, "scale", Vector2.ONE, 0.10).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+			# Petite étoile étincelle à l'impact
+			_spawn_arrival_sparkle(target_center + (p_size * 0.5))
+
+			# Haptique par pièce qui tape
+			Input.vibrate_handheld(12)
+
+			# Rolling number progressif sur le label
+			if target_lbl != null:
+				var progress: float = float(idx + 1) / float(total)
+				var current_val: int = int(lerpf(float(s_val), float(t_val), progress))
+				target_lbl.text = "%d %s" % [current_val, suffix]
+
+			progress_tracker["completed"] += 1
+			if progress_tracker["completed"] >= total_items:
+				_is_flying_currency = false
+				_update_currency_display()
+				_refresh_shop_ui()
+				_refresh_collection_ui()
+		)
+
+func _spawn_arrival_sparkle(center_pos: Vector2) -> void:
+	if currency_fly_layer == null:
+		return
+	var sp: TextureRect = TextureRect.new()
+	sp.texture = SPARKLE_TEX
+	sp.custom_minimum_size = Vector2(28, 28)
+	sp.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	sp.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	sp.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sp.pivot_offset = Vector2(14, 14)
+	sp.position = center_pos - Vector2(14, 14)
+	sp.scale = Vector2(0.3, 0.3)
+	currency_fly_layer.add_child(sp)
+
+	var tw: Tween = create_tween().set_parallel(true)
+	tw.tween_property(sp, "scale", Vector2(1.3, 1.3), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(sp, "modulate:a", 0.0, 0.20).set_delay(0.08)
+	tw.chain().tween_callback(sp.queue_free)
 
 func _on_open_booster() -> void:
 	EventBus.open_booster_modal_requested.emit(null)
@@ -798,6 +1196,22 @@ func _take_menu_screenshot() -> void:
 		card_detail_modal.open_for_card(&"mentox")
 	elif "--card-modal-slot" in args:
 		card_detail_modal.open_for_deck_slot(0, &"mentox")
+
+	if "--top-tab" in args and leaderboard_view != null:
+		var my_uid: String = SaveManager.current_profile.cloud_user_id if SaveManager.current_profile != null else "local"
+		var my_name: String = SaveManager.current_profile.display_name if SaveManager.current_profile != null else "Moi"
+		var demo_entries: Array = [
+			{"user_id": "p1", "display_name": "SugarKing", "survival_best_wave": 45, "survival_best_score": 195400},
+			{"user_id": "p2", "display_name": "BonbonMaster", "survival_best_wave": 38, "survival_best_score": 142100},
+			{"user_id": "p3", "display_name": "ChocoKnight", "survival_best_wave": 33, "survival_best_score": 118900},
+			{"user_id": my_uid, "display_name": my_name, "survival_best_wave": 24, "survival_best_score": 68400},
+			{"user_id": "p5", "display_name": "GummyBear", "survival_best_wave": 19, "survival_best_score": 45200},
+			{"user_id": "p6", "display_name": "LollipopNinja", "survival_best_wave": 16, "survival_best_score": 38900},
+			{"user_id": "p7", "display_name": "CaramelCrush", "survival_best_wave": 14, "survival_best_score": 31050},
+			{"user_id": "p8", "display_name": "PixelTart", "survival_best_wave": 12, "survival_best_score": 24800},
+		]
+		leaderboard_view._render_leaderboard(demo_entries)
+		leaderboard_view._show_state("ready")
 
 	for i in range(20):
 		await get_tree().process_frame

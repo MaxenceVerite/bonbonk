@@ -1,0 +1,373 @@
+[gd_scene load_steps=14 format=3 uid="uid://shoprewardmodal01"]
+
+[ext_resource type="Script" path="res://scripts/ui/shop/shop_reward_modal.gd" id="1_script"]
+[ext_resource type="Theme" uid="uid://candytheme001" path="res://resources/candy_theme.tres" id="2_theme"]
+[ext_resource type="Shader" path="res://assets/shaders/candy_spiral.gdshader" id="3_spiral_shader"]
+[ext_resource type="Texture2D" path="res://assets/ui/ribbon_red_banner.png" id="4_ribbon"]
+[ext_resource type="Texture2D" path="res://assets/ui/hero_burst_bg.png" id="5_aura"]
+[ext_resource type="Texture2D" path="res://assets/ui/icon_gold_stack.png" id="6_fallback_icon"]
+[ext_resource type="Texture2D" path="res://assets/ui/candy_cane_pattern.png" id="7_candy_cane"]
+[ext_resource type="Texture2D" path="res://assets/ui/btn_jouer_green.png" id="8_btn_green"]
+[ext_resource type="Texture2D" path="res://assets/ui/btn_jouer_green_pressed.png" id="9_btn_green_p"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_Spiral"]
+shader = ExtResource("3_spiral_shader")
+shader_parameter/color_red = Color(0.96, 0.65, 0.15, 0.5)
+shader_parameter/color_white = Color(1, 0.95, 0.75, 0.35)
+shader_parameter/rotation_speed = 0.5
+shader_parameter/spiral_arms = 12.0
+shader_parameter/twist_strength = 2.5
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Card"]
+content_margin_left = 22.0
+content_margin_top = 18.0
+content_margin_right = 22.0
+content_margin_bottom = 22.0
+bg_color = Color(0.96, 0.92, 0.85, 0.98)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 8
+border_color = Color(0.72, 0.55, 0.38, 1)
+corner_radius_top_left = 26
+corner_radius_top_right = 26
+corner_radius_bottom_right = 26
+corner_radius_bottom_left = 26
+shadow_color = Color(0.12, 0.05, 0.02, 0.45)
+shadow_size = 14
+shadow_offset = Vector2(0, 6)
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_BtnGreenN"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+texture = ExtResource("8_btn_green")
+texture_margin_left = 40.0
+texture_margin_top = 20.0
+texture_margin_right = 40.0
+texture_margin_bottom = 30.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="StyleBox_BtnGreenP"]
+content_margin_left = 24.0
+content_margin_top = 16.0
+content_margin_right = 24.0
+content_margin_bottom = 14.0
+texture = ExtResource("9_btn_green_p")
+texture_margin_left = 40.0
+texture_margin_top = 24.0
+texture_margin_right = 40.0
+texture_margin_bottom = 24.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_BtnLater"]
+content_margin_left = 18.0
+content_margin_top = 10.0
+content_margin_right = 18.0
+content_margin_bottom = 14.0
+bg_color = Color(0.80, 0.70, 0.58, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.60, 0.48, 0.36, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_CostPanel"]
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
+bg_color = Color(0.92, 0.86, 0.76, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 3
+border_color = Color(0.74, 0.58, 0.40, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_BtnClose"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+bg_color = Color(0.85, 0.32, 0.28, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 4
+border_color = Color(0.55, 0.15, 0.15, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[node name="ShopRewardModal" type="Control"]
+visible = false
+z_index = 100
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_script")
+
+[node name="DarkOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.02, 0.06, 0.82)
+
+[node name="SpiralBackdrop" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_Spiral")
+custom_minimum_size = Vector2(760, 760)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -380.0
+offset_top = -380.0
+offset_right = 380.0
+offset_bottom = 380.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CardCenter" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CardContainer" type="PanelContainer" parent="CardCenter"]
+custom_minimum_size = Vector2(580, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_Card")
+
+[node name="VBox" type="VBoxContainer" parent="CardCenter/CardContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="RibbonBanner" type="TextureRect" parent="CardCenter/CardContainer/VBox"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+texture = ExtResource("4_ribbon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RibbonLabel" type="Label" parent="CardCenter/CardContainer/VBox/RibbonBanner"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 2.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.45, 0.08, 0.12, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 20
+text = "🎉 ACHAT EFFECTUÉ !"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="IconCenter" type="CenterContainer" parent="CardCenter/CardContainer/VBox"]
+custom_minimum_size = Vector2(0, 160)
+layout_mode = 2
+
+[node name="AuraAnchor" type="Control" parent="CardCenter/CardContainer/VBox/IconCenter"]
+custom_minimum_size = Vector2(160, 160)
+layout_mode = 2
+
+[node name="Aura" type="TextureRect" parent="CardCenter/CardContainer/VBox/IconCenter/AuraAnchor"]
+modulate = Color(1, 0.85, 0.35, 0.45)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -25.0
+offset_top = -25.0
+offset_right = 25.0
+offset_bottom = 25.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_aura")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ItemIcon" type="TextureRect" parent="CardCenter/CardContainer/VBox/IconCenter/AuraAnchor"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("6_fallback_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="CardCenter/CardContainer/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.12, 0.04, 1)
+theme_override_colors/font_outline_color = Color(1, 0.96, 0.88, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 26
+text = "ARTICLE BOUTIQUE"
+horizontal_alignment = 1
+
+[node name="DescLabel" type="Label" parent="CardCenter/CardContainer/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.30, 0.18, 1)
+theme_override_font_sizes/font_size = 14
+text = "Récompenses ajoutées avec succès !"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="CandyCaneRibbon" type="TextureRect" parent="CardCenter/CardContainer/VBox"]
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+texture = ExtResource("7_candy_cane")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="RewardsVBox" type="VBoxContainer" parent="CardCenter/CardContainer/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Spacer" type="Control" parent="CardCenter/CardContainer/VBox"]
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+
+[node name="CostPanel" type="PanelContainer" parent="CardCenter/CardContainer/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_CostPanel")
+
+[node name="CostVBox" type="VBoxContainer" parent="CardCenter/CardContainer/VBox/CostPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="PriceLabel" type="Label" parent="CardCenter/CardContainer/VBox/CostPanel/CostVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.24, 0.12, 0.04, 1)
+theme_override_colors/font_outline_color = Color(1, 0.95, 0.85, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 21
+text = "PRIX : 150 🪙"
+horizontal_alignment = 1
+
+[node name="BalanceLabel" type="Label" parent="CardCenter/CardContainer/VBox/CostPanel/CostVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.32, 0.18, 1)
+theme_override_font_sizes/font_size = 15
+text = "Votre solde : 15 000 🪙  ➔  14 850 🪙"
+horizontal_alignment = 1
+
+[node name="ButtonsContainer" type="VBoxContainer" parent="CardCenter/CardContainer/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="ConfirmButtonsHBox" type="HBoxContainer" parent="CardCenter/CardContainer/VBox/ButtonsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="BtnCancel" type="Button" parent="CardCenter/CardContainer/VBox/ButtonsContainer/ConfirmButtonsHBox"]
+custom_minimum_size = Vector2(160, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.28, 0.14, 0.06, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBox_BtnLater")
+theme_override_styles/pressed = SubResource("StyleBox_BtnLater")
+theme_override_styles/hover = SubResource("StyleBox_BtnLater")
+text = "ANNULER"
+
+[node name="BtnConfirm" type="Button" parent="CardCenter/CardContainer/VBox/ButtonsContainer/ConfirmButtonsHBox"]
+custom_minimum_size = Vector2(250, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.06, 0.35, 0.12, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBox_BtnGreenN")
+theme_override_styles/pressed = SubResource("StyleBox_BtnGreenP")
+theme_override_styles/hover = SubResource("StyleBox_BtnGreenN")
+text = "✅ CONFIRMER"
+
+[node name="BtnClaim" type="Button" parent="CardCenter/CardContainer/VBox/ButtonsContainer"]
+visible = false
+custom_minimum_size = Vector2(320, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.06, 0.35, 0.12, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBox_BtnGreenN")
+theme_override_styles/pressed = SubResource("StyleBox_BtnGreenP")
+theme_override_styles/hover = SubResource("StyleBox_BtnGreenN")
+text = "✨  RÉCUPÉRER !"
+
+[node name="BoosterButtonsHBox" type="HBoxContainer" parent="CardCenter/CardContainer/VBox/ButtonsContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="BtnLater" type="Button" parent="CardCenter/CardContainer/VBox/ButtonsContainer/BoosterButtonsHBox"]
+custom_minimum_size = Vector2(160, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.28, 0.14, 0.06, 1)
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("StyleBox_BtnLater")
+theme_override_styles/pressed = SubResource("StyleBox_BtnLater")
+theme_override_styles/hover = SubResource("StyleBox_BtnLater")
+text = "PLUS TARD"
+
+[node name="BtnOpenBooster" type="Button" parent="CardCenter/CardContainer/VBox/ButtonsContainer/BoosterButtonsHBox"]
+custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.06, 0.35, 0.12, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBox_BtnGreenN")
+theme_override_styles/pressed = SubResource("StyleBox_BtnGreenP")
+theme_override_styles/hover = SubResource("StyleBox_BtnGreenN")
+text = "🍬  OUVRIR"
+
+[node name="BtnClose" type="Button" parent="CardCenter/CardContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.35, 0.08, 0.08, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBox_BtnClose")
+theme_override_styles/pressed = SubResource("StyleBox_BtnClose")
+theme_override_styles/hover = SubResource("StyleBox_BtnClose")
+text = "✕"
+

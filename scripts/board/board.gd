@@ -97,9 +97,12 @@ var tube_ball_queue: Array[StringName]:
 
 signal factory_state_changed(types_queue: Array[StringName], is_synthesizing: bool, next_type: StringName, progress: float, pod_slots: Array[StringName])
 
+const _MegaSlamControllerScript = preload("res://scripts/board/mega_slam_controller.gd")
+
 var is_game_running: bool = false
 var ball_pool: NodePool = NodePool.new()
 var enemy_pool: NodePool = NodePool.new()
+var mega_slam_controller: Node2D = null
 
 func _ready() -> void:
 	add_child(ball_pool)
@@ -108,6 +111,14 @@ func _ready() -> void:
 	ball_tube.initialize(max_tube_capacity, synthesis_time_seconds)
 	ball_tube.factory_state_changed.connect(func(q, s, n, p, pods): factory_state_changed.emit(q, s, n, p, pods))
 	EventBus.flipper_parried.connect(_on_flipper_parried)
+
+	# Initialisation du Mega Slam
+	mega_slam_controller = _MegaSlamControllerScript.new()
+	mega_slam_controller.name = "MegaSlamController"
+	mega_slam_controller.board = self
+	mega_slam_controller.left_gate = left_gate
+	mega_slam_controller.right_gate = right_gate
+	add_child(mega_slam_controller)
 
 const _HitstopManagerScript = preload("res://scripts/core/hitstop_manager.gd")
 const _ParryImpactEffectScript = preload("res://scripts/effects/parry_impact_effect.gd")
@@ -329,8 +340,7 @@ func place_bumper_at_slot(slot: BumperSlot, bumper_id: StringName) -> bool:
 	if b_data != null:
 		bumper.setup_bumper(b_data)
 
-	var st: Dictionary = SaveManager.get_card_state(bumper_id)
-	bumper.current_level = st.get("level", 1)
+	bumper.current_level = SaveManager.get_in_game_card_level(bumper_id)
 
 	slot.attach_bumper(bumper)
 	return true

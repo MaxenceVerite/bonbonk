@@ -122,8 +122,14 @@ var campaign_unlocked_level: int:
 var campaign_selected_world: int = 1
 var campaign_selected_level: int = 1
 
-# Sélection active d'arène en Survie (session de jeu)
-var survival_selected_world: int = 1
+# Sélection active d'arène en Survie (persistée dans le profil)
+var survival_selected_world: int:
+	get:
+		return current_profile.survival_selected_world if current_profile != null else 1
+	set(val):
+		if current_profile != null:
+			current_profile.survival_selected_world = val
+			request_save()
 
 var campaign_levels_data: Dictionary:
 	get:
@@ -195,6 +201,7 @@ func _init_profile_and_storage() -> void:
 
 	_sync_boosters_from_profile()
 	_validate_decks()
+	sanitize_campaign_progression()
 
 	# 3. Tentative de synchronisation cloud transparente en tâche de fond (si non-sandbox)
 	if active_profile_id != "sandbox":
@@ -216,6 +223,10 @@ func save_to_disk() -> bool:
 	_write_last_active_profile_id(current_profile.profile_id)
 	return success
 
+## Alias de commodité pour save_to_disk()
+func save_profile() -> bool:
+	return save_to_disk()
+
 func load_profile(p_id: String) -> bool:
 	var path: String = get_profile_path(p_id)
 	var data: Dictionary = SaveCipher.load_encrypted_json(path)
@@ -227,6 +238,7 @@ func load_profile(p_id: String) -> bool:
 	active_profile_id = p_id
 	_sync_boosters_from_profile()
 	_validate_decks()
+	sanitize_campaign_progression()
 	return true
 
 func switch_profile(target_profile_id: String) -> void:
@@ -331,18 +343,28 @@ func _sync_boosters_from_profile() -> void:
 # OUTILS SANDBOX (DÉVELOPPEUR SANS BIDOUILLE DANS LE GAMEPLAY)
 # ==============================================================================
 
-func is_sandbox_active() -> bool:
-	return active_profile_id == "sandbox"
+func is_admin() -> bool:
+	return current_profile != null and current_profile.is_admin
 
 func is_dev_account() -> bool:
-	if is_sandbox_active():
-		return true
-	if current_profile != null and (current_profile.account_type == "sandbox" or current_profile.account_type == "dev"):
-		return true
-	return OS.is_debug_build()
+	return is_admin() or OS.is_debug_build()
+
+func get_setting(key: String, default_val: bool = true) -> bool:
+	if current_profile == null:
+		return default_val
+	return bool(current_profile.settings.get(key, default_val))
+
+func set_setting(key: String, val: bool) -> void:
+	if current_profile != null:
+		current_profile.settings[key] = val
+		request_save()
+
+func vibrate(ms: int = 30) -> void:
+	if get_setting("vibrate", true) and Input.has_method("vibrate_handheld"):
+		Input.vibrate_handheld(ms)
 
 func sandbox_unlock_all() -> void:
-	if not is_sandbox_active():
+	if not is_dev_account():
 		return
 	for cid in registered_card_defs:
 		if not cards_inventory.has(cid):
@@ -354,14 +376,14 @@ func sandbox_unlock_all() -> void:
 	EventBus.deck_changed.emit(active_deck_index)
 
 func sandbox_add_resources(gold_amount: int = 10000, dia_amount: int = 500) -> void:
-	if not is_sandbox_active():
+	if not is_dev_account():
 		return
 	add_gold(gold_amount)
 	add_diamonds(dia_amount)
 	save_to_disk()
 
 func sandbox_set_all_max_level(target_lvl: int = 5) -> void:
-	if not is_sandbox_active():
+	if not is_dev_account():
 		return
 	for cid in registered_card_defs:
 		if not cards_inventory.has(cid):
@@ -372,8 +394,11 @@ func sandbox_set_all_max_level(target_lvl: int = 5) -> void:
 	save_to_disk()
 	EventBus.deck_changed.emit(active_deck_index)
 
+func is_sandbox_active() -> bool:
+	return active_profile_id == "sandbox"
+
 func sandbox_reset() -> void:
-	if not is_sandbox_active():
+	if not is_dev_account():
 		return
 	current_profile = PlayerProfileScript.create_default("sandbox", true)
 	_sync_boosters_from_profile()
@@ -430,7 +455,9 @@ func spend_diamonds(amount: int) -> bool:
 
 func record_game_results(final_score: int, waves_cleared: int, gold_earned: int) -> Dictionary:
 	var res: Dictionary = economy_service.record_game_results(current_profile, final_score, waves_cleared, gold_earned)
-	request_save()
+	save_to_disk()
+	if cloud_sync != null and res.get("is_new_record", false):
+		cloud_sync.sync_now()
 	return res
 
 func can_upgrade_card(card_id: StringName) -> bool:
@@ -445,11 +472,55 @@ func upgrade_card(card_id: StringName) -> bool:
 func get_card_state(card_id: StringName) -> Dictionary:
 	return inventory_service.get_card_state(card_id, cards_inventory, registered_card_defs, gold)
 
+## Retourne le niveau effectif de la carte en cours de partie :
+## - En mode Campagne (Aventure) : Toujours Niveau 1 (équilibrage déterministe basé sur le skill).
+## - En mode Survie : Niveau réel amélioré de la collection du joueur.
+func get_in_game_card_level(card_id: StringName) -> int:
+	if is_campaign():
+		return 1
+	var st: Dictionary = get_card_state(card_id)
+	if not st.is_empty():
+		return int(st.get("level", 1))
+	if cards_inventory.has(card_id):
+		return int(cards_inventory[card_id].get("level", 1))
+	return 1
+
 func purchase_item(item: ShopItemData, use_diamonds: bool) -> bool:
 	var success: bool = economy_service.purchase_item(item, use_diamonds, current_profile, available_boosters, inventory_service)
 	if success:
-		request_save()
+		_sync_boosters_to_profile()
+		save_to_disk()
 	return success
+
+## Enregistre un achat in-app avec garantie zéro-perte (Journal FinTech) :
+## 1. Génère un identifiant unique de transaction (tx_id)
+## 2. Crédite immédiatement les récompenses au joueur
+## 3. Enregistre dans le journal pending_purchases
+## 4. Écrit la sauvegarde chiffrée sur disque
+## 5. Déclenche la synchronisation Cloud Supabase pour acquittement
+func record_in_app_purchase(product_id: String, amount_paid: float, diamonds_to_grant: int, items_to_grant: Dictionary = {}, platform: String = "google_play", receipt: String = "") -> String:
+	if current_profile == null:
+		return ""
+	var tx_id: String = "tx_%d_%d" % [int(Time.get_unix_time_from_system()), randi()]
+	var tx: Dictionary = {
+		"tx_id": tx_id,
+		"product_id": product_id,
+		"amount_paid": amount_paid,
+		"currency": "EUR",
+		"granted_diamonds": diamonds_to_grant,
+		"granted_gold": 0,
+		"granted_items": items_to_grant,
+		"platform": platform,
+		"receipt_data": receipt,
+		"timestamp": int(Time.get_unix_time_from_system())
+	}
+	if diamonds_to_grant > 0:
+		add_diamonds(diamonds_to_grant)
+	current_profile.pending_purchases.append(tx)
+	save_to_disk()
+	if cloud_sync != null:
+		cloud_sync.sync_profile(current_profile)
+	return tx_id
 
 func apply_booster_rewards(result: Dictionary) -> void:
 	economy_service.apply_booster_rewards(result, current_profile, inventory_service)
@@ -491,12 +562,86 @@ func get_active_deck_balls() -> Array[StringName]:
 func get_active_deck_bumpers() -> Array[StringName]:
 	return deck_service.get_active_deck_bumpers(get_active_deck(), registered_card_defs)
 
+func get_campaign_level_info(world_num: int, level_num: int) -> Dictionary:
+	if current_profile == null:
+		return {}
+	var k_short: String = "w%d_%02d" % [world_num, level_num]
+	if current_profile.campaign_levels_data.has(k_short):
+		return current_profile.campaign_levels_data[k_short]
+	var k_long: String = "world_%d_%02d" % [world_num, level_num]
+	if current_profile.campaign_levels_data.has(k_long):
+		return current_profile.campaign_levels_data[k_long]
+	return {}
+
+## Vérifie si un monde est débloqué (Monde 1 toujours débloqué, ou seuil campaign_unlocked_world, ou boss vaincu)
+func is_campaign_world_unlocked(world_num: int) -> bool:
+	if world_num <= 1:
+		return true
+	if world_num <= campaign_unlocked_world:
+		return true
+	var prev_boss: Dictionary = get_campaign_level_info(world_num - 1, 10)
+	return bool(prev_boss.get("cleared", false)) or int(prev_boss.get("stars", 0)) > 0
+
+## Vérifie si un niveau est débloqué (Niveau 1 débloqué si monde accessible, ou niveau précédent complété)
+func is_campaign_level_unlocked(world_num: int, level_num: int) -> bool:
+	if not is_campaign_world_unlocked(world_num):
+		return false
+	if level_num <= 1:
+		return true
+	if world_num == campaign_unlocked_world and level_num <= campaign_unlocked_level:
+		return true
+	var prev_info: Dictionary = get_campaign_level_info(world_num, level_num - 1)
+	return bool(prev_info.get("cleared", false)) or int(prev_info.get("stars", 0)) > 0
+
+## Recalcule et assainit les compteurs campaign_unlocked_world et campaign_unlocked_level
+## à partir de la vérité terrain des niveaux réellement battus dans campaign_levels_data.
+func sanitize_campaign_progression() -> void:
+	if current_profile == null:
+		return
+
+	# 1. Calcul du monde débloqué selon les boss battus
+	var max_w: int = 1
+	while true:
+		var boss_info: Dictionary = get_campaign_level_info(max_w, 10)
+		var boss_cleared: bool = bool(boss_info.get("cleared", false)) or int(boss_info.get("stars", 0)) > 0
+		if boss_cleared:
+			max_w += 1
+		else:
+			break
+
+	# 2. Calcul du niveau débloqué pour ce monde
+	var max_lvl: int = 1
+	for lvl in range(1, 11):
+		var info: Dictionary = get_campaign_level_info(max_w, lvl)
+		var is_cleared: bool = bool(info.get("cleared", false)) or int(info.get("stars", 0)) > 0
+		if is_cleared:
+			max_lvl = mini(10, lvl + 1)
+		else:
+			break
+
+	var changed: bool = false
+	if current_profile.campaign_unlocked_world != max_w:
+		current_profile.campaign_unlocked_world = max_w
+		changed = true
+	if current_profile.campaign_unlocked_level != max_lvl:
+		current_profile.campaign_unlocked_level = max_lvl
+		changed = true
+
+	if changed:
+		save_to_disk()
+		if active_profile_id != "sandbox":
+			cloud_sync.sync_profile(current_profile)
+
 func record_campaign_level_results(level: LevelData, score: int, stars: int, _hp_left: int) -> Dictionary:
 	if current_profile == null or level == null:
 		return {}
 
+	var w_num: int = level.get_world_number() if level.has_method("get_world_number") else 1
 	var lvl_id_str: String = String(level.id)
-	var prev_data: Dictionary = current_profile.campaign_levels_data.get(lvl_id_str, {})
+	var key_short: String = "w%d_%02d" % [w_num, level.level_number]
+	var key_long: String = "world_%d_%02d" % [w_num, level.level_number]
+
+	var prev_data: Dictionary = get_campaign_level_info(w_num, level.level_number)
 	var is_first_clear: bool = not prev_data.get("cleared", false)
 	var prev_stars: int = int(prev_data.get("stars", 0))
 	var prev_best: int = int(prev_data.get("best_score", 0))
@@ -504,21 +649,25 @@ func record_campaign_level_results(level: LevelData, score: int, stars: int, _hp
 	var new_stars: int = maxi(prev_stars, stars)
 	var new_best: int = maxi(prev_best, score)
 
-	current_profile.campaign_levels_data[lvl_id_str] = {
+	var record_payload: Dictionary = {
 		"stars": new_stars,
 		"best_score": new_best,
 		"cleared": true
 	}
 
-	# Progression du niveau suivant si premier succès (palier maximal conservé)
-	if is_first_clear and level.level_number >= current_profile.campaign_unlocked_level:
+	# Enregistrement sous les clés canoniques pour rétrocompatibilité absolue
+	current_profile.campaign_levels_data[lvl_id_str] = record_payload
+	current_profile.campaign_levels_data[key_short] = record_payload
+	current_profile.campaign_levels_data[key_long] = record_payload
+
+	# Déblocage GARANTI du niveau suivant (le palier avance dès que le niveau actuel est battu)
+	if (level.level_number + 1) > current_profile.campaign_unlocked_level:
 		current_profile.campaign_unlocked_level = level.level_number + 1
 
 	# Déblocage du monde suivant si le boss du niveau 10 est vaincu
-	if is_first_clear and level.level_number >= 10:
-		var current_w_num: int = int(String(level.world_id).trim_prefix("world_"))
-		if current_w_num >= current_profile.campaign_unlocked_world:
-			current_profile.campaign_unlocked_world = current_w_num + 1
+	if level.level_number >= 10:
+		if (w_num + 1) > current_profile.campaign_unlocked_world:
+			current_profile.campaign_unlocked_world = w_num + 1
 
 	campaign_selected_level = level.level_number + 1
 
@@ -536,7 +685,8 @@ func record_campaign_level_results(level: LevelData, score: int, stars: int, _hp
 	if diamonds_earned > 0:
 		add_diamonds(diamonds_earned)
 
-	request_save()
+	# Sauvegarde immédiate et certaine sur disque
+	save_to_disk()
 
 	return {
 		"level_id": level.id,
@@ -546,7 +696,7 @@ func record_campaign_level_results(level: LevelData, score: int, stars: int, _hp
 		"diamonds_earned": diamonds_earned,
 		"is_first_clear": is_first_clear,
 		"is_new_record": score > prev_best,
-		"unlocked_next_level": is_first_clear
+		"unlocked_next_level": true
 	}
 
 func record_campaign_defeat(level: LevelData, score: int, gold_earned: int) -> Dictionary:

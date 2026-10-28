@@ -22,6 +22,11 @@ const LevelWaveData = preload("res://scripts/data/level_wave_data.gd")
 @export var first_clear_diamonds: int = 5
 @export var first_clear_booster_id: StringName = &"silver_pop"
 
+## Retourne le numéro du monde (ex: 1 pour world_1)
+func get_world_number() -> int:
+	var w_str: String = String(world_id).trim_prefix("world_")
+	return int(w_str) if w_str.is_valid_int() else 1
+
 ## Calcule le nombre d'étoiles (de 1 à 3) mérité selon le score et les PV restants
 func calculate_stars(score: int, hp_left: int, max_hp: int) -> int:
 	if hp_left <= 0:

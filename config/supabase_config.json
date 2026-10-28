@@ -1,0 +1,9 @@
+{
+  "supabase_url": "https://vpxqzuquknimcobmjpgf.supabase.co",
+  "supabase_anon_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZweHF6dXF1a25pbWNvYm1qcGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3OTI3NzIsImV4cCI6MjEwNDM2ODc3Mn0.a4j8r-R9kl06X_RR-9PJ7--V7f6FOW36VBQe9atfM_M",
+  "schema": "bonbonk",
+  "auto_sync_interval_seconds": 300,
+  "request_timeout_seconds": 8.0,
+  "max_retry_attempts": 3,
+  "enable_cloud_sync": true
+}

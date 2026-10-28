@@ -9,6 +9,8 @@ var profile_id: String = "main"
 var display_name: String = "Gourmand"
 var account_type: String = "guest" # "guest", "cloud", "sandbox"
 var cloud_user_id: String = ""
+var is_admin: bool = false
+var has_chosen_name: bool = false
 
 var created_at: int = 0
 var last_saved_at: int = 0
@@ -37,6 +39,10 @@ var campaign_levels_data: Dictionary = {} # level_id (String) -> { "stars": int,
 # Records du Mode Survie (Roguelike)
 var survival_best_wave: int = 0
 var survival_best_score: int = 0
+var survival_selected_world: int = 1
+
+# Journal inviolable des achats / transactions payantes en attente d'acquittement cloud
+var pending_purchases: Array = []
 
 # Boosters en attente d'ouverture (dictionnaires de données pour sérialisation)
 var available_boosters: Array = []
@@ -51,6 +57,13 @@ var stats: Dictionary = {
 	"enemies_defeated": 0,
 }
 
+# Paramètres audio et retour haptique
+var settings: Dictionary = {
+	"music": true,
+	"sfx": true,
+	"vibrate": true,
+}
+
 func _init() -> void:
 	var now: int = int(Time.get_unix_time_from_system())
 	created_at = now
@@ -63,6 +76,8 @@ func to_dict() -> Dictionary:
 		"display_name": display_name,
 		"account_type": account_type,
 		"cloud_user_id": cloud_user_id,
+		"is_admin": is_admin,
+		"has_chosen_name": has_chosen_name,
 		"created_at": created_at,
 		"last_saved_at": int(Time.get_unix_time_from_system()),
 		"sync_revision": sync_revision,
@@ -78,22 +93,38 @@ func to_dict() -> Dictionary:
 		"campaign_levels_data": campaign_levels_data.duplicate(true),
 		"survival_best_wave": survival_best_wave,
 		"survival_best_score": survival_best_score,
+		"survival_selected_world": survival_selected_world,
+		"pending_purchases": pending_purchases.duplicate(true),
 		"available_boosters": available_boosters.duplicate(true),
 		"pending_sync_actions": pending_sync_actions.duplicate(true),
 		"stats": stats.duplicate(true),
+		"settings": settings.duplicate(true),
 	}
 
 func from_dict(data: Dictionary) -> void:
-	schema_version = data.get("schema_version", CURRENT_SCHEMA_VERSION)
-	profile_id = data.get("profile_id", "main")
-	display_name = data.get("display_name", "Gourmand")
-	account_type = data.get("account_type", "guest")
-	cloud_user_id = data.get("cloud_user_id", "")
-	created_at = data.get("created_at", int(Time.get_unix_time_from_system()))
-	last_saved_at = data.get("last_saved_at", int(Time.get_unix_time_from_system()))
-	sync_revision = data.get("sync_revision", 0)
-	gold = data.get("gold", 250)
-	diamonds = data.get("diamonds", 30)
+	schema_version = int(data.get("schema_version", CURRENT_SCHEMA_VERSION))
+	profile_id = str(data.get("profile_id", "main"))
+	display_name = str(data.get("display_name", "Gourmand"))
+	account_type = str(data.get("account_type", "guest"))
+	cloud_user_id = str(data.get("cloud_user_id", ""))
+	is_admin = bool(data.get("is_admin", false))
+	has_chosen_name = bool(data.get("has_chosen_name", false)) or (display_name != "Gourmand" and not display_name.begins_with("Gourmand_"))
+
+	var raw_created = data.get("created_at", 0)
+	if raw_created is String:
+		created_at = int(Time.get_unix_time_from_datetime_string(str(raw_created))) if not str(raw_created).is_empty() else int(Time.get_unix_time_from_system())
+	else:
+		created_at = int(raw_created) if int(raw_created) > 0 else int(Time.get_unix_time_from_system())
+
+	var raw_saved = data.get("last_saved_at", 0)
+	if raw_saved is String:
+		last_saved_at = int(Time.get_unix_time_from_datetime_string(str(raw_saved))) if not str(raw_saved).is_empty() else int(Time.get_unix_time_from_system())
+	else:
+		last_saved_at = int(raw_saved) if int(raw_saved) > 0 else int(Time.get_unix_time_from_system())
+
+	sync_revision = int(data.get("sync_revision", 0))
+	gold = int(data.get("gold", 250))
+	diamonds = int(data.get("diamonds", 30))
 
 	var raw_inv: Dictionary = data.get("cards_inventory", {})
 	cards_inventory.clear()
@@ -117,15 +148,18 @@ func from_dict(data: Dictionary) -> void:
 	for card_id in raw_survival_deck:
 		survival_deck.append(StringName(card_id))
 
-	campaign_unlocked_world = data.get("campaign_unlocked_world", 1)
-	campaign_unlocked_level = data.get("campaign_unlocked_level", 1)
+	campaign_unlocked_world = int(data.get("campaign_unlocked_world", 1))
+	campaign_unlocked_level = int(data.get("campaign_unlocked_level", 1))
 	campaign_levels_data = data.get("campaign_levels_data", {}).duplicate(true)
-	survival_best_wave = data.get("survival_best_wave", 0)
-	survival_best_score = data.get("survival_best_score", 0)
+	survival_best_wave = int(data.get("survival_best_wave", 0))
+	survival_best_score = int(data.get("survival_best_score", 0))
+	survival_selected_world = int(data.get("survival_selected_world", 1))
 
+	pending_purchases = data.get("pending_purchases", []).duplicate(true)
 	available_boosters = data.get("available_boosters", []).duplicate(true)
 	pending_sync_actions = data.get("pending_sync_actions", []).duplicate(true)
 	stats = data.get("stats", { "best_score": 0, "games_played": 0, "enemies_defeated": 0 }).duplicate(true)
+	settings = data.get("settings", { "music": true, "sfx": true, "vibrate": true }).duplicate(true)
 
 	# Auto-migration de schéma si nécessaire
 	_apply_migrations()
@@ -205,6 +239,7 @@ static func create_default(p_id: String, is_sandbox: bool = false) -> RefCounted
 	if is_sandbox:
 		profile.display_name = "Dev Sandbox 🧪"
 		profile.account_type = "sandbox"
+		profile.is_admin = true
 		profile.gold = 99999
 		profile.diamonds = 5000
 		profile.cards_inventory = {
@@ -224,6 +259,7 @@ static func create_default(p_id: String, is_sandbox: bool = false) -> RefCounted
 		profile.survival_deck = [&"jawbreaker", &"mentox", &"fizz", &"twistypop", &"dragiburst", &"flying_saucer"]
 	else:
 		profile.display_name = "Gourmand"
+		profile.has_chosen_name = false
 		profile.account_type = "guest"
 		profile.gold = 250
 		profile.diamonds = 30

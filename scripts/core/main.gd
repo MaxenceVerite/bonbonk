@@ -175,6 +175,7 @@ func show_main_menu() -> void:
 		wave_director.stop_waves()
 	
 	main_menu.set_last_score(last_score)
+	main_menu.refresh()
 	if damage_number_manager != null:
 		damage_number_manager.clear_all()
 	if board != null:

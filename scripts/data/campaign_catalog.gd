@@ -5,9 +5,16 @@ const LevelData = preload("res://scripts/data/level_data.gd")
 const WorldData = preload("res://scripts/data/world_data.gd")
 const LevelWaveData = preload("res://scripts/data/level_wave_data.gd")
 
+const LEVELS_JSON_PATH: String = "res://data/campaign_levels.json"
+
 ## Catalogue et configuration par défaut des Mondes et Niveaux du mode Campagne.
 
 static var _cached_worlds: Array[WorldData] = []
+
+static func reload_levels_data() -> void:
+	_cached_worlds.clear()
+	_cached_worlds = _build_default_worlds()
+	print("CampaignCatalog: Niveaux rechargés depuis le JSON !")
 
 static func get_all_worlds() -> Array[WorldData]:
 	if not _cached_worlds.is_empty():
@@ -91,11 +98,42 @@ static func _build_default_worlds() -> Array[WorldData]:
 	w1.wall_right_texture = foret_wall_r
 	w1.top_extension_texture = foret_top_ext
 	w1.saga_map_texture = foret_map
+	w1.banner_texture = load("res://assets/maps/banner_world_1.png")
 	w1.pin_positions = pin_ratios_foret
 	w1.arena_modulate = Color.WHITE
 	w1.completion_reward_booster_id = &"golden_crush"
 
-	# Niveau 1-1
+	if not _load_levels_from_json(w1):
+		_build_w1_fallback(w1)
+	list.append(w1)
+
+	# =========================================================================
+	# MONDE 2 : PLAGE SUCRÉE
+	# =========================================================================
+	var w2: WorldData = WorldData.new()
+	w2.id = &"world_2"
+	w2.world_number = 2
+	w2.display_name = "Plage Sucrée"
+	w2.subtitle = "Le rivage de sucre rose et d'océan pétillant"
+	w2.arena_texture = beach_texture
+	w2.canopy_texture = null
+	w2.flipper_texture = beach_flipper
+	w2.wall_left_texture = beach_wall_l
+	w2.wall_right_texture = beach_wall_r
+	w2.top_extension_texture = beach_top_ext
+	w2.saga_map_texture = beach_map
+	w2.banner_texture = load("res://assets/maps/banner_world_2.png")
+	w2.pin_positions = pin_ratios_plage
+	w2.arena_modulate = Color.WHITE
+	w2.completion_reward_booster_id = &"diamond_dust"
+
+	if not _load_levels_from_json(w2):
+		_build_w2_fallback(w2)
+	list.append(w2)
+
+	return list
+
+static func _build_w1_fallback(w1: WorldData) -> void:
 	var l1: LevelData = LevelData.new()
 	l1.id = &"w1_01"
 	l1.world_id = w1.id
@@ -384,28 +422,8 @@ static func _build_default_worlds() -> Array[WorldData]:
 		])
 	]
 	w1.levels.append(l10)
-	list.append(w1)
 
-	# =========================================================================
-	# MONDE 2 : PLAGE SUCRÉE
-	# =========================================================================
-	var w2: WorldData = WorldData.new()
-	w2.id = &"world_2"
-	w2.world_number = 2
-	w2.display_name = "Plage Sucrée"
-	w2.subtitle = "Le rivage de sucre rose et d'océan pétillant"
-	w2.arena_texture = beach_texture
-	w2.canopy_texture = null
-	w2.flipper_texture = beach_flipper
-	w2.wall_left_texture = beach_wall_l
-	w2.wall_right_texture = beach_wall_r
-	w2.top_extension_texture = beach_top_ext
-	w2.saga_map_texture = beach_map
-	w2.pin_positions = pin_ratios_plage
-	w2.arena_modulate = Color.WHITE
-	w2.completion_reward_booster_id = &"diamond_dust"
-
-	# Niveau 2-1 (Arrivée sur la Plage)
+static func _build_w2_fallback(w2: WorldData) -> void:
 	var l21: LevelData = LevelData.new()
 	l21.id = &"w2_01"
 	l21.world_id = w2.id
@@ -682,12 +700,63 @@ static func _build_default_worlds() -> Array[WorldData]:
 		])
 	]
 	w2.levels.append(l210)
-	list.append(w2)
-
-	return list
 
 static func _create_wave(wave_num: int, spawns: Array[Dictionary]) -> LevelWaveData:
 	var w: LevelWaveData = LevelWaveData.new()
 	w.wave_number = wave_num
 	w.spawns = spawns
 	return w
+
+static func _load_levels_from_json(world: WorldData) -> bool:
+	if not FileAccess.file_exists(LEVELS_JSON_PATH):
+		return false
+	var file: FileAccess = FileAccess.open(LEVELS_JSON_PATH, FileAccess.READ)
+	if file == null:
+		return false
+	var json_text: String = file.get_as_text()
+	var json: JSON = JSON.new()
+	if json.parse(json_text) != OK:
+		push_warning("CampaignCatalog: Erreur parsing JSON: " + json.get_error_message())
+		return false
+	var root: Dictionary = json.data as Dictionary
+	if not root.has("worlds"):
+		return false
+	for w_dict in root["worlds"]:
+		if StringName(w_dict.get("id", "")) == world.id:
+			world.levels.clear()
+			for lvl_dict in w_dict.get("levels", []):
+				var lvl: LevelData = LevelData.new()
+				lvl.world_id = world.id
+				lvl.level_number = int(lvl_dict.get("number", 1))
+				lvl.id = StringName("w%d_%02d" % [world.world_number, lvl.level_number])
+				lvl.display_title = str(lvl_dict.get("title", "Niveau %d" % lvl.level_number))
+				lvl.description = str(lvl_dict.get("description", ""))
+				
+				var thresholds = lvl_dict.get("star_thresholds", [1000, 2500, 4000])
+				var typed_thresholds: Array[int] = [int(thresholds[0]), int(thresholds[1]), int(thresholds[2])]
+				lvl.star_thresholds = typed_thresholds
+				
+				var rewards = lvl_dict.get("rewards", {})
+				lvl.first_clear_gold = int(rewards.get("gold", 100))
+				lvl.first_clear_diamonds = int(rewards.get("diamonds", 5))
+				lvl.first_clear_booster_id = StringName(rewards.get("booster", "silver_pop"))
+				
+				var waves_arr: Array[LevelWaveData] = []
+				for wave_dict in lvl_dict.get("waves", []):
+					var wave_num = int(wave_dict.get("subwave", 1))
+					var spawns_raw = wave_dict.get("spawns", [])
+					var wave_data = LevelWaveData.new()
+					wave_data.wave_number = wave_num
+					var spawns_arr: Array[Dictionary] = []
+					for sp in spawns_raw:
+						spawns_arr.append({
+							"unit": str(sp.get("unit", "tomato")),
+							"delay": float(sp.get("delay", 0.5)),
+							"x_ratio": float(sp.get("x", 0.5))
+						})
+					wave_data.spawns = spawns_arr
+					waves_arr.append(wave_data)
+				lvl.waves = waves_arr
+				world.levels.append(lvl)
+			return true
+	return false
